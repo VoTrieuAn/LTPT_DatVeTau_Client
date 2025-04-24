@@ -1,13 +1,7 @@
 package controller.NhanVien;
 
 import common.LoaiNhanVien;
-import config.DatabaseContext;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
-import dao.NhanVienDAO;
-import dao.TaiKhoanDAO;
-import dao.impl.NhanVienDAOImpl;
-import dao.impl.TaiKhoanDAOImpl;
 import entity.NhanVien;
 import entity.TaiKhoan;
 import javafx.application.Platform;
@@ -28,8 +22,6 @@ import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.NhanVienServiceImpl;
-import service.impl.TaiKhoanServiceImpl;
 import util.*;
 
 import java.io.IOException;

@@ -1,16 +1,7 @@
-package controller.NhanVien;/* AnVo
-    
-    @author: Admin
-    Date: 02/11/2024
-    Time: 11:31 PM
-    
-    ProjectName: workspace.xml 
-*/
+package controller.NhanVien;
+
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
-import dao.NhanVienDAO;
-import dao.impl.NhanVienDAOImpl;
 import entity.NhanVien;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -24,7 +15,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.NhanVienServiceImpl;
 
 import java.io.IOException;
 import java.rmi.RemoteException;

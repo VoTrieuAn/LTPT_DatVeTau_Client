@@ -1,10 +1,6 @@
 package rmi;
 
-//import service.BanVeServiceRemote;
 import service.*;
-import serviceRemote.HanhKhachServiceRemote;
-//import service.KhuyenMaiServiceRemote;
-//import service.TimVeServiceRemote;
 
 import java.rmi.Naming;
 

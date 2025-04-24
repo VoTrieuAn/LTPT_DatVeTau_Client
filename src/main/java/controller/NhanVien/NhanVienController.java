@@ -1,17 +1,7 @@
-package controller.NhanVien;/* AnVo
-
-    @author: Admin
-    Date: 29/10/2024
-    Time: 8:24 PM
-
-    ProjectName: TrainTicket
-*/
+package controller.NhanVien;
 
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
-import dao.NhanVienDAO;
-import dao.impl.NhanVienDAOImpl;
 import entity.NhanVien;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -30,7 +20,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.NhanVienServiceImpl;
 import util.ComponentUtil;
 import util.ExportExcelUtil;
 

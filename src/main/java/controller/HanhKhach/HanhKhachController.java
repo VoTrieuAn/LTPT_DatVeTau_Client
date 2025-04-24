@@ -1,9 +1,6 @@
 package controller.HanhKhach;
 
-import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
-import dao.HanhKhachDAO;
-import dao.impl.HanhKhachDAOImpl;
 import entity.HanhKhach;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

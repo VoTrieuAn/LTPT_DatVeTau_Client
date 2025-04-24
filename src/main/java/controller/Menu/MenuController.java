@@ -1,21 +1,12 @@
-package controller.Menu;/* AnVo
-                        
-                        @author: Admin
-                        Date: 01/12/2024
-                        Time: 5:11 PM
-                        
-                        ProjectName: workspace.xml
-                        */
+package controller.Menu;
 
 import com.jfoenix.controls.JFXButton;
 import config.TrainTicketApplication;
-import controller.NhanVien.NhanVienController;
 import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;

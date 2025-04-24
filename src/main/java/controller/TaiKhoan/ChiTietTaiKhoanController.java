@@ -1,10 +1,7 @@
 package controller.TaiKhoan;
 
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
-import dao.TaiKhoanDAO;
-import dao.impl.TaiKhoanDAOImpl;
 import entity.NhanVien;
 import entity.TaiKhoan;
 import javafx.application.Platform;
@@ -15,8 +12,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import service.EntityService;
-import service.impl.TaiKhoanServiceImpl;
+import rmi.RMIServiceLocator;
 import util.EmailSenderUlti;
 import util.PasswordGeneratorUtil;
 import util.PasswordUtil;
@@ -114,17 +110,7 @@ public class ChiTietTaiKhoanController {
             this.taiKhoan.setMatKhau(PasswordUtil.hashPassword(matKhauNew));
             this.taiKhoan.setNgaySuaDoi(Timestamp.valueOf(LocalDateTime.now()));
             try {
-//                TrainTicketApplication.getInstance()
-//                        .getDatabaseContext()
-//                        .newEntityDAO(TaiKhoanDAO.class)
-//                        .capNhat(this.taiKhoan);
-                new TaiKhoanServiceImpl(new TaiKhoanDAOImpl()).capNhat(this.taiKhoan);
-//                ExecutorService emailService = Executors.newSingleThreadExecutor();
-//                emailService.submit(() -> {
-//                    String content = "Tên đăng nhập là: " + this.taiKhoan.getNhanvienByMaNv().getMaNv() + "\n"
-//                            + "Mật khẩu mới của bạn là: " + matKhauNew;
-//                    EmailSenderUlti.sendEmail(this.taiKhoan.getNhanvienByMaNv().getEmail(), "Tài khoản và mật khẩu", content);
-//                });
+                RMIServiceLocator.getTaiKhoanService().capNhat(this.taiKhoan);
                 ExecutorService emailService = Executors.newCachedThreadPool();
 
                 emailService.submit(() -> {

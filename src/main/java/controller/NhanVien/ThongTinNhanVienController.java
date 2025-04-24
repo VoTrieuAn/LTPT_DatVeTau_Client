@@ -1,11 +1,4 @@
-package controller.NhanVien;/* AnVo
-    
-    @author: Admin
-    Date: 04/11/2024
-    Time: 7:35 AM
-    
-    ProjectName: workspace.xml 
-*/
+package controller.NhanVien;
 
 import controller.Menu.MenuController;
 import entity.NhanVien;

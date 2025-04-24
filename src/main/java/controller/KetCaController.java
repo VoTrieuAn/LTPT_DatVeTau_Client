@@ -1,9 +1,7 @@
 package controller;
 
 import com.jfoenix.controls.JFXButton;
-import config.TrainTicketApplication;
 import dao.HoaDonDAO;
-import dao.TaiKhoanDAO;
 import dao.VeDAO;
 import dao.impl.HoaDonDAOImpl;
 import dao.impl.VeDAOImpl;
@@ -17,14 +15,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 public class KetCaController {
 

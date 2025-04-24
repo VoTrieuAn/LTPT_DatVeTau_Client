@@ -35,10 +35,6 @@ public class LoginController {
     public ImageView ImageLoginButton;
     private TaiKhoan taiKhoan;
 
-    // cái initialize này để FXML nó gọi hàm khi mình load file FXML mà ko cần phải
-    // áp sự kiện
-    // Transition là hàm hỗ trợ của JavaFX cho hiệu ứng chuyển động nhé ae
-    // Duration là hàm để làm đặt thời gian làm delay hay gì đó...
     @FXML
     public void initialize() {
         PromtText();

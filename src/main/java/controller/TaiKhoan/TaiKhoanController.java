@@ -1,9 +1,6 @@
 package controller.TaiKhoan;
 
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
-import dao.TaiKhoanDAO;
-import dao.impl.TaiKhoanDAOImpl;
 import entity.NhanVien;
 import entity.TaiKhoan;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,8 +17,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.TaiKhoanServiceImpl;
 import util.ComponentUtil;
 import util.ExportExcelUtil;
 
@@ -236,11 +233,7 @@ public class TaiKhoanController {
             System.out.println("Tháng " + thang);
             int nam = namCheck ? Integer.parseInt(namComboBox.getValue()) : -1;
             System.out.println("Nam " + nam);
-            EntityService<TaiKhoan> taiKhoanService = new TaiKhoanServiceImpl(new TaiKhoanDAOImpl());
-//            List<TaiKhoan> taiKhoans = TrainTicketApplication.getInstance()
-//                    .getDatabaseContext()
-//                    .newEntityDAO(TaiKhoanDAO.class)
-//                    .getDanhSachByDate(ngay, thang, nam, TaiKhoan.class, "ngayDangNhap");
+            EntityService<TaiKhoan> taiKhoanService = RMIServiceLocator.getTaiKhoanService();
             List<TaiKhoan> taiKhoans = taiKhoanService.getDanhSachByDate(ngay, thang, nam, TaiKhoan.class, "ngayDangNhap");
             loadData(taiKhoans);
             hBoxPage.setVisible(false);
@@ -271,11 +264,7 @@ public class TaiKhoanController {
         ngaySuaDoiColumn.setCellValueFactory(new PropertyValueFactory<>("ngaySuaDoi"));
     }
     private void loadData() throws RemoteException {
-        EntityService<TaiKhoan> taiKhoanService = new TaiKhoanServiceImpl(new TaiKhoanDAOImpl());
-//        danhSachTaiKhoanDB = TrainTicketApplication.getInstance()
-//                .getDatabaseContext()
-//                .newEntityDAO(TaiKhoanDAO.class)
-//                .getDanhSach("TaiKhoan.list", TaiKhoan.class);
+        EntityService<TaiKhoan> taiKhoanService = RMIServiceLocator.getTaiKhoanService();
         danhSachTaiKhoanDB = taiKhoanService.getDanhSach("TaiKhoan.list", TaiKhoan.class);
         List<TaiKhoan> filterTaiKhoan = danhSachTaiKhoanDB.stream()
                 .filter(taiKhoan -> !taiKhoan.getNhanvienByMaNv().isDaXoa())

@@ -1,7 +1,6 @@
 package controller.lichTrinh;
 
 import com.jfoenix.controls.JFXCheckBox;
-import common.LoaiNhanVien;
 import config.DatabaseContext;
 import config.TrainTicketApplication;
 import controller.Menu.MenuController;
@@ -27,7 +26,6 @@ import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 

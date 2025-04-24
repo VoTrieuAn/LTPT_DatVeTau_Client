@@ -2,8 +2,6 @@ package controller.HanhKhach;
 
 import controller.Menu.MenuNhanVienController;
 import controller.BanVe.TimVeController;
-import dao.HanhKhachDAO;
-import dao.impl.HanhKhachDAOImpl;
 import entity.HanhKhach;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;

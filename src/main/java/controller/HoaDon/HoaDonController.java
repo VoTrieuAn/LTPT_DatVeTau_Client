@@ -1,9 +1,6 @@
 package controller.HoaDon;
 
-import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
-import dao.HoaDonDAO;
-import dao.impl.HoaDonDAOImpl;
 import entity.HoaDon;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -21,7 +18,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.HoaDonServiceimpl;
 import util.ComponentUtil;
 import util.ExportExcelUtil;
 import java.io.IOException;
