@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="login_page" fx:id="login_Page" styleClass="login" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LoginController">
+   <Label alignment="CENTER" layoutX="-1.0" layoutY="7.0" prefHeight="43.0" prefWidth="440.0" text="PAND" textFill="#0d99ff">
+      <font>
+         <Font name="Fira Code SemiBold" size="32.0" />
+      </font>
+   </Label>
+   <Label alignment="CENTER" layoutX="1.0" layoutY="42.0" prefHeight="17.0" prefWidth="440.0" text="Passenger Assistant Network Delivery">
+      <font>
+         <Font name="Fira Code Medium" size="12.0" />
+      </font>
+   </Label>
+   <ImageView fitHeight="106.0" fitWidth="435.0" layoutX="3.0" layoutY="297.0" pickOnBounds="true" preserveRatio="true">
+      <Image url="@../images/background_btnlogin.png" />
+   </ImageView>
+   <Button id="button_Login" fx:id="buttonLogin" layoutX="158.0" layoutY="289.0" mnemonicParsing="false" onAction="#login" prefHeight="33.0" prefWidth="123.0" styleClass="button_Login" stylesheets="@../css/style.css" textFill="#eef6f9">
+      <graphic>
+         <ImageView id="ImageLoginButton" fx:id="ImageLoginButton" fitHeight="25.0" fitWidth="140.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../images/loginbuton.png" />
+         </ImageView>
+      </graphic>
+   </Button>
+   <TextField id="username" fx:id="textField_username" layoutX="50.0" layoutY="84.0" prefHeight="25.0" prefWidth="263.0" styleClass="text-field-custom" stylesheets="@../css/style.css">
+      <font>
+         <Font size="16.0" />
+      </font></TextField>
+   <PasswordField id="password" fx:id="textField_password" layoutX="50.0" layoutY="169.0" prefHeight="25.0" prefWidth="263.0" styleClass="text-field-custom" stylesheets="@../css/style.css">
+      <font>
+         <Font size="16.0" />
+      </font></PasswordField>
+   <Label id="label_Username" fx:id="label_username" layoutX="51.0" layoutY="89.0" prefHeight="25.0" prefWidth="68.0" stylesheets="@../css/style.css" text="Tài Khoản" textFill="#b3b3b3">
+      <font>
+         <Font size="14.0" />
+      </font></Label>
+   <Label fx:id="label_password" layoutX="51.0" layoutY="174.0" prefHeight="25.0" prefWidth="68.0" text="Mật Khẩu" textFill="#b3b3b3">
+      <font>
+         <Font size="14.0" />
+      </font></Label>
+   <ImageView id="username_icon" fitHeight="26.0" fitWidth="29.0" layoutX="19.0" layoutY="88.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@../images/user-svgrepo-com.png" />
+      </image>
+   </ImageView>
+   <ImageView id="password_icon" fitHeight="26.0" fitWidth="29.0" layoutX="19.0" layoutY="173.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@../images/password-lock-solid-svgrepo-com.png" />
+      </image>
+   </ImageView>
+   <ImageView fx:id="trainImageView" fitHeight="33.0" fitWidth="122.0" layoutX="150.0" layoutY="289.0" pickOnBounds="true" preserveRatio="true" visible="false">
+      <Image url="@../images/train_active.png" />
+   </ImageView>
+   <ImageView fitHeight="400.0" fitWidth="400.0" layoutX="435.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
+      <Image url="@../images/train.png" />
+   </ImageView>
+   <ImageView fx:id="whiteOverlay" fitHeight="401" fitWidth="751" preserveRatio="true" visible="false">
+      <Image url="@../images/img.png" />
+   </ImageView></AnchorPane>

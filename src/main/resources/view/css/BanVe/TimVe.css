@@ -1,0 +1,17 @@
+/* style.css */
+/* Thay đổi kích cỡ chữ của toàn bộ bảng */
+.table-view {
+    -fx-font-size: 14px; /* Kích cỡ chữ chung */
+}
+
+/* Tùy chỉnh kích cỡ chữ của tiêu đề cột */
+.table-view .column-header {
+    -fx-font-size: 16px; /* Kích cỡ chữ của tiêu đề cột */
+    -fx-font-weight: bold; /* Đậm chữ cho tiêu đề */
+}
+
+/* Tùy chỉnh kích cỡ chữ của các ô */
+.table-view .cell {
+    -fx-font-size: 14px; /* Kích cỡ chữ của ô dữ liệu */
+}
+

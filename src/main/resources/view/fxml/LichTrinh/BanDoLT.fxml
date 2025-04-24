@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="635.0" prefWidth="380.0" style="-fx-background-color: #f3f4f8;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lichTrinh.BanDoLTController">
+   <children>
+      <ImageView fitHeight="629.0" fitWidth="365.0" layoutX="5.0" layoutY="1.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../images/bitmap.png" />
+         </image>
+      </ImageView>
+      <HBox layoutX="65.0" layoutY="31.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_LaoCai" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Lào Cai" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="83.0" layoutY="83.0" prefHeight="20.0" prefWidth="76.0">
+         <children>
+            <Label prefHeight="20.0" prefWidth="53.0" text="Hà Nội" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Circle fx:id="circle_HaNoi" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+         </children>
+      </HBox>
+      <HBox layoutX="133.0" layoutY="137.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_ThanhHoa" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Thanh Hóa" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="141.0" layoutY="194.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_Vinh" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Vinh" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="190.0" layoutY="255.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_DongHoi" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Đồng Hới" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="242.0" layoutY="301.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_DaNang" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Đà Nẵng" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="167.0" layoutY="290.0" prefHeight="20.0" prefWidth="59.0">
+         <children>
+            <Label prefHeight="20.0" prefWidth="33.0" text="Huế" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Circle fx:id="circle_Hue" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+         </children>
+      </HBox>
+      <HBox layoutX="275.0" layoutY="379.0" prefHeight="20.0" prefWidth="96.0">
+         <children>
+            <Circle fx:id="circle_QuyNhon" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Quy Nhơn" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="284.0" layoutY="457.0" prefHeight="20.0" prefWidth="93.0">
+         <children>
+            <Circle fx:id="circle_NhaTrang" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Nha Trang" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="122.0" layoutY="519.0" prefHeight="20.0" prefWidth="75.0">
+         <children>
+            <Label prefHeight="20.0" prefWidth="54.0" text="Sài Gòn" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Circle fx:id="circle_SaiGon" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+         </children>
+      </HBox>
+      <HBox layoutX="267.0" layoutY="502.0" prefHeight="20.0" prefWidth="96.0">
+         <children>
+            <Circle fx:id="circle_PhanThiet" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Phan Thiết" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="183.0" layoutY="102.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_HaiPhong" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Hải Phòng" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="208.0" layoutY="539.0" prefHeight="12.0" prefWidth="114.0">
+         <children>
+            <Circle fx:id="circle_VungTau" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label prefHeight="15.0" prefWidth="79.0" text="Vũng Tàu" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <Line fx:id="line_LaoCai_HaNoi" endX="38.75" endY="26.25" fill="WHITE" layoutX="99.0" layoutY="60.0" startX="-17.75" startY="-13.75" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_HaNoi_HaiPhong" endX="22.0" endY="14.5" fill="WHITE" layoutX="161.0" layoutY="94.0" startX="-7.0" startY="2.5" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_HaNoi_ThanhHoa" endX="33.25" endY="66.5" fill="WHITE" layoutX="109.0" layoutY="70.0" startX="35.25" startY="31.25" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_ThanhHoa_Vinh" endX="38.75" endY="124.25" fill="WHITE" layoutX="109.0" layoutY="70.0" startX="34.5" startY="85.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_Vinh_DongHoi" endX="37.0" endY="130.25" fill="WHITE" layoutX="119.0" layoutY="80.0" startX="73.5" startY="177.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_DongHoi_Hue" endX="77.75" endY="199.75" fill="WHITE" layoutX="129.0" layoutY="90.0" startX="73.5" startY="183.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_Hue_DaNang" endX="102.75" endY="208.75" fill="WHITE" layoutX="139.0" layoutY="100.0" startX="79.0" startY="202.75" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_DaNang_QuyNhon" endX="130.75" endY="269.25" fill="WHITE" layoutX="149.0" layoutY="110.0" startX="105.5" startY="209.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_QuyNhon_NhaTrang" endX="131.5" endY="337.0" fill="WHITE" layoutX="159.0" layoutY="120.0" startX="127.5" startY="277.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_NhaTrang_PhanThiet" endX="111.5" endY="372.0" fill="WHITE" layoutX="169.0" layoutY="130.0" startX="121.25" startY="345.25" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_PhanThiet_SaiGon" endX="15.0" endY="384.5" fill="WHITE" layoutX="179.0" layoutY="140.0" startX="87.5" startY="372.0" stroke="WHITE" strokeWidth="2.0" />
+      <Line fx:id="line_SaiGon_VungTau" endX="3.25" endY="383.5" fill="WHITE" layoutX="189.0" layoutY="150.0" startX="19.5" startY="395.0" stroke="WHITE" strokeWidth="2.0" />
+   </children>
+</AnchorPane>

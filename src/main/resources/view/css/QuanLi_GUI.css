@@ -1,0 +1,52 @@
+.logo_img{
+    -fx-alignment: center; /* Căn giữa nội dung */
+    -fx-pref-height: 200; /* Chiều cao ưu tiên cho phần chứa */
+    -fx-pref-width: 200; /* Chiều rộng ưu tiên cho phần chứa */
+}
+
+.button-custom:hover {
+    -fx-background-color: #2980b9; /* Đổi màu nền khi hover */
+}
+
+.text_area {
+    -fx-font-size: 24px;
+}
+
+.datepicker_fontsize{
+    -fx-font-size: 14px;
+}
+
+.confirm_button{
+    -fx-font-size: 24px;
+    -fx-border-radius: 20px;
+    -fx-background-color: #38c871;
+}
+
+.toggle_button {
+    -fx-font-size: 16px;
+    -fx-border-radius: 5px;
+    -fx-border-color: #2899f3;
+    -fx-text-fill: #2899f3;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5px 10px;
+    -fx-alignment: center;
+    -fx-focus-color: transparent; /* Loại bỏ viền focus */
+    -fx-faint-focus-color: transparent;
+}
+
+.toggle_button:hover {
+    -fx-text-fill: #fff; /* Màu chữ khi hover */
+    -fx-background-color: #2899f3; /* Màu nền khi hover */
+}
+
+.toggle_button:selected {
+    -fx-text-fill: #fff; /* Màu chữ khi được chọn */
+    -fx-background-color: #1e73d9; /* Màu nền khi được chọn */
+    -fx-border-color: #1e73d9; /* Màu viền khi được chọn */
+}
+
+.toggle_button:selected:hover {
+    -fx-background-color: #1560bb; /* Màu nền khi chọn và hover */
+    -fx-border-color: #1560bb; /* Màu viền khi chọn và hover */
+}

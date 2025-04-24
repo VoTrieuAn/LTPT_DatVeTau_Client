@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="anchorPane" onKeyPressed="#keyPressed" onMouseClicked="#mouseClickedEvent" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lichTrinh.ThemLichTrinhController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <top>
+                <AnchorPane BorderPane.alignment="CENTER">
+                    <children>
+                        <HBox spacing="6.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Label fx:id="labelDanhSachLT" onMouseClicked="#mouseClickedEvent" text="Danh sách lịch trình" HBox.hgrow="ALWAYS">
+                                    <font>
+                                        <Font name="System Italic" size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="/">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Thêm lịch trình">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <Button fx:id="btnTroLai" layoutX="520.0" mnemonicParsing="false" onAction="#controller" styleClass="btn" stylesheets="/view/css/style.css" text="Trở lại (ESC)" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Button>
+                        <Pane prefHeight="9.0" prefWidth="1260.0" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
+                          <Label layoutX="-2.0" layoutY="25.0" prefHeight="37.0" prefWidth="278.0" text="Tạo mới lịch trình" textAlignment="CENTER" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="25.0">
+                              <font>
+                                  <Font size="36.0" />
+                              </font>
+                          </Label>
+                    </children>
+                </AnchorPane>
+            </top>
+            <center>
+            <ScrollPane hbarPolicy="ALWAYS" prefHeight="538.0" prefWidth="1260.0" styleClass="scroll-bar" stylesheets="@../../css/style.css" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
+               <content>
+                  <HBox alignment="CENTER">
+                     <children>
+                            <AnchorPane prefHeight="650.0" prefWidth="850.0" HBox.hgrow="ALWAYS">
+                                <children>
+                                    <GridPane alignment="CENTER" hgap="10.0" prefHeight="275.0" prefWidth="680.0" vgap="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                        <columnConstraints>
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                        </columnConstraints>
+                                        <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        </rowConstraints>
+                                        <children>
+                                            <VBox prefHeight="68.0" prefWidth="191.0" GridPane.rowIndex="1">
+                                                <children>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="20.0" prefWidth="420.0">
+                                             <children>
+                                                <Circle fill="RED" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
+                                                          <Label text="Ga Khởi Hành">
+                                                              <font>
+                                                                  <Font size="18.0" />
+                                                              </font>
+                                                          </Label>
+                                             </children>
+                                          </HBox>
+                                          <ComboBox fx:id="cboxGaKhoiHanh" onAction="#actionGaKH" prefHeight="28.0" prefWidth="393.0" promptText="--Chọn ga--" />
+                                                </children>
+                                            </VBox>
+                                            <VBox prefHeight="68.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                <children>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="0.0" prefWidth="420.0">
+                                             <children>
+                                                <Circle fill="BLUE" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
+                                                          <Label text="Ga Kết Thúc">
+                                                              <font>
+                                                                  <Font size="18.0" />
+                                                              </font>
+                                                          </Label>
+                                             </children>
+                                          </HBox>
+                                          <ComboBox fx:id="cboxGaKetThuc" onAction="#actionGaKT" prefHeight="28.0" prefWidth="365.0" promptText="--Chọn ga--" />
+                                                </children>
+                                            </VBox>
+                                            <VBox prefHeight="68.0" prefWidth="191.0" GridPane.rowIndex="2">
+                                                <children>
+                                                    <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                                        <children>
+                                                            <Label text="Ngày Khởi Hành" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                <font>
+                                                                    <Font size="18.0" />
+                                                                </font>
+                                                            </Label>
+                                                            <DatePicker fx:id="ngayKH_DatePicker" prefHeight="32.0" promptText="dd/mm/yyy" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="26.0" />
+                                                        </children>
+                                                    </AnchorPane>
+                                                </children>
+                                            </VBox>
+                                            <VBox prefHeight="68.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                                <children>
+                                                    <Label text="Ngày Kết Thúc">
+                                                        <font>
+                                                            <Font size="18.0" />
+                                                        </font>
+                                                    </Label>
+                                          <DatePicker fx:id="ngayKT_DatePicker" disable="true" prefHeight="28.0" prefWidth="361.0" promptText="dd/mm/yyy" />
+                                                </children>
+                                            </VBox>
+                                            <VBox prefHeight="69.0" prefWidth="335.0" GridPane.rowIndex="3">
+                                                <children>
+                                                    <Label text="Giờ Khởi Hành">
+                                                        <font>
+                                                            <Font size="18.0" />
+                                                        </font>
+                                                    </Label>
+                                          <HBox prefHeight="100.0" prefWidth="200.0">
+                                             <children>
+                                                <ComboBox fx:id="cboxGioKH" prefHeight="30.0" prefWidth="120.0" promptText="--Chọn giờ--">
+                                                   <HBox.margin>
+                                                      <Insets right="20.0" />
+                                                   </HBox.margin>
+                                                </ComboBox>
+                                                <ComboBox fx:id="cboxPhutKH" prefHeight="30.0" prefWidth="120.0" promptText="--Chọn phút--" />
+                                             </children>
+                                          </HBox>
+                                                </children>
+                                            </VBox>
+                                            <VBox prefHeight="68.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <children>
+                                          <VBox prefHeight="68.0" prefWidth="191.0">
+                                             <children>
+                                                <Label text="Giờ Kết Thúc">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </VBox>
+                                          <HBox prefHeight="100.0" prefWidth="200.0">
+                                             <children>
+                                                <ComboBox fx:id="cboxGioKT" disable="true" prefHeight="30.0" prefWidth="120.0" promptText="00">
+                                                   <HBox.margin>
+                                                      <Insets right="20.0" />
+                                                   </HBox.margin>
+                                                </ComboBox>
+                                                <ComboBox fx:id="cboxPhutKT" disable="true" prefHeight="30.0" prefWidth="120.0" promptText="00" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                            </VBox>
+                                    <VBox prefHeight="68.0" prefWidth="191.0">
+                                       <children>
+                                          <Label text="Tàu">
+                                             <font>
+                                                <Font size="18.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox fx:id="cboxTau" prefHeight="28.0" prefWidth="393.0" promptText="--Chọn tàu--" />
+                                       </children>
+                                    </VBox>
+                                    <JFXCheckBox fx:id="checkbox_DungAllGa" text="Dừng tất cả các ga trên tuyến" GridPane.columnIndex="1">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                    </JFXCheckBox>
+                                        </children>
+                                        <padding>
+                                            <Insets top="10.0" />
+                                        </padding>
+                                    </GridPane>
+                                    <TableView fx:id="tableThemLT" layoutY="319.0" onMouseClicked="#mouseClickedEvent" prefHeight="315.0" prefWidth="850.0" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="319.0">
+                                        <columns>
+                                            <TableColumn fx:id="maLTColumn" prefWidth="75.0" sortable="false" text="Mã LT" />
+                                            <TableColumn fx:id="gaKHColumn" prefWidth="75.0" sortable="false" text="Ga KH" />
+                                            <TableColumn fx:id="gaKTColumn" prefWidth="75.0" sortable="false" text="Ga KT" />
+                                            <TableColumn fx:id="ngayKHColumn" prefWidth="75.0" sortable="false" text="Ngày KH" />
+                                            <TableColumn fx:id="gioKHColumn" prefWidth="75.0" sortable="false" text="Giờ KH" />
+                                            <TableColumn fx:id="ngayKTColumn" prefWidth="75.0" sortable="false" text="Ngày KT" />
+                                            <TableColumn fx:id="gioKTColumn" prefWidth="75.0" sortable="false" text="Giờ KT" />
+                                            <TableColumn fx:id="maTauColumn" prefWidth="75.0" sortable="false" text="Mã Tàu" />
+                                            <TableColumn fx:id="trangThaiColumn" prefWidth="75.0" sortable="false" text="Trạng thái" />
+                                        </columns>
+                                        <columnResizePolicy>
+                                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                        </columnResizePolicy>
+                                    </TableView>
+                              <HBox alignment="CENTER_LEFT" layoutY="281.0" prefHeight="27.0" prefWidth="796.0">
+                                 <children>
+                                    <Circle fill="ORANGE" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
+                                    <Label text="Ga Dừng: ">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="label_GaDung" prefHeight="27.0" prefWidth="679.0" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                                </children>
+                            </AnchorPane>
+                        <AnchorPane fx:id="map_pane" HBox.hgrow="ALWAYS">
+                            <children>
+                                <ImageView fitHeight="629.0" fitWidth="365.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../../images/bitmap.png" />
+                                    </image>
+                                </ImageView>
+                                <HBox layoutX="62.0" layoutY="49.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_LaoCai" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Lào Cai" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="80.0" layoutY="101.0" prefHeight="20.0" prefWidth="76.0">
+                                    <children>
+                                        <Label prefHeight="20.0" prefWidth="53.0" text="Hà Nội" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Circle fx:id="circle_HaNoi" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="130.0" layoutY="155.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_ThanhHoa" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Thanh Hóa" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="138.0" layoutY="212.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_Vinh" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Vinh" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="187.0" layoutY="273.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_DongHoi" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Đồng Hới" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="239.0" layoutY="319.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_DaNang" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Đà Nẵng" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="164.0" layoutY="308.0" prefHeight="20.0" prefWidth="59.0">
+                                    <children>
+                                        <Label prefHeight="20.0" prefWidth="33.0" text="Huế" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Circle fx:id="circle_Hue" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="272.0" layoutY="397.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_QuyNhon" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Quy Nhơn" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="281.0" layoutY="475.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_NhaTrang" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Nha Trang" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="119.0" layoutY="537.0" prefHeight="20.0" prefWidth="75.0">
+                                    <children>
+                                        <Label prefHeight="20.0" prefWidth="54.0" text="Sài Gòn" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Circle fx:id="circle_SaiGon" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="264.0" layoutY="520.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_PhanThiet" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Phan Thiết" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="180.0" layoutY="120.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_HaiPhong" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Hải Phòng" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox layoutX="205.0" layoutY="557.0" prefHeight="12.0" prefWidth="114.0">
+                                    <children>
+                                        <Circle fx:id="circle_VungTau" fill="WHITE" onMouseClicked="#onCircleClick" radius="9.0" stroke="BLACK" strokeType="INSIDE" />
+                                        <Label prefHeight="15.0" prefWidth="79.0" text="Vũng Tàu" textFill="RED">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <Line fx:id="line_LaoCai_HaNoi" endX="38.75" endY="26.25" fill="WHITE" layoutX="96.0" layoutY="78.0" startX="-17.75" startY="-13.75" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_HaNoi_HaiPhong" endX="22.0" endY="14.5" fill="WHITE" layoutX="158.0" layoutY="112.0" startX="-7.0" startY="2.5" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_HaNoi_ThanhHoa" endX="33.25" endY="66.5" fill="WHITE" layoutX="106.0" layoutY="88.0" startX="35.25" startY="31.25" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_ThanhHoa_Vinh" endX="38.75" endY="124.25" fill="WHITE" layoutX="106.0" layoutY="88.0" startX="34.5" startY="85.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_Vinh_DongHoi" endX="37.0" endY="130.25" fill="WHITE" layoutX="116.0" layoutY="98.0" startX="73.5" startY="177.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_DongHoi_Hue" endX="77.75" endY="199.75" fill="WHITE" layoutX="126.0" layoutY="108.0" startX="73.5" startY="183.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_Hue_DaNang" endX="102.75" endY="208.75" fill="WHITE" layoutX="136.0" layoutY="118.0" startX="79.0" startY="202.75" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_DaNang_QuyNhon" endX="130.75" endY="269.25" fill="WHITE" layoutX="146.0" layoutY="128.0" startX="105.5" startY="209.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_QuyNhon_NhaTrang" endX="131.5" endY="337.0" fill="WHITE" layoutX="156.0" layoutY="138.0" startX="127.5" startY="277.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_NhaTrang_PhanThiet" endX="111.5" endY="372.0" fill="WHITE" layoutX="166.0" layoutY="148.0" startX="121.25" startY="345.25" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_PhanThiet_SaiGon" endX="15.0" endY="384.5" fill="WHITE" layoutX="176.0" layoutY="158.0" startX="87.5" startY="372.0" stroke="WHITE" strokeWidth="2.0" />
+                                <Line fx:id="line_SaiGon_VungTau" endX="3.25" endY="383.5" fill="WHITE" layoutX="186.0" layoutY="168.0" startX="19.5" startY="395.0" stroke="WHITE" strokeWidth="2.0" />
+                            </children>
+                        </AnchorPane>
+                     </children>
+                  </HBox>
+               </content>
+            </ScrollPane>
+            </center>
+            <bottom>
+                <AnchorPane prefHeight="26.0" prefWidth="1260.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <HBox spacing="12.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0">
+                            <children>
+                                <Button fx:id="btnLuuLai" disable="true" mnemonicParsing="false" onAction="#controller" stylesheets="/view/css/style.css" text="Lưu lại (Ctrl + S)">
+                                    <styleClass>
+                                        <String fx:value="btn" />
+                                        <String fx:value="btn-success" />
+                                    </styleClass>
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnHuyBo" disable="true" mnemonicParsing="false" onAction="#controller" prefHeight="31.0" stylesheets="/view/css/style.css" text="Hủy bỏ (X)">
+                                    <styleClass>
+                                        <String fx:value="btn" />
+                                        <String fx:value="btn-danger" />
+                                    </styleClass>
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </HBox>
+                        <Button fx:id="btnThemMoi" layoutX="428.0" layoutY="-1.0" mnemonicParsing="false" onAction="#controller" styleClass="btn" stylesheets="/view/css/style.css" text="Thêm mới (Enter)" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                  </Button>
+                    </children>
+                </AnchorPane>
+            </bottom>
+        </BorderPane>
+    </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</AnchorPane>

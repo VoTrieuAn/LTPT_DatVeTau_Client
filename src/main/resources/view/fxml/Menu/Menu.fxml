@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitMenuButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.Menu.MenuController">
+   <children>
+      <BorderPane fx:id="borderPane" layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <top>
+            <VBox BorderPane.alignment="CENTER">
+               <children>
+                  <HBox alignment="CENTER" maxHeight="-Infinity" spacing="10.0" style="-fx-background-color: #73BFF6;">
+                     <children>
+                        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                           <children>
+                              <Label text="PAND">
+                                 <font>
+                                    <Font name="System Bold" size="36.0" />
+                                 </font>
+                              </Label>
+                              <Separator blendMode="MULTIPLY" maxHeight="-Infinity" orientation="VERTICAL" prefHeight="60.0" prefWidth="0.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                              </Separator>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" prefHeight="70.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <JFXButton fx:id="lichTrinhButton" onAction="#handleLichTrinhAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
+                                 <graphic>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/Schedule.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label text="Lịch Trình">
+                                             <font>
+                                                <Font name="System Bold" size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </VBox>
+                                 </graphic>
+                              </JFXButton>
+                              <JFXButton fx:id="khuyenMaiButton" onAction="#handleKhuyenMaiAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
+                                 <graphic>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/Discount.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label text="Khuyến Mãi">
+                                             <font>
+                                                <Font name="System Bold" size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </VBox>
+                                 </graphic>
+                              </JFXButton>
+                              <JFXButton fx:id="nhanVienButton" onAction="#handleNhanVienAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
+                                 <graphic>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/Collaborator%20Male.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label text="Nhân Viên">
+                                             <font>
+                                                <Font name="System Bold" size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </VBox>
+                                 </graphic>
+                              </JFXButton>
+                              <JFXButton fx:id="thongKeButton" onAction="#handleThongKeAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
+                                 <graphic>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/Combo%20Chart.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label text="Thống Kê">
+                                             <font>
+                                                <Font name="System Bold" size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </VBox>
+                                 </graphic>
+                              </JFXButton>
+                              <JFXButton fx:id="taiKhoanButton" onAction="#handleTaiKhoanAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
+                                 <graphic>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/Customer.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label text="Tài Khoản">
+                                             <font>
+                                                <Font name="System Bold" size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </VBox>
+                                 </graphic>
+                              </JFXButton>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Separator blendMode="MULTIPLY" maxHeight="-Infinity" orientation="VERTICAL" prefHeight="60.0" prefWidth="0.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                              </Separator>
+                              <VBox alignment="CENTER">
+                                 <children>
+                                    <Label fx:id="hoTenNVLabel" alignment="CENTER" maxHeight="-Infinity" text="Họ tên" textFill="RED">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="maNVLabel" alignment="CENTER" maxHeight="-Infinity" text="Mã nhân viên">
+                                       <font>
+                                          <Font name="System Italic" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                              <SplitMenuButton alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" stylesheets="@../../css/style.css" textAlignment="JUSTIFY">
+                                 <items>
+                                    <MenuItem fx:id="thongTinCaNhanButton" mnemonicParsing="false" onAction="#controller">
+                                       <graphic>
+                                          <Label text="Thông tin cá nhân" textAlignment="CENTER">
+                                             <font>
+                                                <Font size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </graphic>
+                                    </MenuItem>
+                                    <MenuItem fx:id="doiMatKhauButton" mnemonicParsing="false" onAction="#controller">
+                                       <graphic>
+                                          <Label text="Đổi mật khẩu" textAlignment="CENTER">
+                                             <font>
+                                                <Font size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </graphic>
+                                    </MenuItem>
+                                    <MenuItem fx:id="dangXuatButton" mnemonicParsing="false" onAction="#controller">
+                                       <graphic>
+                                          <Label text="Đăng xuất" textAlignment="CENTER">
+                                             <font>
+                                                <Font size="16.0" />
+                                             </font>
+                                          </Label>
+                                       </graphic>
+                                    </MenuItem>
+                                 </items>
+                                 <graphic>
+                                    <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../../images/Circled%20User%20Male%20Skin%20Type%205.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </SplitMenuButton>
+                           </children>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="20.0" right="20.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </VBox>
+         </top>
+      </BorderPane>
+   </children>
+</AnchorPane>

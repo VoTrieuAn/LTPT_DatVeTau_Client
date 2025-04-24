@@ -1,0 +1,14 @@
+.train-car-button {
+    -fx-background-color: lightblue;
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    -fx-shape: "M0,0 L100,0 L100,50 L80,50 L80,100 L20,100 L20,50 L0,50 Z";
+    -fx-pref-width: 100;
+    -fx-pref-height: 100;
+}
+
+
+.train-car-button .graphic {
+    -fx-scale-x: 1.0;
+    -fx-scale-y: 1.0;
+}

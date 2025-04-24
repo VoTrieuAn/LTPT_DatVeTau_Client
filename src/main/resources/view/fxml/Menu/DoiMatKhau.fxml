@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.Menu.DoiMatKhauController">
+    <children>
+        <BorderPane layoutX="20.0" layoutY="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <top>
+                <AnchorPane BorderPane.alignment="CENTER">
+                    <children>
+                        <Pane AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Label text="Đổi mật khẩu">
+                                    <font>
+                                        <Font name="System Bold" size="36.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </Pane>
+                    </children>
+                </AnchorPane>
+            </top>
+            <center>
+                <AnchorPane BorderPane.alignment="CENTER">
+                    <children>
+                        <GridPane alignment="TOP_CENTER" vgap="10.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="235.5" minWidth="10.0" prefWidth="140.5" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <Label text="Mật Khẩu Mới:" GridPane.rowIndex="1">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Nhập Lại Mật Khẩu Mới:" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                                <PasswordField fx:id="mkCuTextField" promptText="Nhập mật khẩu cũ" GridPane.columnIndex="1">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </PasswordField>
+                                <PasswordField fx:id="mkMoiTextField" promptText="Nhập mật khẩu mới" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </PasswordField>
+                                <PasswordField fx:id="mkNhapLaiTextField" promptText="Nhập lại mật khẩu mới" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </PasswordField>
+                                <Label text="Mật Khẩu Cũ:">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </GridPane>
+                    </children>
+                </AnchorPane>
+            </center>
+            <bottom>
+                <AnchorPane BorderPane.alignment="CENTER">
+                    <children>
+                        <HBox spacing="12.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Button fx:id="btnLuuLai" mnemonicParsing="false" onAction="#controller" stylesheets="@../../css/style.css" text="Xác Nhận Lưu">
+                                    <styleClass>
+                                        <String fx:value="btn-success" />
+                                        <String fx:value="btn" />
+                                    </styleClass>
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children>
+                    <BorderPane.margin>
+                        <Insets top="40.0" />
+                    </BorderPane.margin>
+                </AnchorPane>
+            </bottom>
+        </BorderPane>
+    </children>
+    <padding>
+        <Insets bottom="30.0" left="60.0" right="60.0" top="30.0" />
+    </padding>
+</AnchorPane>

@@ -1,0 +1,7 @@
+<fontFamilies>
+    <fontFamily name="Times New Roman">
+        <normal>times.ttf</normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+</fontFamilies>

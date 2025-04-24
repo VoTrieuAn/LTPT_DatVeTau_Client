@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4eedbb89-b4f6-4469-9ab6-f642a1688cf7">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter (4)"/>
+	<style name="Times New Roman" isDefault="true" fontName="Times New Roman" fontSize="14"/>
+	<style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50" isBold="false" pdfFontName="Times-Bold"/>
+	<style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18" isBold="false" pdfFontName="Times-Roman"/>
+	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14" isBold="true"/>
+	<style name="Detail" mode="Transparent" fontName="Times New Roman"/>
+	<style name="Row" mode="Transparent" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style mode="Opaque" backcolor="#EEEFF0"/>
+		</conditionalStyle>
+	</style>
+	<style name="Table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#CACED0">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#D8D8D8"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="maHD" class="java.lang.String"/>
+	<parameter name="qrCodeImage" class="java.awt.Image"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+            hoa_don.ma_hd AS maHD,
+            hoa_don.tong_tien AS tongTien,
+            hoa_don.tien_nhan AS tienNhan,
+            hoa_don.tien_thua AS tienThua,
+            hoa_don.ngay_lap AS ngayLap,
+            nhan_vien.ma_nv AS maNV,
+            nhan_vien.ho_ten_dem AS nv_hoTenDem,
+            nhan_vien.ten AS nv_ten,
+            nhan_vien.gioi_tinh AS nv_gioiTinh,
+            nhan_vien.cccd AS nv_CCCD,
+            nhan_vien.sdt AS nv_sdt,
+            nhan_vien.email AS nv_email,
+            nhan_vien.ngay_sinh AS nv_ngaySinh,
+            nhan_vien.loai_nv AS loaiNV,
+            nhan_vien.trang_thai AS nv_trangThai,
+            nhan_vien.ngay_sua_doi AS nv_ngaySuaDoi,
+            ve.ma_ve AS maVe,
+            ve.gia_ve AS giaVe,
+            ve.thue_suat_gtgt AS thueSuatGTGT,
+            ve.ngay_mua AS ngayMua,
+            ve.loai_ve AS loaiVe,
+            ve.ho_ten AS ve_hoTen,
+            ve.cccd AS ve_CCCD,
+            ve.ngay_sinh_tre_em AS ngaySinhTreEm,
+            ve.loai_kh AS loaiKH,
+            ve.trang_thai_ve AS trangThaiVe,
+            ve.ma_lt AS maLT,
+            ve.ma_ghe AS maGhe,
+            ve.ma_km AS maKM,
+            ve.ngay_sua_doi AS ve_ngaySuaDoi,
+            hanh_khach.ma_hk AS maHK,
+            hanh_khach.ho_ten_dem AS hk_hoTenDem,
+            hanh_khach.ten AS hk_ten,
+            hanh_khach.cccd AS hk_CCCD,
+            hanh_khach.sdt AS hk_sdt,
+            hanh_khach.email AS hk_email,
+            hanh_khach.ngay_sinh AS hk_ngaySinh,
+            hanh_khach.ngay_sua_doi AS hk_ngaySuaDoi,
+            khuyen_mai.ma_km AS km_maKM,
+            khuyen_mai.loai_km AS loaiKM,
+            khuyen_mai.gia_tri_km AS giaTriKM,
+            khuyen_mai.ten_km AS tenKM,
+            ghe.gia_ghe AS giaGhe
+        FROM hoa_don
+        INNER JOIN nhan_vien ON hoa_don.ma_nv = nhan_vien.ma_nv
+        INNER JOIN ve ON hoa_don.ma_hd = ve.ma_hd
+        INNER JOIN hanh_khach ON hoa_don.ma_hk = hanh_khach.ma_hk
+        LEFT JOIN khuyen_mai ON ve.ma_km = khuyen_mai.ma_km
+        LEFT JOIN ghe ON ve.ma_ghe = ghe.ma_ghe
+        WHERE hoa_don.ma_hd = $P{maHD}]]>
+	</queryString>
+	<field name="maHD" class="java.lang.String"/>
+	<field name="tongTien" class="java.lang.Float"/>
+	<field name="tienNhan" class="java.lang.Float"/>
+	<field name="tienThua" class="java.lang.Float"/>
+	<field name="ngayLap" class="java.time.LocalDateTime"/>
+	<field name="maNV" class="java.lang.String"/>
+	<field name="nv_hoTenDem" class="java.lang.String"/>
+	<field name="nv_ten" class="java.lang.String"/>
+	<field name="nv_gioiTinh" class="java.lang.Boolean"/>
+	<field name="nv_CCCD" class="java.lang.String"/>
+	<field name="nv_sdt" class="java.lang.String"/>
+	<field name="nv_email" class="java.lang.String"/>
+	<field name="nv_ngaySinh" class="java.sql.Date"/>
+	<field name="loaiNV" class="java.lang.String"/>
+	<field name="nv_trangThai" class="java.lang.Boolean"/>
+	<field name="nv_ngaySuaDoi" class="java.time.LocalDateTime"/>
+	<field name="maVe" class="java.lang.String"/>
+	<field name="giaVe" class="java.lang.Float"/>
+	<field name="thueSuatGTGT" class="java.lang.Float"/>
+	<field name="ngayMua" class="java.time.LocalDateTime"/>
+	<field name="loaiVe" class="java.lang.String"/>
+	<field name="ve_hoTen" class="java.lang.String"/>
+	<field name="ve_CCCD" class="java.lang.String"/>
+	<field name="ngaySinhTreEm" class="java.sql.Date"/>
+	<field name="loaiKH" class="java.lang.String"/>
+	<field name="trangThaiVe" class="java.lang.Boolean"/>
+	<field name="maLT" class="java.lang.String"/>
+	<field name="maGhe" class="java.lang.String"/>
+	<field name="maKM" class="java.lang.String"/>
+	<field name="ve_ngaySuaDoi" class="java.time.LocalDateTime"/>
+	<field name="maHK" class="java.lang.String"/>
+	<field name="hk_hoTenDem" class="java.lang.String"/>
+	<field name="hk_ten" class="java.lang.String"/>
+	<field name="hk_CCCD" class="java.lang.String"/>
+	<field name="hk_sdt" class="java.lang.String"/>
+	<field name="hk_email" class="java.lang.String"/>
+	<field name="hk_ngaySinh" class="java.sql.Date"/>
+	<field name="hk_ngaySuaDoi" class="java.time.LocalDateTime"/>
+	<field name="km_maKM" class="java.lang.String"/>
+	<field name="loaiKM" class="java.lang.String"/>
+	<field name="giaTriKM" class="java.lang.Double"/>
+	<field name="tenKM" class="java.lang.String"/>
+	<field name="giaGhe" class="java.lang.Float"/>
+	<title>
+		<band height="211" splitType="Stretch">
+			<line>
+				<reportElement x="-1" y="100" width="556" height="1" uuid="806ce5df-1219-4876-ae0c-ca7405b1f246"/>
+			</line>
+			<staticText>
+				<reportElement x="-1" y="160" width="181" height="30" uuid="b62092ec-9053-4f27-b387-9b25d2909a68"/>
+				<text><![CDATA[Số điện thoại:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="130" width="181" height="30" uuid="edbd74ac-0cbd-44c9-8a8e-ccf745191172"/>
+				<text><![CDATA[Họ tên:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="105" width="209" height="25" uuid="139ebe8d-25b0-411e-986c-270015400874"/>
+				<textElement>
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Thông tin khách hàng:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="175" width="181" height="30" uuid="dd52166a-1135-4931-adef-51e7972118bc"/>
+				<text><![CDATA[Địa chỉ email:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="145" width="181" height="30" uuid="2d2f365d-7b12-4a8f-990d-ff528a2660bc"/>
+				<text><![CDATA[CCCD:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="25" width="85" height="20" uuid="0f86baff-6386-4f3f-b3fe-2388707babe8"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[Ngày mua:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy HH:mm:ss">
+				<reportElement x="90" y="25" width="280" height="20" uuid="bb10dbe1-0a4f-4722-9953-c163b63cf979"/>
+				<textFieldExpression><![CDATA[$F{ngayLap}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="50" width="280" height="20" uuid="3836ce65-eca3-4cad-a6de-b1818def0a2b"/>
+				<textFieldExpression><![CDATA[$F{maHD}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="50" width="120" height="20" uuid="0b3f9342-da78-4cfa-9fc5-2301c4749678"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[Số hóa đơn:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="-1" y="0" width="210" height="25" uuid="e622555d-198b-4ccd-a4a1-c59c53304058"/>
+				<textElement>
+					<font size="19" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PAND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="77" width="70" height="20" uuid="2edb234d-ccf7-4efe-a8d0-5d7f7de24d21"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[Nhân viên:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="90" y="77" width="280" height="30" uuid="7eee2697-81dc-45fc-bed2-17fd2829596c"/>
+				<textFieldExpression><![CDATA[$F{nv_hoTenDem} + " " + $F{nv_ten}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="130" width="290" height="30" uuid="432d6ffa-6eb2-4ef1-ac54-9fe15769d7a8"/>
+				<textFieldExpression><![CDATA[$F{hk_hoTenDem} + " " + $F{hk_ten}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="145" width="290" height="30" uuid="21d80357-66b8-455c-bc20-120e40678b46"/>
+				<textFieldExpression><![CDATA[$F{hk_CCCD}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="175" width="290" height="30" uuid="f4967e4c-4b5b-4d83-89d9-79927552c43e"/>
+				<textFieldExpression><![CDATA[$F{hk_email}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="160" width="290" height="30" uuid="e65facf4-a287-4c8e-896a-3cce18d76fc6"/>
+				<textFieldExpression><![CDATA[$F{hk_sdt}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="390" y="30" width="154" height="50" uuid="d434f8c0-29c6-4fe7-b781-873792b8ebcc"/>
+				<imageExpression><![CDATA[$P{qrCodeImage}]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="45">
+			<staticText>
+				<reportElement x="0" y="13" width="160" height="30" uuid="4ce2751d-6b3d-425e-83b5-168738a26b57"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Mã vé]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="160" y="13" width="100" height="30" uuid="29260fe6-e35e-4798-9a2e-7eb29d9fcc37"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Đơn giá]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="260" y="13" width="100" height="30" uuid="5cb5612c-2005-41b4-b550-48daf00b3aac"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Thuế]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="360" y="13" width="100" height="30" uuid="8c1ff514-d7dc-42d2-ad23-88452b8eec07"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Khuyến mãi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="13" width="100" height="30" uuid="5cb92465-60c1-48f6-b7a3-e39646cd2d42"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Thành tiền]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="43" splitType="Stretch">
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="160" height="30" isRemoveLineWhenBlank="true" uuid="f1aeb2a9-a809-4a9e-bbfb-0978b32c0361"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{maVe}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,### VNĐ">
+				<reportElement stretchType="RelativeToTallestObject" x="160" y="0" width="100" height="30" isRemoveLineWhenBlank="true" uuid="0217720a-1187-4999-8f98-4c2e43cf6d48"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{giaGhe}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,### VNĐ">
+				<reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="100" height="30" isRemoveLineWhenBlank="true" uuid="8908089f-3c77-48d7-86fd-fdd41e77064f"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{thueSuatGTGT} * $F{giaGhe}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="360" y="0" width="100" height="30" isRemoveLineWhenBlank="true" uuid="3086a5f0-1428-405f-9cfe-873fd61117bd"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{km_maKM} == null ? "Không có" :
+                    $F{loaiKM}.equals("KM_KHACH_HANG") ? "KH - " + $F{tenKM} + " (-" + $F{giaTriKM} + " VNĐ)" :
+                    $F{loaiKM}.equals("KM_VE") ? "Vé - " + $F{tenKM} + " (-" + $F{giaTriKM} + " VNĐ)" :
+                    $F{loaiKM}.equals("KM_NGAY") ? "Ngày - " + $F{tenKM} + " (-" + $F{giaTriKM} + " VNĐ)" : ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,### VNĐ">
+				<reportElement stretchType="RelativeToTallestObject" x="460" y="0" width="100" height="30" isRemoveLineWhenBlank="true" uuid="85ccfa10-3f76-4047-8236-c3098ca7eb6b"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{giaVe}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="161" splitType="Stretch">
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="4" y="105" width="556" height="30" isRemoveLineWhenBlank="true" backcolor="#E6E8E9" uuid="4e981201-9b86-4ad3-a186-1f6ca621dd99"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Serif" size="9" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[CẢM ƠN QUÝ KHÁCH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="330" y="10" width="100" height="30" isRemoveLineWhenBlank="true" uuid="2ed4202e-6792-4ebe-bf93-c7a6521f09a1"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tổng tiền:]]></text>
+			</staticText>
+			<textField pattern="#,### VNĐ">
+				<reportElement x="465" y="10" width="100" height="30" isRemoveLineWhenBlank="true" uuid="8baca186-2b80-453a-a6a2-11a36f62bd02"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tongTien}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="330" y="40" width="100" height="30" isRemoveLineWhenBlank="true" uuid="81b40de7-ee64-4660-8460-02461a5c17a7"/>
+				<text><![CDATA[Tiền nhận:]]></text>
+			</staticText>
+			<textField pattern="#,### VNĐ">
+				<reportElement x="465" y="40" width="100" height="30" isRemoveLineWhenBlank="true" uuid="7c10e7ce-b9e9-4490-bd59-3b9055518d3b"/>
+				<textFieldExpression><![CDATA[$F{tienNhan}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="330" y="70" width="100" height="30" isRemoveLineWhenBlank="true" uuid="99ca00c4-dc24-4ee2-af71-f91a739fbe54"/>
+				<text><![CDATA[Tiền thừa:]]></text>
+			</staticText>
+			<textField pattern="#,### VNĐ">
+				<reportElement x="467" y="70" width="100" height="30" isRemoveLineWhenBlank="true" uuid="9c844814-4518-44af-a04a-5cae3a05e7f8"/>
+				<textFieldExpression><![CDATA[$F{tienThua}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="130" width="555" height="25" uuid="c226e44d-3bb5-4145-b0b3-903bf1d79fde"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<text><![CDATA[Địa chỉ/Address: 13 Nguyễn Văn Bảo, Phường 4, Gò Vấp, Hồ Chí Minh]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>
