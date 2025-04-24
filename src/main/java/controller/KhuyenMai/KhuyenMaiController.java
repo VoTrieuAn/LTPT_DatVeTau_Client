@@ -19,11 +19,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import service.khuyenMai.KhuyenMaiService;
+import rmi.RMIServiceLocator;
+import service.KhuyenMaiService;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class KhuyenMaiController implements Initializable {
 
@@ -46,7 +50,7 @@ public class KhuyenMaiController implements Initializable {
 
     private ObservableList<KhuyenMai> danhSachKhuyenMai = FXCollections.observableArrayList();
     private String status = "all";
-    private final KhuyenMaiService khuyenMaiService = new KhuyenMaiService();
+    private final KhuyenMaiService khuyenMaiService = RMIServiceLocator.getKhuyenMaiService();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -61,10 +65,14 @@ public class KhuyenMaiController implements Initializable {
             }
             boolean currentState = selectedItem.isTrangThai();
             selectedItem.setTrangThai(!currentState);
-            if (khuyenMaiService.updateKhuyenMai(selectedItem)) {
-                tableKhuyenMai.refresh();
-            } else {
-                showAlert("Lỗi", "Không thể thay đổi trạng thái!", Alert.AlertType.ERROR);
+            try {
+                if (khuyenMaiService.updateKhuyenMai(selectedItem)) {
+                    tableKhuyenMai.refresh();
+                } else {
+                    showAlert("Lỗi", "Không thể thay đổi trạng thái!", Alert.AlertType.ERROR);
+                }
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         });
 
@@ -133,7 +141,12 @@ public class KhuyenMaiController implements Initializable {
     }
 
     private void loadData() {
-        List<KhuyenMai> khuyenMais = khuyenMaiService.getDanhSachKhuyenMai();
+        List<KhuyenMai> khuyenMais = null;
+        try {
+            khuyenMais = khuyenMaiService.getDanhSachKhuyenMai();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         danhSachKhuyenMai.addAll(khuyenMais);
         tableKhuyenMai.setItems(danhSachKhuyenMai);
     }
@@ -238,11 +251,15 @@ public class KhuyenMaiController implements Initializable {
                 km.setGiaTriKhuyenMai(newValue);
 
                 // Gọi service cập nhật
-                if (khuyenMaiService.updateKhuyenMai(km)) {
-                    // Cập nhật lại giao diện
-                    getTableView().refresh(); // CẦN THÊM DÒNG NÀY
-                } else {
-                    showAlert("Lỗi", "Cập nhật thất bại!", Alert.AlertType.ERROR);
+                try {
+                    if (khuyenMaiService.updateKhuyenMai(km)) {
+                        // Cập nhật lại giao diện
+                        getTableView().refresh(); // CẦN THÊM DÒNG NÀY
+                    } else {
+                        showAlert("Lỗi", "Cập nhật thất bại!", Alert.AlertType.ERROR);
+                    }
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -278,7 +295,11 @@ public class KhuyenMaiController implements Initializable {
             KhuyenMai km = event.getRowValue();
             String newTrangThai = event.getNewValue();
             km.setTrangThai(newTrangThai.equals("Hoạt động"));
-            khuyenMaiService.updateKhuyenMai(km);
+            try {
+                khuyenMaiService.updateKhuyenMai(km);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
         });
 
 
@@ -318,12 +339,16 @@ public class KhuyenMaiController implements Initializable {
                     return;
                 }
                 if (buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
-                    if (khuyenMaiService.deleteKhuyenMai(khuyenMai)) {
-                        showAlert("Thông báo", "Xóa thành công!", Alert.AlertType.INFORMATION);
-                        danhSachKhuyenMai.removeIf(km -> !km.isTrangThai());
-                        tableKhuyenMai.refresh();
-                    } else {
-                        showAlert("Thông báo", "Xóa thất bại", Alert.AlertType.WARNING);
+                    try {
+                        if (khuyenMaiService.deleteKhuyenMai(khuyenMai)) {
+                            showAlert("Thông báo", "Xóa thành công!", Alert.AlertType.INFORMATION);
+                            danhSachKhuyenMai.removeIf(km -> !km.isTrangThai());
+                            tableKhuyenMai.refresh();
+                        } else {
+                            showAlert("Thông báo", "Xóa thất bại", Alert.AlertType.WARNING);
+                        }
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }

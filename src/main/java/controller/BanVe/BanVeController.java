@@ -28,7 +28,8 @@ import net.sf.jasperreports.view.JasperViewer;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
-import service.banVe.BanVeService;
+import rmi.RMIServiceLocator;
+import service.BanVeService;
 import util.BarcodeUtil;
 import util.EmailSenderUlti;
 import util.HoadonCodeGeneratorUtil;
@@ -36,6 +37,7 @@ import util.QRCodeUtil;
 
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -112,7 +114,11 @@ public class BanVeController implements Initializable {
 
         tableViewBanVe.setItems(this.veList);
         capNhatTongTienGiam();
-        banVeService.xacDinhLoaiVe(veList);
+        try {
+            banVeService.xacDinhLoaiVe(veList);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -123,7 +129,7 @@ public class BanVeController implements Initializable {
         decimalFormat = new DecimalFormat("#,###", symbols);
         decimalFormat.setMaximumFractionDigits(0);
 
-        banVeService = new BanVeService();
+        banVeService = RMIServiceLocator.getBanVeService();
         setupTienNhapAutoComplete();
 
         setupTable(tableViewBanVe);
@@ -170,7 +176,12 @@ public class BanVeController implements Initializable {
             // Thực hiện logic khi text thay đổi
             String cccd = newValue;
             if (!cccd.isEmpty()) {
-                HanhKhach khachHang = banVeService.timKiemByCccd(cccd);
+                HanhKhach khachHang = null;
+                try {
+                    khachHang = banVeService.timKiemByCccd(cccd);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
                 if (khachHang != null) {
                     // Nếu khách hàng tồn tại, hiển thị thông tin và vô hiệu hóa nút btnThem1
                     hoTenTextField.setText(khachHang.getHoTenDem() + " " + khachHang.getTen());
@@ -347,9 +358,18 @@ public class BanVeController implements Initializable {
                         datePicker.setDisable(false);
                     }
 
-                    KhuyenMai khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                    KhuyenMai khuyenMaiTotNhat = null;
+                    try {
+                        khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                    banVeService.capNhatGiaVe(ve);
+                    try {
+                        banVeService.capNhatGiaVe(ve);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     capNhatTongTien();
                     capNhatTongTienGiam();
                     tableViewBanVe.refresh();
@@ -389,9 +409,18 @@ public class BanVeController implements Initializable {
                     if (ve != null) {
                         if (newVal != null) {
                             ve.setNgaySinhTreEm(Date.valueOf(newVal));
-                            KhuyenMai khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                            KhuyenMai khuyenMaiTotNhat = null;
+                            try {
+                                khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
                             ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                            banVeService.capNhatGiaVe(ve);
+                            try {
+                                banVeService.capNhatGiaVe(ve);
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
                             capNhatTongTien();
                             tableViewBanVe.refresh();
                         } else {
@@ -475,7 +504,11 @@ public class BanVeController implements Initializable {
                     } else {
                         lblKhuyenMaiValue.setText("0");
                     }
-                    banVeService.capNhatGiaVe(ve);
+                    try {
+                        banVeService.capNhatGiaVe(ve);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     capNhatTongTien();
                     capNhatTongTienGiam();
                     tableViewBanVe.refresh();
@@ -514,11 +547,20 @@ public class BanVeController implements Initializable {
                     comboBox.getItems().setAll(danhSachKhuyenMaiApDung);
 
                     if (ve.getKhuyenmaiByMaKm() == null && !danhSachKhuyenMaiApDung.isEmpty()) {
-                        KhuyenMai khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                        KhuyenMai khuyenMaiTotNhat = null;
+                        try {
+                            khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
                         ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
                         comboBox.setValue(khuyenMaiTotNhat);
                         lblKhuyenMaiValue.setText(formatCurrency(khuyenMaiTotNhat.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100));
-                        banVeService.capNhatGiaVe(ve);
+                        try {
+                            banVeService.capNhatGiaVe(ve);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
                         capNhatTongTien();
                         capNhatTongTienGiam();
                         tableViewBanVe.refresh();
@@ -575,13 +617,23 @@ public class BanVeController implements Initializable {
     }
 
     private void capNhatTongTien() {
-        double tongTien = banVeService.tinhTongTien(veList);
+        double tongTien = 0;
+        try {
+            tongTien = banVeService.tinhTongTien(veList);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         lblTongTien.setText(formatCurrency(tongTien));
         capNhatTienThua();
     }
 
     private void capNhatTongTienGiam() {
-        double tongTienGiam = banVeService.tinhTongTienGiam(veList);
+        double tongTienGiam = 0;
+        try {
+            tongTienGiam = banVeService.tinhTongTienGiam(veList);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         tienGiamTextField.setText(formatCurrency(tongTienGiam));
     }
 
