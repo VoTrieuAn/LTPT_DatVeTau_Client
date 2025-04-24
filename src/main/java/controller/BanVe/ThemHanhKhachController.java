@@ -11,9 +11,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import service.banVe.HanhKhachService;
+import rmi.RMIServiceLocator;
+import service.HanhKhachService;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
@@ -52,7 +54,7 @@ public class ThemHanhKhachController {
     private LocalDate ngayVeLD;
     private boolean isMotChieu;
     private NhanVien nhanVien;
-    private final HanhKhachService hanhKhachService = new HanhKhachService();
+    private final HanhKhachService hanhKhachService = RMIServiceLocator.getHanhKhachService();
 
     @FXML
     public void initialize() {
@@ -166,7 +168,12 @@ public class ThemHanhKhachController {
         String email = diaChiTextField.getText().trim();
         String cccd = cccdTextField.getText().trim();
 
-        HanhKhach hanhKhachNew = hanhKhachService.createHanhKhach(hoTenDem, ten, ngaySinh, sdt, email, cccd);
+        HanhKhach hanhKhachNew = null;
+        try {
+            hanhKhachNew = hanhKhachService.createHanhKhach(hoTenDem, ten, ngaySinh, sdt, email, cccd);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         if (hanhKhachNew == null) {
             showValidationError(hoTenDem, ten, ngaySinh, sdt, email, cccd);
         }
@@ -194,9 +201,15 @@ public class ThemHanhKhachController {
         } else if (cccd.isEmpty() || !cccd.matches("[0-9]{12}")) {
             showAlert("Cảnh Báo", "Số CCCD không hợp lệ!", Alert.AlertType.WARNING);
             cccdTextField.requestFocus();
-        } else if (hanhKhachService.isCccdExists(cccd)) {
-            showAlert("Cảnh Báo", "Số CCCD đã tồn tại!", Alert.AlertType.WARNING);
-            cccdTextField.requestFocus();
+        } else {
+            try {
+                if (hanhKhachService.isCccdExists(cccd)) {
+                    showAlert("Cảnh Báo", "Số CCCD đã tồn tại!", Alert.AlertType.WARNING);
+                    cccdTextField.requestFocus();
+                }
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

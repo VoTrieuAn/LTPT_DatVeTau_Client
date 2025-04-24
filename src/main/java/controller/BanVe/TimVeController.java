@@ -22,9 +22,12 @@ import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
-import service.banVe.TimVeService;
+import rmi.RMIServiceLocator;
+import service.TimVeService;
 
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.Date;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,51 +36,31 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TimVeController implements Initializable {
-    @FXML
-    private ComboBox<String> comboBoxGaDi;
-    @FXML
-    private ComboBox<String> comboBoxGaDen;
-    @FXML
-    private RadioButton motChieuRadio;
-    @FXML
-    private RadioButton khuHoiRadio;
-    @FXML
-    private DatePicker ngayDiDatePicker;
-    @FXML
-    private DatePicker ngayVeDatePicker;
-    @FXML
-    private Button btnTimKiem;
-    @FXML
-    private AnchorPane anchorPaneMain; // Lượt đi
-    @FXML
-    private AnchorPane anchorPaneMain1; // Lượt về
-    @FXML
-    private TableView<LichTrinh> tableViewDi; // table luot di
-    @FXML
-    private TableView<LichTrinh> tableViewVe;
-    @FXML
-    private Label loaiToaGhe;
-    @FXML
-    private GridPane toaTauGridPane;
-    @FXML
-    private GridPane gridPaneGheTrai;
-    @FXML
-    private Label luotDilb;
-    @FXML
-    private Label dsGhelb;
-    @FXML
-    private Label toaTaulb;
-    @FXML
-    private AnchorPane toaTauPane;
-    @FXML
-    private AnchorPane dsGheContaner;
+    @FXML private ComboBox<String> comboBoxGaDi;
+    @FXML private ComboBox<String> comboBoxGaDen;
+    @FXML private RadioButton motChieuRadio;
+    @FXML private RadioButton khuHoiRadio;
+    @FXML private DatePicker ngayDiDatePicker;
+    @FXML private DatePicker ngayVeDatePicker;
+    @FXML private Button btnTimKiem;
+    @FXML private AnchorPane anchorPaneMain; // Lượt đi
+    @FXML private AnchorPane anchorPaneMain1; // Lượt về
+    @FXML private TableView<LichTrinh> tableViewDi; // Table lượt đi
+    @FXML private TableView<LichTrinh> tableViewVe;
+    @FXML private Label loaiToaGhe;
+    @FXML private GridPane toaTauGridPane;
+    @FXML private GridPane gridPaneGheTrai;
+    @FXML private Label luotDilb;
+    @FXML private Label dsGhelb;
+    @FXML private Label toaTaulb;
+    @FXML private AnchorPane toaTauPane;
+    @FXML private AnchorPane dsGheContaner;
 
     private Button selectedToaButton;
-    private TimVeService timVeService; // Sử dụng service thay vì DAO
+    private TimVeService timVeService;
 
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapDi = new HashMap<>();
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapVe = new HashMap<>();
-
     private final ObservableList<String> masterGaDiList = FXCollections.observableArrayList();
     private final ObservableList<String> masterGaDenList = FXCollections.observableArrayList();
     private final ObservableList<LichTrinh> dataLichTrinhDi = FXCollections.observableArrayList();
@@ -101,6 +84,7 @@ public class TimVeController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Lưu trạng thái giao diện
         toaTauChildren = new ArrayList<>(toaTauGridPane.getChildren());
         gheTraiChildren = new ArrayList<>(gridPaneGheTrai.getChildren());
         tableLuotDiContainer = new ArrayList<>(anchorPaneMain.getChildren());
@@ -112,11 +96,30 @@ public class TimVeController implements Initializable {
         VBox.setVgrow(anchorPaneMain, Priority.ALWAYS);
 
         // Khởi tạo service
-        timVeService = new TimVeService();
+        try {
+            timVeService = RMIServiceLocator.getTimVeService();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể kết nối tới TimVeService: " + e.getMessage());
+            return;
+        }
 
         // Tải danh sách ga đi và ga đến
-        timVeService.loadGaDiGaDen(masterGaDiList, masterGaDenList);
+        try {
+            masterGaDiList.addAll(timVeService.getDistinctGaKhoiHanh());
+            masterGaDenList.addAll(timVeService.getDistinctGaKetThuc());
+            if (!masterGaDiList.isEmpty()) {
+                comboBoxGaDi.getSelectionModel().selectFirst();
+            }
+            if (!masterGaDenList.isEmpty()) {
+                comboBoxGaDen.getSelectionModel().selectFirst();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải danh sách ga: " + e.getMessage());
+        }
 
+        // Cấu hình DatePicker
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         ngayDiDatePicker.setConverter(new StringConverter<LocalDate>() {
             @Override
@@ -156,7 +159,17 @@ public class TimVeController implements Initializable {
         setupTableView(tableViewVe);
 
         // Tải danh sách lịch trình mặc định
-        tableViewDi.setItems(timVeService.layDanhSachLichTrinhMacDinh());
+        try {
+            Date today = Date.valueOf(LocalDate.now());
+            List<LichTrinh> lichTrinhDanhSach = timVeService.getLichTrinhByNgayKhoiHanhAndTrangThai(today, 0);
+            tableViewDi.setItems(FXCollections.observableArrayList(lichTrinhDanhSach));
+            if (!lichTrinhDanhSach.isEmpty()) {
+                tableViewDi.getSelectionModel().select(0);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải danh sách lịch trình: " + e.getMessage());
+        }
 
         ngayDiLD = ngayDiDatePicker.getValue();
         ngayVeLD = ngayVeDatePicker.getValue();
@@ -200,14 +213,17 @@ public class TimVeController implements Initializable {
                 }
             }
         });
-
-        if (!tableViewDi.getItems().isEmpty()) {
-            tableViewDi.getSelectionModel().select(0);
-        }
     }
 
     private void hienThiToaTau(String maTau, LocalDate lichTrinh, boolean isDi) {
-        List<ToaTau> toaTauList = timVeService.timToaTauTheoMaTau(maTau);
+        List<ToaTau> toaTauList;
+        try {
+            toaTauList = timVeService.timToaTauTheoMaTau(maTau);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể hiển thị toa tàu: " + e.getMessage());
+            return;
+        }
 
         if (toaTauList == null || toaTauList.isEmpty()) {
             toaTauGridPane.getChildren().clear();
@@ -238,8 +254,20 @@ public class TimVeController implements Initializable {
             Button toaButton = new Button();
             ToaTau toaTau = toaTauList.get(i);
 
-            List<Ghe> danhSachGhe = timVeService.layDanhSachGheTrongToa(toaTau.getMaTt());
-            List<Ghe> gheDaMua = timVeService.layDanhSachGheDaMua(toaTau.getTauByMaTau().getMaTau(), lichTrinh);
+            List<Ghe> danhSachGhe;
+            List<Ghe> gheDaMua;
+            try {
+                danhSachGhe = timVeService.layDanhSachGheTrongToa(toaTau.getMaTt());
+                Date sqlDate = Date.valueOf(lichTrinh);
+                gheDaMua = timVeService.layDanhSachGheDaMua(
+                        toaTau.getTauByMaTau().getMaTau(),
+                        sqlDate
+                );
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải danh sách ghế: " + e.getMessage());
+                return;
+            }
 
             long soGheDaMuaTrongToa = gheDaMua.stream()
                     .filter(ghe -> ghe.getToatauByMaTt().getMaTt().equals(toaTau.getMaTt()))
@@ -248,7 +276,8 @@ public class TimVeController implements Initializable {
             boolean tatCaGheDaMua = danhSachGhe.size() > 0 && danhSachGhe.size() == soGheDaMuaTrongToa;
 
             toaButton.setText("Toa " + toaTau.getSoToa());
-            Image iconImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/train_11088660.png")));
+            Image iconImage = new Image(
+                    Objects.requireNonNull(getClass().getResourceAsStream("/view/images/train_11088660.png")));
             ImageView iconView = new ImageView(iconImage);
             iconView.setFitHeight(30);
             iconView.setFitWidth(30);
@@ -283,7 +312,6 @@ public class TimVeController implements Initializable {
                         + "-fx-border-radius: 5;");
 
                 selectedToaButton = toaButton;
-
                 toaTaulb.setVisible(false);
                 hienThiGheTrongToa(toaTau, lichTrinh, isDi);
             });
@@ -292,7 +320,6 @@ public class TimVeController implements Initializable {
 
             int row = i;
             int column = 0;
-
             toaTauGridPane.add(toaButton, column, row);
 
             if (!defaultSelected && !toaButton.isDisabled()) {
@@ -338,11 +365,29 @@ public class TimVeController implements Initializable {
         }
 
         Map<ToaTau, Set<Ghe>> gheDaChonMap = isDi ? gheDaChonMapDi : gheDaChonMapVe;
-        List<Ghe> danhSachGhe = timVeService.layDanhSachGheTrongToa(toaTau.getMaTt());
-        int totalSeats = danhSachGhe.size();
-        List<Ghe> gheDaMua = timVeService.layDanhSachGheDaMua(toaTau.getTauByMaTau().getMaTau(), lichTrinh);
-        Set<String> gheDaMuaSet = gheDaMua.stream().map(Ghe::getMaGhe).collect(Collectors.toSet());
+        List<Ghe> danhSachGhe;
+        try {
+            danhSachGhe = timVeService.layDanhSachGheTrongToa(toaTau.getMaTt());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải danh sách ghế: " + e.getMessage());
+            return;
+        }
 
+        int totalSeats = danhSachGhe.size();
+        List<Ghe> gheDaMua;
+        try {
+            gheDaMua = timVeService.layDanhSachGheDaMua(
+                    toaTau.getTauByMaTau().getMaTau(),
+                    Date.valueOf(lichTrinh)
+            );
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải danh sách ghế đã mua: " + e.getMessage());
+            return;
+        }
+
+        Set<String> gheDaMuaSet = gheDaMua.stream().map(Ghe::getMaGhe).collect(Collectors.toSet());
         gheDaChonMap.putIfAbsent(toaTau, new HashSet<>());
 
         for (int i = 0; i < totalSeats; i++) {
@@ -367,7 +412,8 @@ public class TimVeController implements Initializable {
                 gheButton.setStyle("-fx-border-color: red;");
             } else if (gheDaChonMap.get(toaTau).contains(ghe)) {
                 gheButton.setSelected(true);
-                gheButton.setStyle("-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
+                gheButton.setStyle(
+                        "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
             } else {
                 gheButton.setStyle("-fx-background-color: white; -fx-border-color: transparent;");
             }
@@ -375,20 +421,33 @@ public class TimVeController implements Initializable {
             gheButton.setOnAction(event -> {
                 if (!gheDaMuaSet.contains(maGhe)) {
                     if (gheButton.isSelected()) {
-                        gheButton.setStyle("-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
-                        gheDaChonMap.get(toaTau).add(ghe);
-                        timVeService.themVe(veList, ghe, toaTau, isDi ? selectedLichTrinhDi : selectedLichTrinhVe);
+                        gheButton.setStyle(
+                                "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
+                        try {
+                            Ve ve = new Ve();
+                            timVeService.themVe(ve, ghe, toaTau, isDi ? selectedLichTrinhDi : selectedLichTrinhVe, isDi, gheDaChonMap, veList);
+                            System.out.println("Vé đã được thêm: " + veList);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể thêm vé: " + e.getMessage());
+                        }
                     } else {
-                        gheButton.setStyle("-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
-                        gheDaChonMap.get(toaTau).remove(ghe);
-                        timVeService.xoaVe(veList, ghe);
+                        gheButton.setStyle(
+                                "-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
+                        try {
+                            timVeService.xoaVe(ghe, isDi, veList);
+                            gheDaChonMap.get(toaTau).remove(ghe);
+                            System.out.println("Vé đã được xóa: " + veList);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa vé: " + e.getMessage());
+                        }
                     }
                 }
             });
 
             int row = i / 4;
             int column = i % 4;
-
             if (column >= 2) {
                 column++;
             }
@@ -419,13 +478,11 @@ public class TimVeController implements Initializable {
                     }
 
                     String userInput = request.getUserText().toLowerCase();
-
                     if (userInput.isBlank()) {
                         return FXCollections.observableArrayList();
                     }
 
                     String normalizedInput = removeDiacritics(userInput);
-
                     return masterList.stream()
                             .filter(item -> removeDiacritics(item.toLowerCase()).contains(normalizedInput))
                             .collect(Collectors.toList());
@@ -464,11 +521,7 @@ public class TimVeController implements Initializable {
 
         if (gaDi != null && gaDen != null && !gaDi.trim().isEmpty() && !gaDen.trim().isEmpty()) {
             if (gaDi.equalsIgnoreCase(gaDen)) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Lỗi");
-                alert.setHeaderText(null);
-                alert.setContentText("Ga đi và ga đến không được trùng nhau.");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Ga đi và ga đến không được trùng nhau.");
             }
         }
     }
@@ -597,46 +650,57 @@ public class TimVeController implements Initializable {
             return;
         }
 
-        List<LichTrinh> lichTrinhDiList = timVeService.timLichTrinh(gaDi, gaDen, ngayDiLD);
-        VBox parentVBox = (VBox) anchorPaneMain.getParent();
+        Date ngayDi = Date.valueOf(ngayDiLD);
+        Date ngayVe = !isMotChieu && ngayVeLD != null
+                ? Date.valueOf(ngayVeLD)
+                : null;
 
-        if (isMotChieu) {
-            if (parentVBox.getChildren().contains(anchorPaneMain1)) {
-                parentVBox.getChildren().remove(anchorPaneMain1);
-            }
 
-            if (lichTrinhDiList == null || lichTrinhDiList.isEmpty()) {
-                showAlert(Alert.AlertType.INFORMATION, "Thông báo", "Không tìm thấy lịch trình phù hợp cho lượt đi.");
-                lamMoi();
+        try {
+            List<LichTrinh> lichTrinhDiList = timVeService.timLichTrinh(gaDi, gaDen, ngayDi);
+            VBox parentVBox = (VBox) anchorPaneMain.getParent();
+
+            if (isMotChieu) {
+                if (parentVBox.getChildren().contains(anchorPaneMain1)) {
+                    parentVBox.getChildren().remove(anchorPaneMain1);
+                }
+
+                if (lichTrinhDiList == null || lichTrinhDiList.isEmpty()) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thông báo", "Không tìm thấy lịch trình phù hợp cho lượt đi.");
+                    lamMoi();
+                } else {
+                    luotDilb.setText("LƯỢT ĐI");
+                    dataLichTrinhDi.setAll(lichTrinhDiList);
+                    tableViewDi.setItems(dataLichTrinhDi);
+                }
+
+                VBox.setVgrow(anchorPaneMain, Priority.ALWAYS);
             } else {
-                luotDilb.setText("LƯỢT ĐI");
-                dataLichTrinhDi.setAll(lichTrinhDiList);
-                tableViewDi.setItems(dataLichTrinhDi);
+                List<LichTrinh> lichTrinhVeList = timVeService.timLichTrinh(gaDen, gaDi, ngayVe);
+
+                if (!parentVBox.getChildren().contains(anchorPaneMain1)) {
+                    parentVBox.getChildren().add(anchorPaneMain1);
+                }
+
+                if ((lichTrinhDiList == null || lichTrinhDiList.isEmpty()) ||
+                        (lichTrinhVeList == null || lichTrinhVeList.isEmpty())) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thông báo",
+                            "Không tìm thấy lịch trình phù hợp cho " +
+                                    (lichTrinhDiList.isEmpty() ? "lượt đi." : "lượt về."));
+                    lamMoi();
+                } else {
+                    luotDilb.setText("LƯỢT ĐI");
+                    dataLichTrinhDi.setAll(lichTrinhDiList);
+                    tableViewDi.setItems(dataLichTrinhDi);
+                    dataLichTrinhVe.setAll(lichTrinhVeList);
+                    tableViewVe.setItems(dataLichTrinhVe);
+                }
+
+                VBox.setVgrow(anchorPaneMain, Priority.NEVER);
             }
-
-            VBox.setVgrow(anchorPaneMain, Priority.ALWAYS);
-        } else {
-            List<LichTrinh> lichTrinhVeList = timVeService.timLichTrinh(gaDen, gaDi, ngayVeLD);
-
-            if (!parentVBox.getChildren().contains(anchorPaneMain1)) {
-                parentVBox.getChildren().add(anchorPaneMain1);
-            }
-
-            if ((lichTrinhDiList == null || lichTrinhDiList.isEmpty()) ||
-                    (lichTrinhVeList == null || lichTrinhVeList.isEmpty())) {
-                showAlert(Alert.AlertType.INFORMATION, "Thông báo",
-                        "Không tìm thấy lịch trình phù hợp cho " +
-                                (lichTrinhDiList.isEmpty() ? "lượt đi." : "lượt về."));
-                lamMoi();
-            } else {
-                luotDilb.setText("LƯỢT ĐI");
-                dataLichTrinhDi.setAll(lichTrinhDiList);
-                tableViewDi.setItems(dataLichTrinhDi);
-                dataLichTrinhVe.setAll(lichTrinhVeList);
-                tableViewVe.setItems(dataLichTrinhVe);
-            }
-
-            VBox.setVgrow(anchorPaneMain, Priority.NEVER);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tìm kiếm lịch trình: " + e.getMessage());
         }
     }
 
@@ -746,10 +810,8 @@ public class TimVeController implements Initializable {
         comboBoxGaDen.setValue(gaDenParam);
         ngayDiDatePicker.setValue(ngayDiLDParam);
         ngayVeDatePicker.setValue(ngayVeLDParam);
-        motChieuRadio.setSelected(true);
-        if (isMotChieuParam) {
-            motChieuRadio.setSelected(true);
-        } else {
+        motChieuRadio.setSelected(isMotChieuParam);
+        if (!isMotChieuParam) {
             khuHoiRadio.setSelected(true);
         }
         handleTimKiem();
