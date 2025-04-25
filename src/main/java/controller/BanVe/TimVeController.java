@@ -58,6 +58,12 @@ public class TimVeController implements Initializable {
     @FXML private Label toaTaulb;
     @FXML private AnchorPane toaTauPane;
     @FXML private AnchorPane dsGheContaner;
+    @FXML private Button btnPreviousDi;
+    @FXML private Button btnNextDi;
+    @FXML private Label lblPageInfoDi;
+    @FXML private Button btnPreviousVe;
+    @FXML private Button btnNextVe;
+    @FXML private Label lblPageInfoVe;
 
     private Button selectedToaButton;
     private LichTrinhService timVeService;
@@ -68,6 +74,8 @@ public class TimVeController implements Initializable {
     private final ObservableList<String> masterGaDenList = FXCollections.observableArrayList();
     private final ObservableList<LichTrinh> dataLichTrinhDi = FXCollections.observableArrayList();
     private final ObservableList<LichTrinh> dataLichTrinhVe = FXCollections.observableArrayList();
+    private final ObservableList<LichTrinh> displayedLichTrinhDi = FXCollections.observableArrayList();
+    private final ObservableList<LichTrinh> displayedLichTrinhVe = FXCollections.observableArrayList();
     private ObservableList<Ve> veList = FXCollections.observableArrayList();
 
     private String gaDi;
@@ -85,10 +93,15 @@ public class TimVeController implements Initializable {
 
     private NhanVien nhanVien;
 
+    private int currentPageDi = 1;
+    private int currentPageVe = 1;
+    private int rowsPerPage = 10; // Mặc định là 10 cho vé một chiều
+    private long totalRecordsDi;
+    private long totalRecordsVe;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            // Kết nối tới RMI service
             timVeService = RMIServiceLocator.getLichTrinhService();
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +109,6 @@ public class TimVeController implements Initializable {
             return;
         }
 
-        // Lưu trạng thái giao diện
         toaTauChildren = new ArrayList<>(toaTauGridPane.getChildren());
         gheTraiChildren = new ArrayList<>(gridPaneGheTrai.getChildren());
         tableLuotDiContainer = new ArrayList<>(anchorPaneMain.getChildren());
@@ -147,10 +159,17 @@ public class TimVeController implements Initializable {
         setupTableView(tableViewDi);
         setupTableView(tableViewVe);
 
+        tableViewDi.setItems(displayedLichTrinhDi);
+        tableViewVe.setItems(displayedLichTrinhVe);
+
         try {
             List<LichTrinh> lichTrinhDanhSach = timVeService.getLichTrinhByNgayKhoiHanhAndTrangThai(
                     Date.valueOf(LocalDate.now()), 0);
-            tableViewDi.setItems(FXCollections.observableArrayList(lichTrinhDanhSach));
+            dataLichTrinhDi.setAll(lichTrinhDanhSach);
+            totalRecordsDi = lichTrinhDanhSach.size();
+            currentPageDi = 1;
+            updateDisplayedLichTrinhDi();
+            updatePageInfoDi();
             if (!lichTrinhDanhSach.isEmpty()) {
                 tableViewDi.getSelectionModel().select(0);
             }
@@ -201,6 +220,89 @@ public class TimVeController implements Initializable {
                 }
             }
         });
+
+        btnPreviousDi.setDisable(true);
+        btnNextDi.setDisable(true);
+        btnPreviousVe.setDisable(true);
+        btnNextVe.setDisable(true);
+    }
+
+    @FXML
+    private void handlePreviousDi() {
+        if (currentPageDi > 1) {
+            currentPageDi--;
+            updateDisplayedLichTrinhDi();
+            updatePageInfoDi();
+        }
+    }
+
+    @FXML
+    private void handleNextDi() {
+        if (currentPageDi < getTotalPagesDi()) {
+            currentPageDi++;
+            updateDisplayedLichTrinhDi();
+            updatePageInfoDi();
+        }
+    }
+
+    @FXML
+    private void handlePreviousVe() {
+        if (currentPageVe > 1) {
+            currentPageVe--;
+            updateDisplayedLichTrinhVe();
+            updatePageInfoVe();
+        }
+    }
+
+    @FXML
+    private void handleNextVe() {
+        if (currentPageVe < getTotalPagesVe()) {
+            currentPageVe++;
+            updateDisplayedLichTrinhVe();
+            updatePageInfoVe();
+        }
+    }
+
+    private void updateDisplayedLichTrinhDi() {
+        displayedLichTrinhDi.clear();
+        int startIndex = (currentPageDi - 1) * rowsPerPage;
+        int endIndex = Math.min(startIndex + rowsPerPage, dataLichTrinhDi.size());
+        if (startIndex < dataLichTrinhDi.size()) {
+            displayedLichTrinhDi.addAll(dataLichTrinhDi.subList(startIndex, endIndex));
+        }
+        tableViewDi.refresh();
+    }
+
+    private void updateDisplayedLichTrinhVe() {
+        displayedLichTrinhVe.clear();
+        int startIndex = (currentPageVe - 1) * rowsPerPage;
+        int endIndex = Math.min(startIndex + rowsPerPage, dataLichTrinhVe.size());
+        if (startIndex < dataLichTrinhVe.size()) {
+            displayedLichTrinhVe.addAll(dataLichTrinhVe.subList(startIndex, endIndex));
+        }
+        tableViewVe.refresh();
+    }
+
+    private void updatePageInfoDi() {
+        long totalPages = getTotalPagesDi();
+        lblPageInfoDi.setText(String.format("Page %d of %d", currentPageDi, totalPages));
+        btnPreviousDi.setDisable(currentPageDi == 1);
+        btnNextDi.setDisable(currentPageDi >= totalPages || dataLichTrinhDi.isEmpty());
+    }
+
+    private void updatePageInfoVe() {
+        long totalPages = getTotalPagesVe();
+        lblPageInfoVe.setText(String.format("Page %d of %d", currentPageVe, totalPages));
+        btnPreviousVe.setDisable(currentPageVe == 1);
+        btnNextVe.setDisable(currentPageVe >= totalPages || dataLichTrinhVe.isEmpty());
+    }
+
+    private long getTotalPagesDi() {
+        return (totalRecordsDi + rowsPerPage - 1) / rowsPerPage;
+    }
+
+    private long getTotalPagesVe() {
+        return (totalRecordsVe + rowsPerPage - 1) / rowsPerPage;
     }
 
     private void hienThiToaTau(String maTau, LocalDate lichTrinh, boolean isDi) {
@@ -230,7 +332,7 @@ public class TimVeController implements Initializable {
                 toaTauGridPane.getRowConstraints().add(rowConstraints);
             }
 
-            boolean defaultSelected = false;
+            Button firstAvailableToaButton = null;
 
             for (int i = 0; i < toaTauList.size(); i++) {
                 Button toaButton = new Button();
@@ -240,12 +342,6 @@ public class TimVeController implements Initializable {
                 List<Ghe> gheDaMua = timVeService.layDanhSachGheDaMua(
                         toaTau.getTauByMaTau().getMaTau(),
                         Date.valueOf(lichTrinh));
-
-                // Gỡ lỗi: Ghi lại các đối tượng Ghe
-                System.out.println("Danh sách ghế đã mua cho toa " + toaTau.getMaTt() + ":");
-                for (Ghe ghe : gheDaMua) {
-                    System.out.println("Ghế: " + ghe.getMaGhe() + ", ToaTau: " + (ghe.getToatauByMaTt() != null ? ghe.getToatauByMaTt().getMaTt() : "null"));
-                }
 
                 long soGheDaMuaTrongToa = gheDaMua.stream()
                         .filter(ghe -> ghe.getToatauByMaTt() != null && ghe.getToatauByMaTt().getMaTt().equals(toaTau.getMaTt()))
@@ -262,10 +358,13 @@ public class TimVeController implements Initializable {
                 toaButton.setGraphic(iconView);
 
                 if (tatCaGheDaMua) {
-                    toaButton.setStyle("-fx-border-color: red; -fx-border-radius: 5; -fx-background-radius: 5;");
+                    toaButton.setStyle("-fx-background-color: #FF6347; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-fill: white;");
                     toaButton.setDisable(true);
                 } else {
                     toaButton.setStyle(getButtonStyle(toaTau.getLoaiToa()));
+                    if (firstAvailableToaButton == null) {
+                        firstAvailableToaButton = toaButton;
+                    }
                 }
 
                 Tooltip tooltip = new Tooltip(toaTau.getLoaiToa().getName());
@@ -284,11 +383,14 @@ public class TimVeController implements Initializable {
                         selectedToaButton.setStyle(getButtonStyle(previousToa.getLoaiToa()));
                     }
 
-                    toaButton.setStyle(getButtonStyle(toaTau.getLoaiToa())
-                            + "-fx-border-color: #2bbaba; "
-                            + "-fx-border-width: 2; "
-                            + "-fx-border-style: solid; "
-                            + "-fx-border-radius: 5;");
+                    // Tối ưu màu khi chọn
+                    toaButton.setStyle(getButtonStyle(toaTau.getLoaiToa()) +
+                            "-fx-border-color: #FFD700; " + // Vàng đậm nổi bật
+                            "-fx-border-width: 3; " +
+                            "-fx-background-color: linear-gradient(to bottom, " + getLighterColor(toaTau.getLoaiToa()) + ", " + getBaseColor(toaTau.getLoaiToa()) + "); " +
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2); " +
+                            "-fx-border-radius: 5; " +
+                            "-fx-background-radius: 5;");
 
                     selectedToaButton = toaButton;
                     toaTaulb.setVisible(false);
@@ -300,20 +402,23 @@ public class TimVeController implements Initializable {
                 int row = i;
                 int column = 0;
                 toaTauGridPane.add(toaButton, column, row);
-
-                if (!defaultSelected && !toaButton.isDisabled()) {
-                    selectedToaButton = toaButton;
-                    toaButton.setStyle(getButtonStyle(toaTau.getLoaiToa())
-                            + "-fx-border-color: #2bbaba; "
-                            + "-fx-border-width: 2; "
-                            + "-fx-border-style: solid; "
-                            + "-fx-border-radius: 5;");
-
-                    loaiToaGhe.setText("Toa số " + toaTau.getSoToa() + ": " + toaTau.getLoaiToa().getName());
-                    hienThiGheTrongToa(toaTau, lichTrinh, isDi);
-                    defaultSelected = true;
-                }
             }
+
+            // Tự động chọn toa đầu tiên không bị disable
+            if (firstAvailableToaButton != null) {
+                ToaTau firstToa = (ToaTau) firstAvailableToaButton.getUserData();
+                selectedToaButton = firstAvailableToaButton;
+                firstAvailableToaButton.setStyle(getButtonStyle(firstToa.getLoaiToa()) +
+                        "-fx-border-color: #FFD700; " +
+                        "-fx-border-width: 3; " +
+                        "-fx-background-color: linear-gradient(to bottom, " + getLighterColor(firstToa.getLoaiToa()) + ", " + getBaseColor(firstToa.getLoaiToa()) + "); " +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2); " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5;");
+                loaiToaGhe.setText("Toa số " + firstToa.getSoToa() + ": " + firstToa.getLoaiToa().getName());
+                hienThiGheTrongToa(firstToa, lichTrinh, isDi);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể hiển thị toa tàu: " + e.getMessage());
@@ -323,13 +428,33 @@ public class TimVeController implements Initializable {
     private String getButtonStyle(LoaiToa loaiToa) {
         switch (loaiToa) {
             case GIUONG_NAM:
-                return "-fx-background-color: #0066CC; -fx-border-radius: 5; -fx-background-radius: 5;";
+                return "-fx-background-color: #0066CC; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;";
             case NGOI_MEM:
-                return "-fx-background-color: #33CC66; -fx-border-radius: 5; -fx-background-radius: 5;";
+                return "-fx-background-color: #33CC66; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;";
             case NGOI_CUNG:
-                return "-fx-background-color: #66CCCC; -fx-border-radius: 5; -fx-background-radius: 5;";
+                return "-fx-background-color: #66CCCC; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;";
             default:
-                return "-fx-background-color: #FFFFFF; -fx-border-radius: 5; -fx-background-radius: 5;";
+                return "-fx-background-color: #FFFFFF; -fx-text-fill: black; -fx-border-radius: 5; -fx-background-radius: 5;";
+        }
+    }
+
+    // Helper method: Lấy màu nền cơ bản
+    private String getBaseColor(LoaiToa loaiToa) {
+        switch (loaiToa) {
+            case GIUONG_NAM: return "#0066CC";
+            case NGOI_MEM: return "#33CC66";
+            case NGOI_CUNG: return "#66CCCC";
+            default: return "#FFFFFF";
+        }
+    }
+
+    // Helper method: Lấy màu sáng hơn để tạo gradient
+    private String getLighterColor(LoaiToa loaiToa) {
+        switch (loaiToa) {
+            case GIUONG_NAM: return "#1E90FF"; // Xanh dương sáng
+            case NGOI_MEM: return "#7CFC00";   // Xanh lá sáng
+            case NGOI_CUNG: return "#AFEEEE";  // Xanh ngọc sáng
+            default: return "#F0F0F0";         // Xám nhạt
         }
     }
 
@@ -366,7 +491,7 @@ public class TimVeController implements Initializable {
                 final String maGhe = ghe.getMaGhe();
                 VBox content = new VBox();
                 Label soGheLabel = new Label("" + ghe.getSoGhe());
-                soGheLabel.setStyle("-fx-font-size: 14px;");
+                soGheLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
                 Label giaGheLabel = new Label(String.format("%.0fK", ghe.getGiaGhe() / 1000));
                 giaGheLabel.setStyle("-fx-font-size: 12px;");
 
@@ -378,24 +503,34 @@ public class TimVeController implements Initializable {
                 gheButton.setPrefSize(100, 100);
                 gheButton.setMaxSize(100, 100);
 
-                // Kiểm tra trạng thái ghế
+                // Thiết lập kiểu dáng cho các trạng thái
                 if (gheDaMuaSet.contains(maGhe)) {
-                    // Ghế đã mua: vô hiệu hóa và viền đỏ
                     gheButton.setDisable(true);
-                    gheButton.setStyle("-fx-border-color: red; -fx-border-radius: 10; -fx-background-radius: 10;");
+                    gheButton.setStyle(
+                            "-fx-background-color: #FF6347; " + // Đỏ cam cho ghế đã mua
+                                    "-fx-text-fill: white; " +
+                                    "-fx-border-radius: 10; " +
+                                    "-fx-background-radius: 10;");
                 } else if (gheDaChonMap.get(toaTau).contains(ghe)) {
-                    // Ghế đã chọn: tô màu xanh, cho phép tương tác
                     gheButton.setSelected(true);
                     gheButton.setStyle(
-                            "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
-                    gheButton.setDisable(false); // Có thể tương tác
+                            "-fx-background-color: linear-gradient(to bottom, #F0F8FF, #E0FFFF); " + // Gradient xanh nhạt
+                                    "-fx-border-color: #FFD700; " + // Viền vàng đậm
+                                    "-fx-border-width: 3; " +
+                                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2); " +
+                                    "-fx-border-radius: 10; " +
+                                    "-fx-background-radius: 10;");
+                    gheButton.setDisable(false);
                 } else {
-                    // Ghế chưa chọn: màu trắng, có thể tương tác
-                    gheButton.setStyle("-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
-                    gheButton.setDisable(false); // Có thể tương tác
+                    gheButton.setStyle(
+                            "-fx-background-color: #F5F5F5; " + // Xám nhạt cho ghế trống
+                                    "-fx-border-color: #D3D3D3; " + // Viền xám nhẹ
+                                    "-fx-border-width: 1; " +
+                                    "-fx-border-radius: 10; " +
+                                    "-fx-background-radius: 10;");
+                    gheButton.setDisable(false);
                 }
 
-                // Gắn sự kiện chọn/bỏ chọn
                 gheButton.setOnAction(event -> {
                     if (!gheDaMuaSet.contains(maGhe)) {
                         LichTrinh selectedLichTrinh = isDi ? selectedLichTrinhDi : selectedLichTrinhVe;
@@ -406,7 +541,6 @@ public class TimVeController implements Initializable {
                         }
 
                         if (gheButton.isSelected()) {
-                            // Khóa ghế trên server
                             Task<Boolean> lockTask = new Task<>() {
                                 @Override
                                 protected Boolean call() throws Exception {
@@ -418,9 +552,13 @@ public class TimVeController implements Initializable {
                                 Platform.runLater(() -> {
                                     if (lockSuccess) {
                                         gheButton.setStyle(
-                                                "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
+                                                "-fx-background-color: linear-gradient(to bottom, #F0F8FF, #E0FFFF); " +
+                                                        "-fx-border-color: #FFD700; " +
+                                                        "-fx-border-width: 3; " +
+                                                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2); " +
+                                                        "-fx-border-radius: 10; " +
+                                                        "-fx-background-radius: 10;");
                                         try {
-                                            // Kiểm tra trùng lặp vé
                                             boolean veTonTai = veList.stream().anyMatch(
                                                     existingVe -> existingVe.getGheByMaGhe().equals(ghe) &&
                                                             existingVe.getLichtrinhByMaLt().equals(selectedLichTrinh));
@@ -431,7 +569,6 @@ public class TimVeController implements Initializable {
                                                 return;
                                             }
 
-                                            // Tạo vé mới
                                             Ve ve = new Ve();
                                             ve.setMaVe(VeCodeGeneratorUtil.generateMaVe(
                                                     toaTau.getTauByMaTau().getMaTau(), toaTau.getMaTt(), ghe.getMaGhe()));
@@ -466,7 +603,6 @@ public class TimVeController implements Initializable {
                             });
                             new Thread(lockTask).start();
                         } else {
-                            // Bỏ chọn ghế
                             Task<Void> unlockTask = new Task<>() {
                                 @Override
                                 protected Void call() throws Exception {
@@ -477,7 +613,11 @@ public class TimVeController implements Initializable {
                             unlockTask.setOnSucceeded(taskEvent -> {
                                 Platform.runLater(() -> {
                                     gheButton.setStyle(
-                                            "-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
+                                            "-fx-background-color: #F5F5F5; " +
+                                                    "-fx-border-color: #D3D3D3; " +
+                                                    "-fx-border-width: 1; " +
+                                                    "-fx-border-radius: 10; " +
+                                                    "-fx-background-radius: 10;");
                                     try {
                                         veList.removeIf(ve -> ve.getGheByMaGhe().equals(ghe) &&
                                                 ve.getLichtrinhByMaLt().equals(selectedLichTrinh));
@@ -534,7 +674,6 @@ public class TimVeController implements Initializable {
         }
     }
 
-    // Helper method to unlock a seat asynchronously
     private void unlockSeatAsync(String maGhe, ToggleButton gheButton) {
         Task<Void> unlockTask = new Task<>() {
             @Override
@@ -686,13 +825,26 @@ public class TimVeController implements Initializable {
             if (newValue == motChieuRadio) {
                 ngayVeDatePicker.setDisable(true);
                 ngayVeDatePicker.setValue(null);
+                rowsPerPage = 10;
             } else if (newValue == khuHoiRadio) {
                 ngayVeDatePicker.setDisable(false);
+                rowsPerPage = 5;
+            }
+            if (!dataLichTrinhDi.isEmpty()) {
+                currentPageDi = 1;
+                updateDisplayedLichTrinhDi();
+                updatePageInfoDi();
+            }
+            if (!dataLichTrinhVe.isEmpty()) {
+                currentPageVe = 1;
+                updateDisplayedLichTrinhVe();
+                updatePageInfoVe();
             }
         });
 
         motChieuRadio.setSelected(true);
         ngayVeDatePicker.setDisable(true);
+        rowsPerPage = 10;
     }
 
     private void setupTableView(TableView<LichTrinh> tableView) {
@@ -735,6 +887,8 @@ public class TimVeController implements Initializable {
         ngayDiLD = ngayDiDatePicker.getValue();
         ngayVeLD = ngayVeDatePicker.getValue();
         isMotChieu = motChieuRadio.isSelected();
+
+        rowsPerPage = isMotChieu ? 10 : 5;
 
         toaTauGridPane.getChildren().clear();
 
@@ -783,7 +937,18 @@ public class TimVeController implements Initializable {
                 } else {
                     luotDilb.setText("LƯỢT ĐI");
                     dataLichTrinhDi.setAll(lichTrinhDiList);
-                    tableViewDi.setItems(dataLichTrinhDi);
+                    totalRecordsDi = lichTrinhDiList.size();
+                    currentPageDi = 1;
+                    updateDisplayedLichTrinhDi();
+                    updatePageInfoDi();
+
+                    // Tự động chọn dòng đầu tiên trong tableViewDi
+                    if (!displayedLichTrinhDi.isEmpty()) {
+                        tableViewDi.getSelectionModel().select(0);
+                        selectedLichTrinhDi = displayedLichTrinhDi.get(0);
+                        // hiển thị toa tàu, sẽ tự động chọn toa đầu tiên không bị disable
+                        hienThiToaTau(selectedLichTrinhDi.getTauByMaTau().getMaTau(), ngayDiLD, true);
+                    }
                 }
 
                 VBox.setVgrow(anchorPaneMain, Priority.ALWAYS);
@@ -803,9 +968,23 @@ public class TimVeController implements Initializable {
                 } else {
                     luotDilb.setText("LƯỢT ĐI");
                     dataLichTrinhDi.setAll(lichTrinhDiList);
-                    tableViewDi.setItems(dataLichTrinhDi);
                     dataLichTrinhVe.setAll(lichTrinhVeList);
-                    tableViewVe.setItems(dataLichTrinhVe);
+                    totalRecordsDi = lichTrinhDiList.size();
+                    totalRecordsVe = lichTrinhVeList.size();
+                    currentPageDi = 1;
+                    currentPageVe = 1;
+                    updateDisplayedLichTrinhDi();
+                    updateDisplayedLichTrinhVe();
+                    updatePageInfoDi();
+                    updatePageInfoVe();
+
+                    // Tự động chọn dòng đầu tiên trong tableViewDi
+                    if (!displayedLichTrinhDi.isEmpty()) {
+                        tableViewDi.getSelectionModel().select(0);
+                        selectedLichTrinhDi = displayedLichTrinhDi.get(0);
+                        // Gọi hienThiToaTau để hiển thị toa tàu, sẽ tự động chọn toa đầu tiên không bị disable
+                        hienThiToaTau(selectedLichTrinhDi.getTauByMaTau().getMaTau(), ngayDiLD, true);
+                    }
                 }
 
                 VBox.setVgrow(anchorPaneMain, Priority.NEVER);
@@ -819,8 +998,15 @@ public class TimVeController implements Initializable {
     private void lamMoi() {
         dataLichTrinhDi.clear();
         dataLichTrinhVe.clear();
-        tableViewDi.setItems(dataLichTrinhDi);
-        tableViewVe.setItems(dataLichTrinhVe);
+        displayedLichTrinhDi.clear();
+        displayedLichTrinhVe.clear();
+        totalRecordsDi = 0;
+        totalRecordsVe = 0;
+        currentPageDi = 1;
+        currentPageVe = 1;
+        rowsPerPage = motChieuRadio.isSelected() ? 10 : 5;
+        updatePageInfoDi();
+        updatePageInfoVe();
         lamMoiGiaoDien();
 
         VBox parentVBox = (VBox) anchorPaneMain.getParent();
@@ -886,7 +1072,6 @@ public class TimVeController implements Initializable {
 
         Optional<ButtonType> result = confirmAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Unlock all selected seats before refreshing
             for (Map.Entry<ToaTau, Set<Ghe>> entry : gheDaChonMapDi.entrySet()) {
                 for (Ghe ghe : entry.getValue()) {
                     unlockSeatAsync(ghe.getMaGhe(), null);
@@ -900,6 +1085,17 @@ public class TimVeController implements Initializable {
             veList.clear();
             gheDaChonMapDi.clear();
             gheDaChonMapVe.clear();
+            dataLichTrinhDi.clear();
+            dataLichTrinhVe.clear();
+            displayedLichTrinhDi.clear();
+            displayedLichTrinhVe.clear();
+            totalRecordsDi = 0;
+            totalRecordsVe = 0;
+            currentPageDi = 1;
+            currentPageVe = 1;
+            rowsPerPage = motChieuRadio.isSelected() ? 10 : 5;
+            updatePageInfoDi();
+            updatePageInfoVe();
             FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
         }
     }
@@ -922,7 +1118,6 @@ public class TimVeController implements Initializable {
                           LocalDate ngayDiLDParam,
                           LocalDate ngayVeLDParam,
                           boolean isMotChieuParam) {
-        // Gán lại dữ liệu
         this.veList.setAll(veListParam);
         this.gheDaChonMapDi.clear();
         this.gheDaChonMapDi.putAll(gheDaChonMapDiParam);
@@ -935,51 +1130,72 @@ public class TimVeController implements Initializable {
         this.ngayVeLD = ngayVeLDParam;
         this.isMotChieu = isMotChieuParam;
 
-        // Gán lại giao diện
+        rowsPerPage = isMotChieuParam ? 10 : 5;
+
         comboBoxGaDi.setValue(gaDiParam);
         comboBoxGaDen.setValue(gaDenParam);
         ngayDiDatePicker.setValue(ngayDiLDParam);
         ngayVeDatePicker.setValue(ngayVeLDParam);
         motChieuRadio.setSelected(isMotChieuParam);
-        if (!isMotChieuParam) {
-            khuHoiRadio.setSelected(true);
+        khuHoiRadio.setSelected(!isMotChieuParam);
+
+        VBox parentVBox = (VBox) anchorPaneMain.getParent();
+        if (isMotChieuParam) {
+            if (parentVBox.getChildren().contains(anchorPaneMain1)) {
+                parentVBox.getChildren().remove(anchorPaneMain1);
+            }
+            VBox.setVgrow(anchorPaneMain, Priority.ALWAYS);
+        } else {
+            if (!parentVBox.getChildren().contains(anchorPaneMain1)) {
+                parentVBox.getChildren().add(anchorPaneMain1);
+            }
+            VBox.setVgrow(anchorPaneMain, Priority.NEVER);
         }
 
-        // Xóa tất cả khóa ghế trên server
-        Task<Void> unlockAllSeatsTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                for (Ve ve : veList) {
-                    try {
-                        timVeService.unlockSeat(ve.getGheByMaGhe().getMaGhe());
-                    } catch (Exception e) {
-                        System.err.println("Failed to unlock seat: " + ve.getGheByMaGhe().getMaGhe() + ", error: " + e.getMessage());
+        try {
+            List<LichTrinh> lichTrinhDiList = timVeService.timLichTrinh(gaDiParam, gaDenParam, Date.valueOf(ngayDiLDParam));
+            if (lichTrinhDiList != null && !lichTrinhDiList.isEmpty()) {
+                dataLichTrinhDi.setAll(lichTrinhDiList);
+                totalRecordsDi = lichTrinhDiList.size();
+                currentPageDi = 1;
+                updateDisplayedLichTrinhDi();
+                updatePageInfoDi();
+                for (LichTrinh lt : lichTrinhDiList) {
+                    if (veList.stream().anyMatch(ve -> ve.getLichtrinhByMaLt().equals(lt))) {
+                        tableViewDi.getSelectionModel().select(lt);
+                        selectedLichTrinhDi = lt;
+                        break;
                     }
                 }
-                return null;
             }
-        };
-        unlockAllSeatsTask.setOnFailed(event -> {
-            Platform.runLater(() -> {
-                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Không thể xóa khóa ghế cho một số ghế.");
-            });
-        });
-        new Thread(unlockAllSeatsTask).start();
 
-        // Tìm lại lịch trình và set
-        handleTimKiem();
+            if (!isMotChieuParam && ngayVeLDParam != null) {
+                List<LichTrinh> lichTrinhVeList = timVeService.timLichTrinh(gaDenParam, gaDiParam, Date.valueOf(ngayVeLDParam));
+                if (lichTrinhVeList != null && !lichTrinhVeList.isEmpty()) {
+                    dataLichTrinhVe.setAll(lichTrinhVeList);
+                    totalRecordsVe = lichTrinhVeList.size();
+                    currentPageVe = 1;
+                    updateDisplayedLichTrinhVe();
+                    updatePageInfoVe();
+                    for (LichTrinh lt : lichTrinhVeList) {
+                        if (veList.stream().anyMatch(ve -> ve.getLichtrinhByMaLt().equals(lt))) {
+                            tableViewVe.getSelectionModel().select(lt);
+                            selectedLichTrinhVe = lt;
+                            break;
+                        }
+                    }
+                }
+            }
 
-        // Hiển thị toa tàu và ghế đã chọn
-        if (!dataLichTrinhDi.isEmpty()) {
-            selectedLichTrinhDi = dataLichTrinhDi.get(0);
-            tableViewDi.getSelectionModel().select(0);
-            hienThiToaTau(selectedLichTrinhDi.getTauByMaTau().getMaTau(), ngayDiLD, true);
-        }
+            if (selectedLichTrinhDi != null) {
+                hienThiToaTau(selectedLichTrinhDi.getTauByMaTau().getMaTau(), ngayDiLDParam, true);
+            } else if (selectedLichTrinhVe != null) {
+                hienThiToaTau(selectedLichTrinhVe.getTauByMaTau().getMaTau(), ngayVeLDParam, false);
+            }
 
-        if (!isMotChieu && !dataLichTrinhVe.isEmpty()) {
-            selectedLichTrinhVe = dataLichTrinhVe.get(0);
-            tableViewVe.getSelectionModel().select(0);
-            hienThiToaTau(selectedLichTrinhVe.getTauByMaTau().getMaTau(), ngayVeLD, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khôi phục trạng thái: " + e.getMessage());
         }
     }
 
