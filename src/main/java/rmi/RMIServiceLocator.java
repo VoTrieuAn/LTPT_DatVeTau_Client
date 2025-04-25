@@ -13,7 +13,7 @@ public class RMIServiceLocator {
         return safeLookup("VeService");
     }
     public static HanhKhachService getHanhKhachService() {
-        return safeLookup("HanhKhacService");
+        return safeLookup("HanhKhachService");
     }
     public static NhanVienService getNhanVienService() {
         return safeLookup("NhanVienService");
@@ -21,8 +21,14 @@ public class RMIServiceLocator {
     public static HoaDonService getHoaDonService() {
         return safeLookup("HoaDonService");
     }
+    public static LichTrinhService getLichTrinhService() {
+        return safeLookup("LichTrinhService");
+    }
     public static TaiKhoanService getTaiKhoanService() {
         return safeLookup("TaiKhoanService");
+    }
+    public static KhuyenMaiService getKhuyenMaiService() {
+        return safeLookup("KhuyenMaiService");
     }
 
     @SuppressWarnings("unchecked")

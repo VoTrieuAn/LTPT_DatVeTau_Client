@@ -1,6 +1,7 @@
 package controller.BanVe;
 
 import common.LoaiHanhKhach;
+import common.LoaiVe;
 import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
 import dao.KhuyenMaiDAO;
@@ -29,7 +30,7 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import rmi.RMIServiceLocator;
-import service.BanVeService;
+import service.HoaDonService;
 import util.BarcodeUtil;
 import util.EmailSenderUlti;
 import util.HoadonCodeGeneratorUtil;
@@ -85,7 +86,7 @@ public class BanVeController implements Initializable {
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapDi = new HashMap<>();
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapVe = new HashMap<>();
     private DecimalFormat decimalFormat;
-    private BanVeService banVeService;
+    private HoaDonService hoaDonService;
     private NhanVien nhanVien;
     private boolean isFormatting = false;
     private String gaDi;
@@ -113,12 +114,19 @@ public class BanVeController implements Initializable {
         this.isMotChieu = isMotChieuParam;
 
         tableViewBanVe.setItems(this.veList);
-        capNhatTongTienGiam();
-        try {
-            banVeService.xacDinhLoaiVe(veList);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
+        xacDinhLoaiVe(this.veList); // Xác định loại vé
+        // Cập nhật khuyến mãi và giá vé
+        for (Ve ve : veList) {
+            try {
+                KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
+                ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                capNhatGiaVe(ve); // Gọi phương thức cục bộ
+            } catch (RemoteException e) {
+                showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
         }
+        capNhatTongTienGiam();
+        capNhatTongTien();
     }
 
     @Override
@@ -129,7 +137,7 @@ public class BanVeController implements Initializable {
         decimalFormat = new DecimalFormat("#,###", symbols);
         decimalFormat.setMaximumFractionDigits(0);
 
-        banVeService = RMIServiceLocator.getBanVeService();
+        hoaDonService = RMIServiceLocator.getHoaDonService();
         setupTienNhapAutoComplete();
 
         setupTable(tableViewBanVe);
@@ -173,31 +181,27 @@ public class BanVeController implements Initializable {
         btnXoaTatCa.setOnAction(event -> xoaTatCaVe());
 
         cccdTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // Thực hiện logic khi text thay đổi
             String cccd = newValue;
             if (!cccd.isEmpty()) {
                 HanhKhach khachHang = null;
                 try {
-                    khachHang = banVeService.timKiemByCccd(cccd);
+                    khachHang = hoaDonService.timKiemByCccd(cccd);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
                 if (khachHang != null) {
-                    // Nếu khách hàng tồn tại, hiển thị thông tin và vô hiệu hóa nút btnThem1
                     hoTenTextField.setText(khachHang.getHoTenDem() + " " + khachHang.getTen());
                     emailTextField.setText(khachHang.getEmail());
-                    btnThem1.setDisable(true); // Vô hiệu hóa nút
+                    btnThem1.setDisable(true);
                 } else {
-                    // Nếu khách hàng không tồn tại, xóa thông tin và kích hoạt nút btnThem1
                     hoTenTextField.setText("");
                     emailTextField.setText("");
-                    btnThem1.setDisable(false); // Bật lại nút
+                    btnThem1.setDisable(false);
                 }
             } else {
-                // Khi không có giá trị trong TextField, xóa thông tin và bật lại nút btnThem1
                 hoTenTextField.setText("");
                 emailTextField.setText("");
-                btnThem1.setDisable(false); // Bật lại nút
+                btnThem1.setDisable(false);
             }
         });
 
@@ -246,7 +250,6 @@ public class BanVeController implements Initializable {
             return new SimpleStringProperty(hanhTrinh);
         });
 
-        // 3. Cột Tên KH
         colTenKH.setCellValueFactory(cellData -> {
             Ve ve = cellData.getValue();
             if (ve.getHoTen() == null) {
@@ -259,7 +262,7 @@ public class BanVeController implements Initializable {
             private final TextField textField = new TextField();
 
             {
-                textField.setId("textFieldTenKH"); // Thiết lập ID
+                textField.setId("textFieldTenKH");
                 textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                     if (!isNowFocused) {
                         commitEdit(textField.getText());
@@ -358,17 +361,12 @@ public class BanVeController implements Initializable {
                         datePicker.setDisable(false);
                     }
 
-                    KhuyenMai khuyenMaiTotNhat = null;
                     try {
-                        khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                        KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
+                        ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                        capNhatGiaVe(ve); // Gọi phương thức cục bộ
                     } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
-                    ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                    try {
-                        banVeService.capNhatGiaVe(ve);
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
+                        showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                     capNhatTongTien();
                     capNhatTongTienGiam();
@@ -409,17 +407,12 @@ public class BanVeController implements Initializable {
                     if (ve != null) {
                         if (newVal != null) {
                             ve.setNgaySinhTreEm(Date.valueOf(newVal));
-                            KhuyenMai khuyenMaiTotNhat = null;
                             try {
-                                khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                                KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
+                                ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                                capNhatGiaVe(ve); // Gọi phương thức cục bộ
                             } catch (RemoteException e) {
-                                throw new RuntimeException(e);
-                            }
-                            ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                            try {
-                                banVeService.capNhatGiaVe(ve);
-                            } catch (RemoteException e) {
-                                throw new RuntimeException(e);
+                                showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                             }
                             capNhatTongTien();
                             tableViewBanVe.refresh();
@@ -504,11 +497,7 @@ public class BanVeController implements Initializable {
                     } else {
                         lblKhuyenMaiValue.setText("0");
                     }
-                    try {
-                        banVeService.capNhatGiaVe(ve);
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
+                    capNhatGiaVe(ve); // Gọi phương thức cục bộ
                     capNhatTongTien();
                     capNhatTongTienGiam();
                     tableViewBanVe.refresh();
@@ -547,23 +536,18 @@ public class BanVeController implements Initializable {
                     comboBox.getItems().setAll(danhSachKhuyenMaiApDung);
 
                     if (ve.getKhuyenmaiByMaKm() == null && !danhSachKhuyenMaiApDung.isEmpty()) {
-                        KhuyenMai khuyenMaiTotNhat = null;
                         try {
-                            khuyenMaiTotNhat = banVeService.layKhuyenMaiTotNhat(ve);
+                            KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
+                            ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                            comboBox.setValue(khuyenMaiTotNhat);
+                            lblKhuyenMaiValue.setText(formatCurrency(khuyenMaiTotNhat.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100));
+                            capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                            capNhatTongTien();
+                            capNhatTongTienGiam();
+                            tableViewBanVe.refresh();
                         } catch (RemoteException e) {
-                            throw new RuntimeException(e);
+                            showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                         }
-                        ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                        comboBox.setValue(khuyenMaiTotNhat);
-                        lblKhuyenMaiValue.setText(formatCurrency(khuyenMaiTotNhat.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100));
-                        try {
-                            banVeService.capNhatGiaVe(ve);
-                        } catch (RemoteException e) {
-                            throw new RuntimeException(e);
-                        }
-                        capNhatTongTien();
-                        capNhatTongTienGiam();
-                        tableViewBanVe.refresh();
                     } else {
                         comboBox.setValue(ve.getKhuyenmaiByMaKm());
                         KhuyenMai selectedKhuyenMai = ve.getKhuyenmaiByMaKm();
@@ -617,23 +601,13 @@ public class BanVeController implements Initializable {
     }
 
     private void capNhatTongTien() {
-        double tongTien = 0;
-        try {
-            tongTien = banVeService.tinhTongTien(veList);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+        double tongTien = tinhTongTien(veList); // Gọi phương thức cục bộ
         lblTongTien.setText(formatCurrency(tongTien));
         capNhatTienThua();
     }
 
     private void capNhatTongTienGiam() {
-        double tongTienGiam = 0;
-        try {
-            tongTienGiam = banVeService.tinhTongTienGiam(veList);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+        double tongTienGiam = tinhTongTienGiam(veList); // Gọi phương thức cục bộ
         tienGiamTextField.setText(formatCurrency(tongTienGiam));
     }
 
@@ -679,7 +653,7 @@ public class BanVeController implements Initializable {
 
         try {
             double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
-            HoaDon hoaDon = banVeService.luuHoaDonVaVe(veList, cccdTextField.getText(), tienNhan, nhanVien);
+            HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
 
             for (Ve ve : hoaDon.getVeSet()) {
                 generateReport(ve);
@@ -966,8 +940,6 @@ public class BanVeController implements Initializable {
         if (event.getCode() == KeyCode.ENTER) {
             String cccd = cccdTextField.getText().trim();
             if (!cccd.isEmpty()) {
-                // Gọi service để kiểm tra hành khách nếu cần
-                // Hiện tại giữ logic giao diện đơn giản
                 hoTenTextField.clear();
                 emailTextField.clear();
                 btnThem1.setDisable(false);
@@ -995,5 +967,78 @@ public class BanVeController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    // Phương thức xác định loại vé (chuyển từ server)
+    private void xacDinhLoaiVe(ObservableList<Ve> veList) {
+        List<Ve> veListSort = new ArrayList<>(veList);
+        veListSort.sort(Comparator
+                .comparing((Ve v) -> v.getLichtrinhByMaLt() != null ? v.getLichtrinhByMaLt().getGaKhoiHanh() : "")
+                .thenComparing(v -> v.getLichtrinhByMaLt() != null ? v.getLichtrinhByMaLt().getGaKetThuc() : ""));
+
+        Set<Ve> veDaXet = new HashSet<>();
+        for (int i = 0; i < veListSort.size(); i++) {
+            Ve ve1 = veListSort.get(i);
+            if (veDaXet.contains(ve1) || ve1.getLichtrinhByMaLt() == null) continue;
+
+            for (int j = i + 1; j < veListSort.size(); j++) {
+                Ve ve2 = veListSort.get(j);
+                if (veDaXet.contains(ve2) || ve2.getLichtrinhByMaLt() == null) continue;
+
+                String gaDiVe1 = ve1.getLichtrinhByMaLt().getGaKhoiHanh();
+                String gaDenVe1 = ve1.getLichtrinhByMaLt().getGaKetThuc();
+                String gaDiVe2 = ve2.getLichtrinhByMaLt().getGaKhoiHanh();
+                String gaDenVe2 = ve2.getLichtrinhByMaLt().getGaKetThuc();
+
+                if (gaDiVe1 != null && gaDenVe1 != null && gaDiVe2 != null && gaDenVe2 != null &&
+                        gaDiVe1.equals(gaDenVe2) && gaDenVe1.equals(gaDiVe2)) {
+                    ve1.setLoaiVe(LoaiVe.KHU_HOI);
+                    ve2.setLoaiVe(LoaiVe.KHU_HOI);
+                    veDaXet.add(ve1);
+                    veDaXet.add(ve2);
+                    break;
+                }
+            }
+            if (!veDaXet.contains(ve1)) {
+                ve1.setLoaiVe(LoaiVe.MOT_CHIEU);
+            }
+        }
+    }
+
+    // Phương thức tính tổng tiền giảm (chuyển từ server)
+    private double tinhTongTienGiam(ObservableList<Ve> veList) {
+        return veList.stream()
+                .mapToDouble(ve -> {
+                    if (ve.getGheByMaGhe() == null) return 0;
+                    KhuyenMai khuyenMai = ve.getKhuyenmaiByMaKm();
+                    return (khuyenMai != null) ? khuyenMai.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100 : 0;
+                })
+                .sum();
+    }
+
+    // Phương thức tính tổng tiền (chuyển từ server)
+    private double tinhTongTien(ObservableList<Ve> veList) {
+        return veList.stream()
+                .mapToDouble(ve -> {
+                    if (ve.getGheByMaGhe() == null) return 0;
+                    double giaGhe = ve.getGheByMaGhe().getGiaGhe();
+                    double thueSuat = ve.getThueSuatGtgt();
+                    double thueAmount = giaGhe * thueSuat;
+                    double giamGia = (ve.getKhuyenmaiByMaKm() != null) ? ve.getKhuyenmaiByMaKm().getGiaTriKhuyenMai() / 100 * giaGhe : 0;
+                    return giaGhe + thueAmount - giamGia;
+                })
+                .sum();
+    }
+
+    // Phương thức cập nhật giá vé (chuyển từ server)
+    private void capNhatGiaVe(Ve ve) {
+        if (ve.getGheByMaGhe() == null) return;
+        double giaGoc = ve.getGheByMaGhe().getGiaGhe();
+        KhuyenMai khuyenMai = ve.getKhuyenmaiByMaKm();
+        double thueSuat = ve.getThueSuatGtgt();
+        double thueAmount = giaGoc * thueSuat;
+        double giamGia = (khuyenMai != null) ? khuyenMai.getGiaTriKhuyenMai() * giaGoc / 100 : 0;
+        double giaSauKhuyenMai = giaGoc - giamGia + thueAmount;
+        ve.setGiaVe(giaSauKhuyenMai);
     }
 }
