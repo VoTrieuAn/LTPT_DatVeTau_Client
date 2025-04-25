@@ -19,13 +19,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JasperViewer;
 import org.controlsfx.control.PopOver;
@@ -34,23 +35,18 @@ import org.controlsfx.control.textfield.TextFields;
 import rmi.RMIServiceLocator;
 import service.HoaDonService;
 import service.LichTrinhService;
-import util.BarcodeUtil;
-import util.EmailSenderUlti;
 import util.HoadonCodeGeneratorUtil;
-import util.QRCodeUtil;
 
-import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class BanVeController implements Initializable {
@@ -720,7 +716,6 @@ public class BanVeController implements Initializable {
 
         if (!validateInput()) return;
 
-        // Kiểm tra toatauByMaTt trước khi lưu
         for (Ve ve : veList) {
             Ghe ghe = ve.getGheByMaGhe();
             if (ghe != null && ghe.getToatauByMaTt() == null) {
@@ -729,35 +724,71 @@ public class BanVeController implements Initializable {
             }
         }
 
-        try {
-            double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
-            HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
+                    HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
 
-            for (Ve ve : hoaDon.getVeSet()) {
-                generateReport(ve);
-            }
-            generateReport(hoaDon);
+                    // Tạo báo cáo vé
+                    for (Ve ve : hoaDon.getVeSet()) {
+                        JasperPrint veReport = hoaDonService.generateVeReport(ve.getMaVe());
+                        Platform.runLater(() -> displayJasperReport(veReport));
+                    }
 
-            // Mở khóa ghế sau khi lưu thành công
-            for (Ve ve : veList) {
-                Ghe ghe = ve.getGheByMaGhe();
-                if (ghe != null) {
-                    lichTrinhService.unlockSeat(ghe.getMaGhe());
+                    // Tạo báo cáo hóa đơn
+                    String recipientEmail = hoaDon.getHanhkhachByMaHk().getEmail();
+                    JasperPrint hoaDonReport = hoaDonService.generateHoaDonReport(hoaDon.getMaHd(), recipientEmail);
+                    Platform.runLater(() -> displayJasperReport(hoaDonReport));
+
+                    // Mở khóa ghế
+                    for (Ve ve : veList) {
+                        Ghe ghe = ve.getGheByMaGhe();
+                        if (ghe != null) {
+                            lichTrinhService.unlockSeat(ghe.getMaGhe());
+                        }
+                    }
+
+                    // Update UI sau khi lưu xong
+                    Platform.runLater(() -> {
+                        showAlert("Thông báo", "Lưu hóa đơn và vé thành công", Alert.AlertType.INFORMATION);
+                        veList.clear();
+                        gheDaChonMapDi.clear();
+                        gheDaChonMapVe.clear();
+                        tableViewBanVe.refresh();
+                        try {
+                            FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
+                            TimVeController controller = loader.getController();
+                            controller.setNhanVien(nhanVien);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            showAlert("Lỗi", "Không thể load lại giao diện tìm vé: " + e.getMessage(), Alert.AlertType.ERROR);
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> showAlert("Xảy ra lỗi", "Lưu thất bại! Xảy ra lỗi: " + e.getMessage(), Alert.AlertType.ERROR));
                 }
+                return null;
             }
+        };
 
-            showAlert("Thông báo", "Lưu hóa đơn và vé thành công", Alert.AlertType.INFORMATION);
-            veList.clear();
-            gheDaChonMapDi.clear();
-            gheDaChonMapVe.clear();
-            tableViewBanVe.refresh();
-            FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
-            TimVeController controller = loader.getController();
-            controller.setNhanVien(nhanVien);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Xảy ra lỗi", "Lưu thất bại! Xảy ra lỗi: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
+        new Thread(task).start(); // chạy task trên thread mới
+    }
+
+
+    private void displayJasperReport(JasperPrint jasperPrint) {
+        Platform.runLater(() -> {
+            try {
+                JasperViewer viewer = new JasperViewer(jasperPrint, false);
+                viewer.setTitle(jasperPrint.getName());
+                viewer.setVisible(true);
+            } catch (Exception e) {
+                showAlert("Lỗi", "Không thể hiển thị báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        });
     }
 
     private boolean validateInput() {
@@ -826,43 +857,6 @@ public class BanVeController implements Initializable {
             return false;
         }
         return true;
-    }
-
-    public void generateReport(Ve ve) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "123456")) {
-            HashMap<String, Object> para = new HashMap<>();
-            para.put("maVe", ve.getMaVe());
-            BufferedImage qrCodeImage = QRCodeUtil.generateQRCodeImage(ve.getMaVe(), 94, 90);
-            para.put("qrCodeImage", qrCodeImage);
-
-            JasperPrint jasperPrint = JasperFillManager.fillReport(
-                    JasperCompileManager.compileReport(getClass().getResourceAsStream("/view/report/Blank_Letter.jrxml")),
-                    para, connection);
-            JasperViewer.viewReport(jasperPrint, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Xảy ra lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-    public void generateReport(HoaDon hoaDon) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "123456")) {
-            HashMap<String, Object> para = new HashMap<>();
-            para.put("maHD", hoaDon.getMaHd());
-            BufferedImage qrCodeImage = BarcodeUtil.generateBarcodeImage(hoaDon.getMaHd(), 154, 50);
-            para.put("qrCodeImage", qrCodeImage);
-
-            JasperPrint jasperPrint = JasperFillManager.fillReport(
-                    JasperCompileManager.compileReport(getClass().getResourceAsStream("/view/report/Invoice.jrxml")),
-                    para, connection);
-
-            String recipient = hoaDon.getHanhkhachByMaHk().getEmail();
-            EmailSenderUlti.sendJasperReportAsPDF(recipient, "Hóa đơn của bạn", "Xin chào, đây là hóa đơn của bạn.", jasperPrint);
-            JasperViewer.viewReport(jasperPrint, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Xảy ra lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
     }
 
     private void showPopOver(Node targetNode, String message) {
