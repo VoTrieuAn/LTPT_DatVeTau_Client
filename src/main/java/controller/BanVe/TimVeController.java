@@ -3,11 +3,13 @@ package controller.BanVe;
 import common.LoaiToa;
 import controller.Menu.MenuNhanVienController;
 import entity.*;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -239,8 +241,14 @@ public class TimVeController implements Initializable {
                         toaTau.getTauByMaTau().getMaTau(),
                         Date.valueOf(lichTrinh));
 
+                // Gỡ lỗi: Ghi lại các đối tượng Ghe
+                System.out.println("Danh sách ghế đã mua cho toa " + toaTau.getMaTt() + ":");
+                for (Ghe ghe : gheDaMua) {
+                    System.out.println("Ghế: " + ghe.getMaGhe() + ", ToaTau: " + (ghe.getToatauByMaTt() != null ? ghe.getToatauByMaTt().getMaTt() : "null"));
+                }
+
                 long soGheDaMuaTrongToa = gheDaMua.stream()
-                        .filter(ghe -> ghe.getToatauByMaTt().getMaTt().equals(toaTau.getMaTt()))
+                        .filter(ghe -> ghe.getToatauByMaTt() != null && ghe.getToatauByMaTt().getMaTt().equals(toaTau.getMaTt()))
                         .count();
 
                 boolean tatCaGheDaMua = danhSachGhe.size() > 0 && danhSachGhe.size() == soGheDaMuaTrongToa;
@@ -354,8 +362,8 @@ public class TimVeController implements Initializable {
             gheDaChonMap.putIfAbsent(toaTau, new HashSet<>());
 
             for (int i = 0; i < totalSeats; i++) {
-                Ghe ghe = danhSachGhe.get(i);
-                String maGhe = ghe.getMaGhe();
+                final Ghe ghe = danhSachGhe.get(i);
+                final String maGhe = ghe.getMaGhe();
                 VBox content = new VBox();
                 Label soGheLabel = new Label("" + ghe.getSoGhe());
                 soGheLabel.setStyle("-fx-font-size: 14px;");
@@ -370,76 +378,132 @@ public class TimVeController implements Initializable {
                 gheButton.setPrefSize(100, 100);
                 gheButton.setMaxSize(100, 100);
 
+                // Kiểm tra trạng thái ghế
                 if (gheDaMuaSet.contains(maGhe)) {
+                    // Ghế đã mua: vô hiệu hóa và viền đỏ
                     gheButton.setDisable(true);
-                    gheButton.setStyle("-fx-border-color: red;");
+                    gheButton.setStyle("-fx-border-color: red; -fx-border-radius: 10; -fx-background-radius: 10;");
                 } else if (gheDaChonMap.get(toaTau).contains(ghe)) {
+                    // Ghế đã chọn: tô màu xanh, cho phép tương tác
                     gheButton.setSelected(true);
                     gheButton.setStyle(
                             "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
+                    gheButton.setDisable(false); // Có thể tương tác
                 } else {
-                    gheButton.setStyle("-fx-background-color: white; -fx-border-color: transparent;");
+                    // Ghế chưa chọn: màu trắng, có thể tương tác
+                    gheButton.setStyle("-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
+                    gheButton.setDisable(false); // Có thể tương tác
                 }
 
+                // Gắn sự kiện chọn/bỏ chọn
                 gheButton.setOnAction(event -> {
                     if (!gheDaMuaSet.contains(maGhe)) {
                         LichTrinh selectedLichTrinh = isDi ? selectedLichTrinhDi : selectedLichTrinhVe;
+                        if (selectedLichTrinh == null) {
+                            showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng chọn lịch trình!");
+                            gheButton.setSelected(false);
+                            return;
+                        }
+
                         if (gheButton.isSelected()) {
-                            gheButton.setStyle(
-                                    "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
-                            try {
-                                // Logic themVe ở client
-                                if (selectedLichTrinh == null) {
-                                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Lịch trình không được chọn!");
-                                    gheButton.setSelected(false); // Hủy chọn nếu lỗi
-                                    return;
+                            // Khóa ghế trên server
+                            Task<Boolean> lockTask = new Task<>() {
+                                @Override
+                                protected Boolean call() throws Exception {
+                                    return timVeService.lockSeat(maGhe, toaTau.getTauByMaTau().getMaTau(), Date.valueOf(lichTrinh));
                                 }
+                            };
+                            lockTask.setOnSucceeded(taskEvent -> {
+                                boolean lockSuccess = lockTask.getValue();
+                                Platform.runLater(() -> {
+                                    if (lockSuccess) {
+                                        gheButton.setStyle(
+                                                "-fx-border-color: #2bbaba; -fx-border-width: 3; -fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10;");
+                                        try {
+                                            // Kiểm tra trùng lặp vé
+                                            boolean veTonTai = veList.stream().anyMatch(
+                                                    existingVe -> existingVe.getGheByMaGhe().equals(ghe) &&
+                                                            existingVe.getLichtrinhByMaLt().equals(selectedLichTrinh));
+                                            if (veTonTai) {
+                                                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vé đã tồn tại!");
+                                                gheButton.setSelected(false);
+                                                unlockSeatAsync(maGhe, gheButton);
+                                                return;
+                                            }
 
-                                // Kiểm tra trùng lặp vé
-                                boolean veTonTai = veList.stream().anyMatch(
-                                        existingVe -> existingVe.getGheByMaGhe().equals(ghe) &&
-                                                existingVe.getLichtrinhByMaLt().equals(selectedLichTrinh));
-                                if (veTonTai) {
-                                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Vé đã tồn tại!");
-                                    gheButton.setSelected(false); // Hủy chọn nếu lỗi
-                                    return;
-                                }
+                                            // Tạo vé mới
+                                            Ve ve = new Ve();
+                                            ve.setMaVe(VeCodeGeneratorUtil.generateMaVe(
+                                                    toaTau.getTauByMaTau().getMaTau(), toaTau.getMaTt(), ghe.getMaGhe()));
+                                            ve.setGheByMaGhe(ghe);
+                                            ve.setLichtrinhByMaLt(selectedLichTrinh);
+                                            ve.setGiaVe(ghe.getGiaGhe());
+                                            ve.setThueSuatGtgt(0.1);
+                                            ve.setNgayMua(new Timestamp(System.currentTimeMillis()));
+                                            ve.setTrangThaiVe(true);
+                                            ve.setNgaySuaDoi(null);
 
-                                // Tạo và thiết lập vé
-                                Ve ve = new Ve();
-                                ve.setMaVe(VeCodeGeneratorUtil.generateMaVe(
-                                        toaTau.getTauByMaTau().getMaTau(), toaTau.getMaTt(), ghe.getMaGhe()));
-                                ve.setGheByMaGhe(ghe);
-                                ve.setLichtrinhByMaLt(selectedLichTrinh);
-                                ve.setGiaVe(ghe.getGiaGhe());
-                                ve.setThueSuatGtgt(0.1);
-                                ve.setNgayMua(new Timestamp(System.currentTimeMillis()));
-                                ve.setTrangThaiVe(true);
-                                ve.setNgaySuaDoi(null);
-
-                                // Thêm vé vào veList
-                                veList.add(ve);
-                                // Cập nhật gheDaChonMap
-                                gheDaChonMap.get(toaTau).add(ghe);
-                                System.out.println("Danh sách vé sau khi thêm: " + veList);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể thêm vé: " + e.getMessage());
-                                gheButton.setSelected(false); // Hủy chọn nếu lỗi
-                            }
+                                            veList.add(ve);
+                                            gheDaChonMap.get(toaTau).add(ghe);
+                                            System.out.println("Danh sách vé sau khi thêm: " + veList);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể thêm vé: " + e.getMessage());
+                                            gheButton.setSelected(false);
+                                            unlockSeatAsync(maGhe, gheButton);
+                                        }
+                                    } else {
+                                        gheButton.setSelected(false);
+                                        showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Ghế này vừa được người khác chọn!");
+                                    }
+                                });
+                            });
+                            lockTask.setOnFailed(taskEvent -> {
+                                Platform.runLater(() -> {
+                                    gheButton.setSelected(false);
+                                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khóa ghế: " + lockTask.getException().getMessage());
+                                });
+                            });
+                            new Thread(lockTask).start();
                         } else {
-                            gheButton.setStyle(
-                                    "-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
-                            try {
-                                // Xóa vé
-                                veList.removeIf(ve -> ve.getGheByMaGhe().equals(ghe) &&
-                                        ve.getLichtrinhByMaLt().equals(selectedLichTrinh));
-                                gheDaChonMap.get(toaTau).remove(ghe);
-                                System.out.println("Danh sách vé sau khi xóa: " + veList);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa vé: " + e.getMessage());
-                            }
+                            // Bỏ chọn ghế
+                            Task<Void> unlockTask = new Task<>() {
+                                @Override
+                                protected Void call() throws Exception {
+                                    timVeService.unlockSeat(maGhe);
+                                    return null;
+                                }
+                            };
+                            unlockTask.setOnSucceeded(taskEvent -> {
+                                Platform.runLater(() -> {
+                                    gheButton.setStyle(
+                                            "-fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;");
+                                    try {
+                                        veList.removeIf(ve -> ve.getGheByMaGhe().equals(ghe) &&
+                                                ve.getLichtrinhByMaLt().equals(selectedLichTrinh));
+                                        gheDaChonMap.get(toaTau).remove(ghe);
+                                        System.out.println("Danh sách vé sau khi xóa: " + veList);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa vé: " + e.getMessage());
+                                    }
+                                });
+                            });
+                            unlockTask.setOnFailed(taskEvent -> {
+                                Platform.runLater(() -> {
+                                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể hủy khóa ghế: " + unlockTask.getException().getMessage());
+                                    try {
+                                        veList.removeIf(ve -> ve.getGheByMaGhe().equals(ghe) &&
+                                                ve.getLichtrinhByMaLt().equals(selectedLichTrinh));
+                                        gheDaChonMap.get(toaTau).remove(ghe);
+                                        System.out.println("Danh sách vé sau khi xóa: " + veList);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa vé: " + e.getMessage());
+                                    }
+                                });
+                            });
+                            new Thread(unlockTask).start();
                         }
                     }
                 });
@@ -468,6 +532,23 @@ public class TimVeController implements Initializable {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể hiển thị ghế: " + e.getMessage());
         }
+    }
+
+    // Helper method to unlock a seat asynchronously
+    private void unlockSeatAsync(String maGhe, ToggleButton gheButton) {
+        Task<Void> unlockTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                timVeService.unlockSeat(maGhe);
+                return null;
+            }
+        };
+        unlockTask.setOnFailed(taskEvent -> {
+            Platform.runLater(() -> {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể hủy khóa ghế: " + unlockTask.getException().getMessage());
+            });
+        });
+        new Thread(unlockTask).start();
     }
 
     private void loadGaDiGaDen() {
@@ -805,16 +886,32 @@ public class TimVeController implements Initializable {
 
         Optional<ButtonType> result = confirmAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            // Unlock all selected seats before refreshing
+            for (Map.Entry<ToaTau, Set<Ghe>> entry : gheDaChonMapDi.entrySet()) {
+                for (Ghe ghe : entry.getValue()) {
+                    unlockSeatAsync(ghe.getMaGhe(), null);
+                }
+            }
+            for (Map.Entry<ToaTau, Set<Ghe>> entry : gheDaChonMapVe.entrySet()) {
+                for (Ghe ghe : entry.getValue()) {
+                    unlockSeatAsync(ghe.getMaGhe(), null);
+                }
+            }
+            veList.clear();
+            gheDaChonMapDi.clear();
+            gheDaChonMapVe.clear();
             FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
         }
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.show();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(alertType);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 
     public void setTroLai(List<Ve> veListParam,
@@ -825,6 +922,7 @@ public class TimVeController implements Initializable {
                           LocalDate ngayDiLDParam,
                           LocalDate ngayVeLDParam,
                           boolean isMotChieuParam) {
+        // Gán lại dữ liệu
         this.veList.setAll(veListParam);
         this.gheDaChonMapDi.clear();
         this.gheDaChonMapDi.putAll(gheDaChonMapDiParam);
@@ -837,6 +935,7 @@ public class TimVeController implements Initializable {
         this.ngayVeLD = ngayVeLDParam;
         this.isMotChieu = isMotChieuParam;
 
+        // Gán lại giao diện
         comboBoxGaDi.setValue(gaDiParam);
         comboBoxGaDen.setValue(gaDenParam);
         ngayDiDatePicker.setValue(ngayDiLDParam);
@@ -845,8 +944,43 @@ public class TimVeController implements Initializable {
         if (!isMotChieuParam) {
             khuHoiRadio.setSelected(true);
         }
+
+        // Xóa tất cả khóa ghế trên server
+        Task<Void> unlockAllSeatsTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                for (Ve ve : veList) {
+                    try {
+                        timVeService.unlockSeat(ve.getGheByMaGhe().getMaGhe());
+                    } catch (Exception e) {
+                        System.err.println("Failed to unlock seat: " + ve.getGheByMaGhe().getMaGhe() + ", error: " + e.getMessage());
+                    }
+                }
+                return null;
+            }
+        };
+        unlockAllSeatsTask.setOnFailed(event -> {
+            Platform.runLater(() -> {
+                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Không thể xóa khóa ghế cho một số ghế.");
+            });
+        });
+        new Thread(unlockAllSeatsTask).start();
+
+        // Tìm lại lịch trình và set
         handleTimKiem();
-        tableViewDi.getSelectionModel().select(0);
+
+        // Hiển thị toa tàu và ghế đã chọn
+        if (!dataLichTrinhDi.isEmpty()) {
+            selectedLichTrinhDi = dataLichTrinhDi.get(0);
+            tableViewDi.getSelectionModel().select(0);
+            hienThiToaTau(selectedLichTrinhDi.getTauByMaTau().getMaTau(), ngayDiLD, true);
+        }
+
+        if (!isMotChieu && !dataLichTrinhVe.isEmpty()) {
+            selectedLichTrinhVe = dataLichTrinhVe.get(0);
+            tableViewVe.getSelectionModel().select(0);
+            hienThiToaTau(selectedLichTrinhVe.getTauByMaTau().getMaTau(), ngayVeLD, false);
+        }
     }
 
     public void setNhanVien(NhanVien nhanVien) {

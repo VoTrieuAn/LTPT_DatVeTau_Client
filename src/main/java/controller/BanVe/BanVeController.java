@@ -6,11 +6,13 @@ import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
 import dao.KhuyenMaiDAO;
 import entity.*;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,6 +33,7 @@ import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import rmi.RMIServiceLocator;
 import service.HoaDonService;
+import service.LichTrinhService;
 import util.BarcodeUtil;
 import util.EmailSenderUlti;
 import util.HoadonCodeGeneratorUtil;
@@ -87,6 +90,7 @@ public class BanVeController implements Initializable {
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapVe = new HashMap<>();
     private DecimalFormat decimalFormat;
     private HoaDonService hoaDonService;
+    private LichTrinhService lichTrinhService; // Thêm service để gọi unlockSeat
     private NhanVien nhanVien;
     private boolean isFormatting = false;
     private String gaDi;
@@ -120,7 +124,7 @@ public class BanVeController implements Initializable {
             try {
                 KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
                 ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                capNhatGiaVe(ve);
             } catch (RemoteException e) {
                 showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
             }
@@ -138,6 +142,7 @@ public class BanVeController implements Initializable {
         decimalFormat.setMaximumFractionDigits(0);
 
         hoaDonService = RMIServiceLocator.getHoaDonService();
+        lichTrinhService = RMIServiceLocator.getLichTrinhService(); // Khởi tạo LichTrinhService
         setupTienNhapAutoComplete();
 
         setupTable(tableViewBanVe);
@@ -364,7 +369,7 @@ public class BanVeController implements Initializable {
                     try {
                         KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
                         ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                        capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                        capNhatGiaVe(ve);
                     } catch (RemoteException e) {
                         showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
@@ -410,7 +415,7 @@ public class BanVeController implements Initializable {
                             try {
                                 KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
                                 ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                                capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                                capNhatGiaVe(ve);
                             } catch (RemoteException e) {
                                 showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                             }
@@ -497,7 +502,7 @@ public class BanVeController implements Initializable {
                     } else {
                         lblKhuyenMaiValue.setText("0");
                     }
-                    capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                    capNhatGiaVe(ve);
                     capNhatTongTien();
                     capNhatTongTienGiam();
                     tableViewBanVe.refresh();
@@ -541,7 +546,7 @@ public class BanVeController implements Initializable {
                             ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
                             comboBox.setValue(khuyenMaiTotNhat);
                             lblKhuyenMaiValue.setText(formatCurrency(khuyenMaiTotNhat.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100));
-                            capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                            capNhatGiaVe(ve);
                             capNhatTongTien();
                             capNhatTongTienGiam();
                             tableViewBanVe.refresh();
@@ -601,13 +606,13 @@ public class BanVeController implements Initializable {
     }
 
     private void capNhatTongTien() {
-        double tongTien = tinhTongTien(veList); // Gọi phương thức cục bộ
+        double tongTien = tinhTongTien(veList);
         lblTongTien.setText(formatCurrency(tongTien));
         capNhatTienThua();
     }
 
     private void capNhatTongTienGiam() {
-        double tongTienGiam = tinhTongTienGiam(veList); // Gọi phương thức cục bộ
+        double tongTienGiam = tinhTongTienGiam(veList);
         tienGiamTextField.setText(formatCurrency(tongTienGiam));
     }
 
@@ -624,9 +629,47 @@ public class BanVeController implements Initializable {
     private void xoaVe() {
         Ve selectedVe = tableViewBanVe.getSelectionModel().getSelectedItem();
         if (selectedVe != null && confirm("Bạn có chắc chắn muốn xóa vé này?")) {
+            // Lấy ghế và toa tàu
+            Ghe ghe = selectedVe.getGheByMaGhe();
+            ToaTau toaTau = ghe != null ? ghe.getToatauByMaTt() : null;
+
+            // Xóa vé khỏi veList
             veList.remove(selectedVe);
-            gheDaChonMapDi.getOrDefault(selectedVe.getGheByMaGhe().getToatauByMaTt(), new HashSet<>()).remove(selectedVe.getGheByMaGhe());
-            gheDaChonMapVe.getOrDefault(selectedVe.getGheByMaGhe().getToatauByMaTt(), new HashSet<>()).remove(selectedVe.getGheByMaGhe());
+
+            // Cập nhật gheDaChonMap
+            if (ghe != null && toaTau != null) {
+                boolean isDi = selectedVe.getLichtrinhByMaLt().getGaKhoiHanh().equals(gaDi);
+                Map<ToaTau, Set<Ghe>> gheDaChonMap = isDi ? gheDaChonMapDi : gheDaChonMapVe;
+                Set<Ghe> gheSet = gheDaChonMap.get(toaTau);
+                if (gheSet != null) {
+                    gheSet.remove(ghe);
+                    if (gheSet.isEmpty()) {
+                        gheDaChonMap.remove(toaTau);
+                    }
+                }
+            }
+
+            // Mở khóa ghế trên server
+            if (ghe != null) {
+                Task<Void> unlockTask = new Task<>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        lichTrinhService.unlockSeat(ghe.getMaGhe());
+                        return null;
+                    }
+                };
+                unlockTask.setOnFailed(event -> {
+                    Platform.runLater(() -> {
+                        showAlert("Lỗi", "Không thể mở khóa ghế: " + unlockTask.getException().getMessage(), Alert.AlertType.ERROR);
+                    });
+                });
+                new Thread(unlockTask).start();
+            }
+
+            // Cập nhật giao diện
+            tableViewBanVe.refresh();
+            capNhatTongTien();
+            capNhatTongTienGiam();
         } else if (selectedVe == null) {
             showAlert("Thông báo", "Vui lòng chọn một vé để xóa.", Alert.AlertType.INFORMATION);
         }
@@ -634,9 +677,35 @@ public class BanVeController implements Initializable {
 
     private void xoaTatCaVe() {
         if (!veList.isEmpty() && confirm("Bạn có chắc chắn muốn xóa tất cả vé?")) {
+            // Mở khóa tất cả ghế trên server
+            for (Ve ve : veList) {
+                Ghe ghe = ve.getGheByMaGhe();
+                if (ghe != null) {
+                    Task<Void> unlockTask = new Task<>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            lichTrinhService.unlockSeat(ghe.getMaGhe());
+                            return null;
+                        }
+                    };
+                    unlockTask.setOnFailed(event -> {
+                        Platform.runLater(() -> {
+                            showAlert("Lỗi", "Không thể mở khóa ghế: " + unlockTask.getException().getMessage(), Alert.AlertType.ERROR);
+                        });
+                    });
+                    new Thread(unlockTask).start();
+                }
+            }
+
+            // Xóa dữ liệu
             veList.clear();
             gheDaChonMapDi.clear();
             gheDaChonMapVe.clear();
+
+            // Cập nhật giao diện
+            tableViewBanVe.refresh();
+            capNhatTongTien();
+            capNhatTongTienGiam();
         } else if (veList.isEmpty()) {
             showAlert("Thông báo", "Không có vé nào để xóa.", Alert.AlertType.INFORMATION);
         }
@@ -651,6 +720,15 @@ public class BanVeController implements Initializable {
 
         if (!validateInput()) return;
 
+        // Kiểm tra toatauByMaTt trước khi lưu
+        for (Ve ve : veList) {
+            Ghe ghe = ve.getGheByMaGhe();
+            if (ghe != null && ghe.getToatauByMaTt() == null) {
+                showAlert("Lỗi", "Ghế " + ghe.getMaGhe() + " không có thông tin toa tàu.", Alert.AlertType.ERROR);
+                return;
+            }
+        }
+
         try {
             double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
             HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
@@ -660,10 +738,22 @@ public class BanVeController implements Initializable {
             }
             generateReport(hoaDon);
 
+            // Mở khóa ghế sau khi lưu thành công
+            for (Ve ve : veList) {
+                Ghe ghe = ve.getGheByMaGhe();
+                if (ghe != null) {
+                    lichTrinhService.unlockSeat(ghe.getMaGhe());
+                }
+            }
+
             showAlert("Thông báo", "Lưu hóa đơn và vé thành công", Alert.AlertType.INFORMATION);
             veList.clear();
+            gheDaChonMapDi.clear();
+            gheDaChonMapVe.clear();
             tableViewBanVe.refresh();
             FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
+            TimVeController controller = loader.getController();
+            controller.setNhanVien(nhanVien);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Xảy ra lỗi", "Lưu thất bại! Xảy ra lỗi: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -931,6 +1021,20 @@ public class BanVeController implements Initializable {
     @FXML
     private void Huy() {
         if (confirm("Bạn có chắc chắn muốn hủy? Mọi thay đổi chưa lưu sẽ bị mất.")) {
+            // Mở khóa tất cả ghế trước khi hủy
+            for (Ve ve : veList) {
+                Ghe ghe = ve.getGheByMaGhe();
+                if (ghe != null) {
+                    try {
+                        lichTrinhService.unlockSeat(ghe.getMaGhe());
+                    } catch (RemoteException e) {
+                        showAlert("Lỗi", "Không thể mở khóa ghế: " + e.getMessage(), Alert.AlertType.ERROR);
+                    }
+                }
+            }
+            veList.clear();
+            gheDaChonMapDi.clear();
+            gheDaChonMapVe.clear();
             MenuNhanVienController.instance.readyUI("BanVe/TimVe");
         }
     }
@@ -969,7 +1073,6 @@ public class BanVeController implements Initializable {
         alert.showAndWait();
     }
 
-    // Phương thức xác định loại vé (chuyển từ server)
     private void xacDinhLoaiVe(ObservableList<Ve> veList) {
         List<Ve> veListSort = new ArrayList<>(veList);
         veListSort.sort(Comparator
@@ -1005,7 +1108,6 @@ public class BanVeController implements Initializable {
         }
     }
 
-    // Phương thức tính tổng tiền giảm (chuyển từ server)
     private double tinhTongTienGiam(ObservableList<Ve> veList) {
         return veList.stream()
                 .mapToDouble(ve -> {
@@ -1016,7 +1118,6 @@ public class BanVeController implements Initializable {
                 .sum();
     }
 
-    // Phương thức tính tổng tiền (chuyển từ server)
     private double tinhTongTien(ObservableList<Ve> veList) {
         return veList.stream()
                 .mapToDouble(ve -> {
@@ -1030,7 +1131,6 @@ public class BanVeController implements Initializable {
                 .sum();
     }
 
-    // Phương thức cập nhật giá vé (chuyển từ server)
     private void capNhatGiaVe(Ve ve) {
         if (ve.getGheByMaGhe() == null) return;
         double giaGoc = ve.getGheByMaGhe().getGiaGhe();
