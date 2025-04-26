@@ -739,7 +739,7 @@ public class BanVeController implements Initializable {
     }
 
     public void generateReport(Ve ve) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "123456")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "1234567890")) {
             HashMap<String, Object> para = new HashMap<>();
             para.put("maVe", ve.getMaVe());
             BufferedImage qrCodeImage = QRCodeUtil.generateQRCodeImage(ve.getMaVe(), 94, 90);
@@ -756,7 +756,7 @@ public class BanVeController implements Initializable {
     }
 
     public void generateReport(HoaDon hoaDon) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "123456")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "1234567890")) {
             HashMap<String, Object> para = new HashMap<>();
             para.put("maHD", hoaDon.getMaHd());
             BufferedImage qrCodeImage = BarcodeUtil.generateBarcodeImage(hoaDon.getMaHd(), 154, 50);
