@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import rmi.RMIServiceLocator;
 import util.PasswordUtil;
 
 import java.io.IOException;
@@ -83,20 +84,22 @@ public class LoginController {
                         showAlert("Cảnh báo", "Vui lòng nhập đầy đủ tài khoản mật khẩu", Alert.AlertType.WARNING);
                     } else {
                         Map<String, Object> filter = new HashMap<>();
-                        filter.put("tenTaiKhoan", tenDangNhap);
-                        List<TaiKhoan> taiKhoans = TrainTicketApplication.getInstance()
-                                .getDatabaseContext()
-                                .newEntityDAO(TaiKhoanDAO.class)
-                                .getDanhSach(TaiKhoan.class, filter);
+//                        filter.put("tenTaiKhoan", tenDangNhap);
+//                        List<TaiKhoan> taiKhoans = TrainTicketApplication.getInstance()
+//                                .getDatabaseContext()
+//                                .newEntityDAO(TaiKhoanDAO.class)
+//                                .getDanhSach(TaiKhoan.class, filter);
+                        List<TaiKhoan> taiKhoans = RMIServiceLocator.getTaiKhoanService().getDanhSach(TaiKhoan.class, filter);
                         if (!taiKhoans.isEmpty()) {
                             this.taiKhoan = taiKhoans.get(0);
                             if (taiKhoan.kiemTraDangNhap(tenDangNhap, matKhau)) {
                                 // Cập nhật lại ngày giờ đăng nhập
                                 this.taiKhoan.setNgayDangNhap(Timestamp.valueOf(LocalDateTime.now()));
-                                TrainTicketApplication.getInstance()
-                                        .getDatabaseContext()
-                                        .newEntityDAO(TaiKhoanDAO.class)
-                                        .capNhat(taiKhoan);
+//                                TrainTicketApplication.getInstance()
+//                                        .getDatabaseContext()
+//                                        .newEntityDAO(TaiKhoanDAO.class)
+//                                        .capNhat(taiKhoan);
+                                RMIServiceLocator.getTaiKhoanService().capNhat(taiKhoan);
                                 // Phân quyền
                                 if (taiKhoan.getNhanvienByMaNv().getLoaiNv() == LoaiNhanVien.QUAN_LI_BAN_VE) {
                                     FXMLLoader fxmlLoader = new FXMLLoader(
