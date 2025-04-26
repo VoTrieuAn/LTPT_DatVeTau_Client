@@ -620,7 +620,7 @@
                                           <Insets top="2.0" />
                                        </padding>
                                     </Label>
-                                    <TextField fx:id="timKiemTextField" prefHeight="35.0" prefWidth="305.0" promptText="Mã đơn đổi trả(ấn enter để tìm)" styleClass="text-field-default" stylesheets="@../css/style.css">
+                                    <TextField fx:id="timKiemTextField" onKeyPressed="#timDonDoiTraTheoMa" prefHeight="35.0" prefWidth="305.0" promptText="Mã đơn đổi trả(ấn enter để tìm)" styleClass="text-field-default" stylesheets="@../css/style.css">
                                        <font>
                                           <Font size="16.0" />
                                        </font>

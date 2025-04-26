@@ -1,17 +1,7 @@
 package controller.DoiTra;
 
 import common.LoaiVe;
-import config.TrainTicketApplication;
-import dao.DonDoiTraDAO;
-import dao.EntityDAO;
-import dao.LichTrinhDAO;
-import dao.VeDAO;
-import dao.impl.DonDoiTraDAOImpl;
-import dao.impl.VeDAOImpl;
 import entity.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,13 +19,6 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import rmi.RMIServiceLocator;
-import service.DonDoiTraService;
-import service.LichTrinhService;
-import service.ToaTauService;
-import service.VeService;
-import service.impl.DonDoiTraServiceImpl;
-import service.impl.LichTrinhServiceImpl;
-import service.impl.VeServiceImpl;
 import util.ExportExcelUtil;
 
 import java.io.IOException;
@@ -58,13 +41,9 @@ public class DoiTraController {
     public Button traVeBtn;
     public ScrollPane danhSachToa;
     public Button cancel;
-    public Label tienPhi;
     public Label TongTien;
-    public TextField giaVe_DoiVe;
-    public TextField tienBu;
     public TextField tienHoanTra;
     public TextField tienPhiDoi;
-    public Button tinhTien;
     public TextField giaVeCu_DoiVe;
     public Label TongTien1;
     public TextField giaVeMoi_DoiVe;
@@ -86,8 +65,6 @@ public class DoiTraController {
     public TableColumn<DonDoiTra, Double> tienPhiDon;
     public TableColumn<DonDoiTra, Double> tienHoanTraDon;
     //--------------------
-    private final VeDAOImpl veDAO;
-    private final DonDoiTraDAOImpl donDoiTraDAO;
 
     public Tab tab1;
     public Label cccd;
@@ -96,7 +73,6 @@ public class DoiTraController {
     public Label cccd1;
     @FXML
     public ScrollPane scrollPane;
-    public AnchorPane anchorPaneThanhToanRight;
     public AnchorPane anchorPaneDoiVeRight;
     public VBox vboxDoiVeLeft;
     public VBox vboxScrollPane1;
@@ -126,8 +102,6 @@ public class DoiTraController {
     public TextField textField_CCCD_TraVe;
     public VBox vboxTraVeLeft;
     public AnchorPane panelInfoTicket;
-    @FXML
-    private Button qr_Button;
     private Image coachEmptyImage;
     private Image coachFullImage;
     private Image coachChoosingImage;
@@ -193,8 +167,6 @@ public class DoiTraController {
     private TableColumn<Ve, String> columnLoaiVe;
 
     @FXML
-    private TableColumn<Ve, String> columnTrangThai;
-    @FXML
     private TableColumn<LichTrinh, String> columnTau;
     @FXML
     private TableColumn<LichTrinh, String> columnGioDi;
@@ -212,29 +184,14 @@ public class DoiTraController {
     private TableColumn<Ve, String> colGaDen;
     @FXML
     private TableColumn<Ve, String> colNgayMua;
-    private EntityManager entityManager;
     private List<Ve> dsVe;
-    private final EntityManagerFactory entityManagerFactory;
     private void setHgrow(ToggleButton button) {
         HBox.setHgrow(button, Priority.ALWAYS);
     }
 
-    private DonDoiTraService donDoiTraService;
-    private ToaTauService toaTauService;
-    private VeService veService;
-    private LichTrinhService lichTrinhService;
-
     private String currentTab = "tab1";
-    public DoiTraController(DonDoiTraDAOImpl donDoiTraDAO) {
-        this.donDoiTraDAO = donDoiTraDAO;
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        veDAO = new VeDAOImpl();
-    }
-    public DoiTraController() throws RemoteException {
-        this.donDoiTraDAO = new DonDoiTraDAOImpl();
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        veDAO = new VeDAOImpl();
-    }
+
+
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final ObservableList<DonDoiTra> danhSachDon = FXCollections.observableArrayList();
     @FXML
@@ -554,7 +511,12 @@ public class DoiTraController {
 
     // Done =======================================================
     private void loadToaTaus(String maTau, LichTrinh lichTrinh) {
-        List<ToaTau> toaTaus = RMIServiceLocator.getToaTauService().getToaTauByMaTau(maTau);
+        List<ToaTau> toaTaus = null;
+        try {
+            toaTaus = RMIServiceLocator.getToaTauService().getToaTauByMaTau(maTau);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         if (toaTaus.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, maTau, "Không tìm đươợc");
             return;
@@ -580,7 +542,11 @@ public class DoiTraController {
                     toggleButton.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")))));
                 }
                 selectedToa = (ToaTau) toggleButton.getUserData();
-                refreshGhe(selectedToa, lichTrinh);
+                try {
+                    refreshGhe(selectedToa, lichTrinh);
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
             });
             vboxToa.getChildren().add(toggleButton);
             Label label = new Label("Toa " + toa.getSoToa());
@@ -687,8 +653,8 @@ public class DoiTraController {
     }
 
     // NOTE======================
-    public void refreshGhe(ToaTau toaTau, LichTrinh lichTrinh) {
-        List<Ghe> gheDaDat = veDAO.getGheDaDatTrongToa(toaTau, lichTrinh);
+    public void refreshGhe(ToaTau toaTau, LichTrinh lichTrinh) throws RemoteException {
+        List<Ghe> gheDaDat = RMIServiceLocator.getVeService().getGheDaDat(toaTau, lichTrinh);
         List<Ghe> danhSachGhe = toaTau.getGheList();
         loadGhevaTinhTien(toaTau, lichTrinh, danhSachGhe, gheDaDat);
     }
@@ -783,10 +749,15 @@ public class DoiTraController {
             System.out.println("Ok");
             if (lichTrinh != null && selectedGhe != null && selectedToa != null) {
                 Ve veMoi = doiVe(ve, selectedGhe, lichTrinh, hoaDon, selectedToa);
-                try {
-                    RMIServiceLocator.getVeService().luuDoiVe(veMoi);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
+                if (veMoi != null) {
+                    try {
+                        RMIServiceLocator.getVeService().luuDoiVe(veMoi);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException("Lỗi khi lưu vé mới sau khi đổi vé.", e);
+                    }
+                } else {
+                    System.out.println("Đổi vé thất bại, không có vé mới để lưu.");
                 }
                 double tienHT = veMoi.getGiaVe() < ve.getGiaVe() ? ve.getGiaVe() - veMoi.getGiaVe() : 0;
                 double tienBu = veMoi.getGiaVe() > ve.getGiaVe() ? veMoi.getGiaVe() - ve.getGiaVe() : 0;
