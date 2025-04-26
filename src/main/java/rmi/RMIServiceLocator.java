@@ -12,18 +12,9 @@ public class RMIServiceLocator {
     public static VeService getVeService() {
         return safeLookup("VeService");
     }
-    public static HanhKhachService getHanhKhachService() {
-        return safeLookup("HanhKhacService");
-    }
-    public static NhanVienService getNhanVienService() {
-        return safeLookup("NhanVienService");
-    }
-    public static HoaDonService getHoaDonService() {
-        return safeLookup("HoaDonService");
-    }
-    public static TaiKhoanService getTaiKhoanService() {
-        return safeLookup("TaiKhoanService");
-    }
+    public static DonDoiTraService getDonDoiTraService() {return safeLookup("DonDoiTraService");}
+    public static ToaTauService getToaTauService() {return safeLookup("ToaTauService");}
+    public static LichTrinhService getLichTrinhService() {return safeLookup("LichTrinhService");}
 
     @SuppressWarnings("unchecked")
     private static <T> T safeLookup(String serviceName) {
