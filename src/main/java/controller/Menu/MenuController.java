@@ -138,7 +138,11 @@ public class MenuController {
 
     private void thongTinCaNhan() {
         ThongTinCaNhanController thongTinCaNhanController = readyUI("Menu/ThongTinCaNhan").getController();
-        thongTinCaNhanController.setTaiKhoan(this.taiKhoan);
+        try {
+            thongTinCaNhanController.setTaiKhoan(this.taiKhoan);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void doiMatKhau() {

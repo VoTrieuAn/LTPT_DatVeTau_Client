@@ -733,7 +733,6 @@ public class DoiTraController {
 
     //Done =============================
     public void loadVe(String cccd) {
-        System.out.println("Danh sách vé: " + dsVe);
         List<Ve> dsVe = null;
         try {
             dsVe = RMIServiceLocator.getVeService().getVeById(cccd);
@@ -752,7 +751,12 @@ public class DoiTraController {
 
     //Done==================================================================
     public void loadChuyenTauCungGa(String gaDi, String gaDen) {
-        List<LichTrinh> chuyenTauList = RMIServiceLocator.getLichTrinhService().getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
+        List<LichTrinh> chuyenTauList = null;
+        try {
+            chuyenTauList = RMIServiceLocator.getLichTrinhService().getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         ObservableList<LichTrinh> chuyensTauObservableList = FXCollections.observableArrayList(chuyenTauList);
         tableViewLoadTau.setItems(chuyensTauObservableList);
     }
