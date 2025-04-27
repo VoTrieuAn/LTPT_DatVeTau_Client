@@ -591,7 +591,7 @@
                <children>
                   <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <top>
-                        <AnchorPane stylesheets="@../css/style.css" BorderPane.alignment="CENTER">
+                        <AnchorPane fx:id="banner_XemLSDT" stylesheets="@../css/style.css" BorderPane.alignment="CENTER">
                            <children>
                               <Label layoutX="14.0" layoutY="2.0" stylesheets="@../../view/css/style.css" text="Danh sách đơn đổi " AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <font>
@@ -656,7 +656,7 @@
                                           <Font name="System Bold" size="16.0" />
                                        </font>
                                     </Button>
-                                    <Button fx:id="clear" alignment="CENTER" mnemonicParsing="false" onAction="#ClearForm" prefHeight="62.0" prefWidth="91.0" styleClass="btn-cool" stylesheets="@../css/style.css" text="Làm Mới" textOverrun="CENTER_ELLIPSIS">
+                                    <Button fx:id="clear" alignment="CENTER" mnemonicParsing="false" onAction="#ClearForm" prefHeight="62.0" prefWidth="91.0" styleClass="btn-primary" stylesheets="@../css/style.css" text="Làm Mới" textOverrun="CENTER_ELLIPSIS">
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>
