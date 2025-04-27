@@ -21,7 +21,6 @@
    <children>
       <BorderPane prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <right>
-
             <!-- Phần bên phải: Thông tin hành khách và hóa đơn -->
             <VBox spacing="30.0" BorderPane.alignment="CENTER">
                <children>
@@ -57,7 +56,7 @@
                               <Font size="16.0" />
                            </font></TextField>
 
-                        <!-- Tiền khách đưa -->
+                        <!-- Email -->
                         <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
@@ -68,7 +67,6 @@
                            </font></TextField>
                      </children>
                      <rowConstraints>
-                        <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
@@ -95,6 +93,14 @@
                         <ColumnConstraints minWidth="200.0" prefWidth="200.0" />
                      </columnConstraints>
                      <children>
+                        <Label text="Mã hóa đơn:" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="16.0" />
+                           </font></Label>
+                        <TextField fx:id="maHoaDonTextField" editable="false" stylesheets="@../../css/style.css" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="16.0" />
+                           </font></TextField>
                         <Label text="Ngày tạo:" GridPane.columnIndex="0" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
@@ -140,17 +146,8 @@
                            <font>
                               <Font name="System Bold" size="16.0" />
                            </font></Label>
-                        <Label text="Mã hóa đơn:" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                           <font>
-                              <Font size="16.0" />
-                           </font></Label>
-                        <TextField fx:id="maHoaDonTextField" editable="false" stylesheets="@../../css/style.css" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <font>
-                              <Font size="16.0" />
-                           </font></TextField>
                      </children>
                      <rowConstraints>
-                        <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
@@ -184,6 +181,29 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
+                  <!-- Thêm HBox cho phân trang -->
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnPrevious" text="Sau" onAction="#handlePrevious">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Button>
+                        <Label fx:id="lblPageInfo" text="Page 1 of 1">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="btnNext" text="Sau" onAction="#handleNext">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Button>
+                     </children>
+                     <padding>
+                        <Insets top="5.0" bottom="5.0" />
+                     </padding>
+                  </HBox>
                </children>
             </VBox>
          </center>
@@ -219,7 +239,8 @@
                      </styleClass>
                      <font>
                         <Font size="16.0" />
-                     </font></Button>
+                     </font>
+                  </Button>
                </children>
                <BorderPane.margin>
                   <Insets bottom="10.0" top="5.0" />

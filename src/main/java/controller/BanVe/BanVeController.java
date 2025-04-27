@@ -6,11 +6,13 @@ import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
 import dao.KhuyenMaiDAO;
 import entity.*;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,8 +24,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JasperViewer;
 import org.controlsfx.control.PopOver;
@@ -31,17 +31,13 @@ import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import rmi.RMIServiceLocator;
 import service.HoaDonService;
-import util.BarcodeUtil;
-import util.EmailSenderUlti;
+import service.KhuyenMaiService;
+import service.LichTrinhService;
 import util.HoadonCodeGeneratorUtil;
-import util.QRCodeUtil;
 
-import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
@@ -49,6 +45,7 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 public class BanVeController implements Initializable {
 
@@ -58,7 +55,6 @@ public class BanVeController implements Initializable {
     @FXML private TextField emailTextField;
     @FXML private DatePicker ngayTaoDatePicker;
     @FXML private TextField tienGiamTextField;
-    @FXML private ComboBox<?> phuongThucComboBox;
     @FXML private TextField tienKhachDuaTextField;
     @FXML private Label lblTienThua;
     @FXML private Label lblTongTien;
@@ -78,15 +74,18 @@ public class BanVeController implements Initializable {
     @FXML private Button btnTroLai;
     @FXML private Button btnThem;
     @FXML private Button btnTraVaIn;
-    @FXML private Label cccdErrorLabel;
-    @FXML private Label hoTenErrorLabel;
-    @FXML private Label tienKhachDuaErrorLabel;
+    @FXML private Button btnPrevious;
+    @FXML private Button btnNext;
+    @FXML private Label lblPageInfo;
 
     private ObservableList<Ve> veList = FXCollections.observableArrayList();
+    private ObservableList<Ve> displayedVeList = FXCollections.observableArrayList();
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapDi = new HashMap<>();
     private final Map<ToaTau, Set<Ghe>> gheDaChonMapVe = new HashMap<>();
     private DecimalFormat decimalFormat;
     private HoaDonService hoaDonService;
+    private LichTrinhService lichTrinhService;
+    private KhuyenMaiService khuyenMaiService;
     private NhanVien nhanVien;
     private boolean isFormatting = false;
     private String gaDi;
@@ -94,6 +93,10 @@ public class BanVeController implements Initializable {
     private LocalDate ngayDiLD;
     private LocalDate ngayVeLD;
     private boolean isMotChieu;
+    private int currentPage = 1;
+    private final int rowsPerPage = 10;
+    private long totalRecords;
+    private List<KhuyenMai> cacheDanhSachKhuyenMai = null;
 
     public void setNhanVien(NhanVien nhanVien) {
         this.nhanVien = nhanVien;
@@ -113,20 +116,22 @@ public class BanVeController implements Initializable {
         this.ngayVeLD = ngayVeLDParam;
         this.isMotChieu = isMotChieuParam;
 
-        tableViewBanVe.setItems(this.veList);
-        xacDinhLoaiVe(this.veList); // Xác định loại vé
-        // Cập nhật khuyến mãi và giá vé
+        xacDinhLoaiVe(this.veList);
         for (Ve ve : veList) {
             try {
                 KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
                 ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                capNhatGiaVe(ve);
             } catch (RemoteException e) {
                 showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         }
+        totalRecords = veList.size();
+        currentPage = 1;
+        updateDisplayedVeList();
         capNhatTongTienGiam();
         capNhatTongTien();
+        updatePageInfo();
     }
 
     @Override
@@ -138,10 +143,12 @@ public class BanVeController implements Initializable {
         decimalFormat.setMaximumFractionDigits(0);
 
         hoaDonService = RMIServiceLocator.getHoaDonService();
+        lichTrinhService = RMIServiceLocator.getLichTrinhService();
+        khuyenMaiService = RMIServiceLocator.getKhuyenMaiService();
         setupTienNhapAutoComplete();
 
         setupTable(tableViewBanVe);
-        tableViewBanVe.setItems(veList);
+        tableViewBanVe.setItems(displayedVeList);
         tableViewBanVe.setEditable(true);
 
         maHoaDonTextField.setText(HoadonCodeGeneratorUtil.generateMaHoadon(
@@ -150,14 +157,21 @@ public class BanVeController implements Initializable {
         ngayTaoDatePicker.addEventFilter(MouseEvent.ANY, event -> event.consume());
 
         setupListeners();
+        updatePageInfo();
     }
 
     private void setupListeners() {
-        tableViewBanVe.getItems().addListener((ListChangeListener<Ve>) change -> {
+        veList.addListener((ListChangeListener<Ve>) change -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved() || change.wasUpdated()) {
+                    totalRecords = veList.size();
+                    if (currentPage > getTotalPages()) {
+                        currentPage = Math.toIntExact(Math.max(1, getTotalPages()));
+                    }
+                    updateDisplayedVeList();
                     capNhatTongTien();
                     capNhatTongTienGiam();
+                    updatePageInfo();
                 }
             }
         });
@@ -225,10 +239,52 @@ public class BanVeController implements Initializable {
                 lblTienThua.setText("0");
             }
         });
+
+        btnPrevious.setDisable(true);
+        btnNext.setDisable(true);
     }
 
     @FXML
-    void controller(ActionEvent event) {
+    private void handlePrevious() {
+        if (currentPage > 1) {
+            currentPage--;
+            updateDisplayedVeList();
+            updatePageInfo();
+        }
+    }
+
+    @FXML
+    private void handleNext() {
+        if (currentPage < getTotalPages()) {
+            currentPage++;
+            updateDisplayedVeList();
+            updatePageInfo();
+        }
+    }
+
+    private void updateDisplayedVeList() {
+        displayedVeList.clear();
+        int startIndex = (currentPage - 1) * rowsPerPage;
+        int endIndex = Math.min(startIndex + rowsPerPage, veList.size());
+        if (startIndex < veList.size()) {
+            displayedVeList.addAll(veList.subList(startIndex, endIndex));
+        }
+        tableViewBanVe.refresh();
+    }
+
+    private void updatePageInfo() {
+        long totalPages = getTotalPages();
+        lblPageInfo.setText(String.format("Page %d of %d", currentPage, totalPages));
+        btnPrevious.setDisable(currentPage == 1);
+        btnNext.setDisable(currentPage >= totalPages || veList.isEmpty());
+    }
+
+    private long getTotalPages() {
+        return (totalRecords + rowsPerPage - 1) / rowsPerPage;
+    }
+
+    @FXML
+    private void controller(ActionEvent event) {
         if (event.getSource() == btnTraVaIn) {
             luuHoaDonVaVe();
         }
@@ -239,7 +295,7 @@ public class BanVeController implements Initializable {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty ? null : String.valueOf(getIndex() + 1));
+                setText(empty ? null : String.valueOf((currentPage - 1) * rowsPerPage + getIndex() + 1));
             }
         });
         colTT.setSortable(false);
@@ -296,7 +352,10 @@ public class BanVeController implements Initializable {
             public void commitEdit(String newValue) {
                 super.commitEdit(newValue);
                 Ve ve = getTableView().getItems().get(getIndex());
-                ve.setHoTen(newValue.trim());
+                int globalIndex = (currentPage - 1) * rowsPerPage + getIndex();
+                if (globalIndex < veList.size()) {
+                    veList.get(globalIndex).setHoTen(newValue.trim());
+                }
             }
 
             @Override
@@ -342,7 +401,10 @@ public class BanVeController implements Initializable {
                 comboBox.setOnAction(event -> {
                     LoaiHanhKhach selected = comboBox.getValue();
                     Ve ve = getTableView().getItems().get(getIndex());
-                    ve.setLoaiKh(selected);
+                    int globalIndex = (currentPage - 1) * rowsPerPage + getIndex();
+                    if (globalIndex < veList.size()) {
+                        veList.get(globalIndex).setLoaiKh(selected);
+                    }
 
                     if (selected == LoaiHanhKhach.NGUOI_CAO_TUOI) {
                         label.setText("CCCD:");
@@ -363,8 +425,10 @@ public class BanVeController implements Initializable {
 
                     try {
                         KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
-                        ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                        capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                        if (globalIndex < veList.size()) {
+                            veList.get(globalIndex).setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                            capNhatGiaVe(veList.get(globalIndex));
+                        }
                     } catch (RemoteException e) {
                         showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
@@ -398,26 +462,30 @@ public class BanVeController implements Initializable {
 
                 cccdField.textProperty().addListener((obs, oldVal, newVal) -> {
                     Ve ve = getTableView().getItems().get(getIndex());
-                    if (ve != null) ve.setCccd(newVal);
+                    int globalIndex = (currentPage - 1) * rowsPerPage + getIndex();
+                    if (globalIndex < veList.size()) {
+                        veList.get(globalIndex).setCccd(newVal);
+                    }
                 });
 
                 datePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
                     if (isUpdatingDatePicker) return;
                     Ve ve = getTableView().getItems().get(getIndex());
-                    if (ve != null) {
+                    int globalIndex = (currentPage - 1) * rowsPerPage + getIndex();
+                    if (globalIndex < veList.size()) {
                         if (newVal != null) {
-                            ve.setNgaySinhTreEm(Date.valueOf(newVal));
+                            veList.get(globalIndex).setNgaySinhTreEm(Date.valueOf(newVal));
                             try {
                                 KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
-                                ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                                capNhatGiaVe(ve); // Gọi phương thức cục bộ
+                                veList.get(globalIndex).setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                                capNhatGiaVe(veList.get(globalIndex));
                             } catch (RemoteException e) {
                                 showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                             }
                             capNhatTongTien();
                             tableViewBanVe.refresh();
                         } else {
-                            ve.setNgaySinhTreEm(null);
+                            veList.get(globalIndex).setNgaySinhTreEm(null);
                         }
                     }
                 });
@@ -468,45 +536,13 @@ public class BanVeController implements Initializable {
         });
 
         colKhuyenMai.setCellFactory(column -> new TableCell<Ve, String>() {
-            private final ComboBox<KhuyenMai> comboBox = new ComboBox<>();
-            private final Label lblKhuyenMaiValue = new Label("0");
-
-            {
-                comboBox.setCellFactory(cb -> new ListCell<>() {
-                    @Override
-                    protected void updateItem(KhuyenMai item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText(empty || item == null ? null : item.getTenKhuyenMai());
-                    }
-                });
-                comboBox.setButtonCell(new ListCell<>() {
-                    @Override
-                    protected void updateItem(KhuyenMai item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText(empty || item == null ? null : item.getTenKhuyenMai());
-                    }
-                });
-
-                comboBox.setOnAction(event -> {
-                    Ve ve = getTableView().getItems().get(getIndex());
-                    KhuyenMai khuyenMaiChon = comboBox.getValue();
-                    ve.setKhuyenmaiByMaKm(khuyenMaiChon);
-                    if (khuyenMaiChon != null) {
-                        double discount = khuyenMaiChon.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100;
-                        lblKhuyenMaiValue.setText(formatCurrency(discount));
-                    } else {
-                        lblKhuyenMaiValue.setText("0");
-                    }
-                    capNhatGiaVe(ve); // Gọi phương thức cục bộ
-                    capNhatTongTien();
-                    capNhatTongTienGiam();
-                    tableViewBanVe.refresh();
-                });
-            }
+            private final Label lblTenKhuyenMai = new Label();
+            private final Label lblGiaTriKhuyenMai = new Label("0");
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+
                 if (empty) {
                     setGraphic(null);
                 } else {
@@ -514,52 +550,60 @@ public class BanVeController implements Initializable {
                     LocalDate ngayMuaVe = LocalDate.now();
                     LocalDate ngayKhoiHanh = ve.getLichtrinhByMaLt().getNgayKhoiHanh().toLocalDate();
 
-                    List<KhuyenMai> danhSachKhuyenMai = TrainTicketApplication.getInstance()
-                            .getDatabaseContext()
-                            .newEntityDAO(KhuyenMaiDAO.class)
-                            .getDanhSach("KhuyenMai.findAll", KhuyenMai.class);
-
-                    List<KhuyenMai> danhSachKhuyenMaiApDung = danhSachKhuyenMai.stream()
-                            .filter(km -> {
-                                if (km instanceof KhuyenMaiKhachHang khuyenMaiKhachHang) {
-                                    return ve.getLoaiKh() == khuyenMaiKhachHang.getLoaiKH();
-                                } else if (km instanceof KhuyenMaiNgay khuyenMaiNgay) {
-                                    long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(ngayMuaVe, ngayKhoiHanh);
-                                    return daysBetween >= khuyenMaiNgay.getNgayToiThieuTruocKM();
-                                } else if (km instanceof KhuyenMaiVe khuyenMaiVe) {
-                                    return ve.getLoaiVe() == khuyenMaiVe.getLoaiVe();
-                                }
-                                return false;
-                            })
-                            .collect(java.util.stream.Collectors.toList());
-
-                    comboBox.getItems().setAll(danhSachKhuyenMaiApDung);
-
-                    if (ve.getKhuyenmaiByMaKm() == null && !danhSachKhuyenMaiApDung.isEmpty()) {
-                        try {
-                            KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
-                            ve.setKhuyenmaiByMaKm(khuyenMaiTotNhat);
-                            comboBox.setValue(khuyenMaiTotNhat);
-                            lblKhuyenMaiValue.setText(formatCurrency(khuyenMaiTotNhat.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100));
-                            capNhatGiaVe(ve); // Gọi phương thức cục bộ
-                            capNhatTongTien();
-                            capNhatTongTienGiam();
-                            tableViewBanVe.refresh();
-                        } catch (RemoteException e) {
-                            showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
+                    try {
+                        // Cache danh sách khuyến mãi nếu lần đầu
+                        if (cacheDanhSachKhuyenMai == null) {
+                            cacheDanhSachKhuyenMai = khuyenMaiService.getDanhSach("KhuyenMai.findAll", KhuyenMai.class);
                         }
-                    } else {
-                        comboBox.setValue(ve.getKhuyenmaiByMaKm());
-                        KhuyenMai selectedKhuyenMai = ve.getKhuyenmaiByMaKm();
-                        lblKhuyenMaiValue.setText(selectedKhuyenMai != null
-                                ? formatCurrency(selectedKhuyenMai.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100)
-                                : "0");
+
+                        List<KhuyenMai> danhSachKhuyenMaiApDung = cacheDanhSachKhuyenMai.stream()
+                                .filter(km -> km.isTrangThai()) // Khuyến mãi phải còn hiệu lực
+                                .filter(km -> {
+                                    if (km instanceof KhuyenMaiKhachHang khuyenMaiKhachHang) {
+                                        return ve.getLoaiKh() == khuyenMaiKhachHang.getLoaiKH();
+                                    } else if (km instanceof KhuyenMaiNgay khuyenMaiNgay) {
+                                        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(ngayMuaVe, ngayKhoiHanh);
+                                        return daysBetween >= khuyenMaiNgay.getNgayToiThieuTruocKM();
+                                    } else if (km instanceof KhuyenMaiVe khuyenMaiVe) {
+                                        return ve.getLoaiVe() == khuyenMaiVe.getLoaiVe();
+                                    }
+                                    return false;
+                                })
+                                .collect(Collectors.toList());
+
+                        if (ve.getKhuyenmaiByMaKm() == null && !danhSachKhuyenMaiApDung.isEmpty()) {
+                            KhuyenMai khuyenMaiTotNhat = hoaDonService.layKhuyenMaiTotNhat(ve);
+                            int globalIndex = (currentPage - 1) * rowsPerPage + getIndex();
+
+                            if (globalIndex < veList.size()) {
+                                veList.get(globalIndex).setKhuyenmaiByMaKm(khuyenMaiTotNhat);
+                                capNhatGiaVe(veList.get(globalIndex));
+                                capNhatTongTien();
+                                capNhatTongTienGiam();
+                                tableViewBanVe.refresh();
+                            }
+                        }
+
+                        KhuyenMai khuyenMai = ve.getKhuyenmaiByMaKm();
+                        if (khuyenMai != null) {
+                            lblTenKhuyenMai.setText(khuyenMai.getTenKhuyenMai());
+                            double discount = khuyenMai.getGiaTriKhuyenMai() * ve.getGheByMaGhe().getGiaGhe() / 100;
+                            lblGiaTriKhuyenMai.setText(formatCurrency(discount));
+                        } else {
+                            lblTenKhuyenMai.setText("Không có khuyến mãi");
+                            lblGiaTriKhuyenMai.setText("0");
+                        }
+
+                    } catch (Exception e) {
+                        showAlert("Lỗi", "Không thể cập nhật khuyến mãi: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
 
-                    setGraphic(new VBox(comboBox, lblKhuyenMaiValue));
+                    VBox vbox = new VBox(lblTenKhuyenMai, lblGiaTriKhuyenMai);
+                    setGraphic(vbox);
                 }
             }
         });
+
 
         colThongTinGhe.setCellValueFactory(cellData -> {
             Ghe ghe = cellData.getValue().getGheByMaGhe();
@@ -601,13 +645,13 @@ public class BanVeController implements Initializable {
     }
 
     private void capNhatTongTien() {
-        double tongTien = tinhTongTien(veList); // Gọi phương thức cục bộ
+        double tongTien = tinhTongTien(veList);
         lblTongTien.setText(formatCurrency(tongTien));
         capNhatTienThua();
     }
 
     private void capNhatTongTienGiam() {
-        double tongTienGiam = tinhTongTienGiam(veList); // Gọi phương thức cục bộ
+        double tongTienGiam = tinhTongTienGiam(veList);
         tienGiamTextField.setText(formatCurrency(tongTienGiam));
     }
 
@@ -624,9 +668,52 @@ public class BanVeController implements Initializable {
     private void xoaVe() {
         Ve selectedVe = tableViewBanVe.getSelectionModel().getSelectedItem();
         if (selectedVe != null && confirm("Bạn có chắc chắn muốn xóa vé này?")) {
+            // Lấy ghế và toa tàu
+            Ghe ghe = selectedVe.getGheByMaGhe();
+            ToaTau toaTau = ghe != null ? ghe.getToatauByMaTt() : null;
+            LichTrinh lichTrinh = selectedVe.getLichtrinhByMaLt();
+
+            // Xóa vé khỏi veList
             veList.remove(selectedVe);
-            gheDaChonMapDi.getOrDefault(selectedVe.getGheByMaGhe().getToatauByMaTt(), new HashSet<>()).remove(selectedVe.getGheByMaGhe());
-            gheDaChonMapVe.getOrDefault(selectedVe.getGheByMaGhe().getToatauByMaTt(), new HashSet<>()).remove(selectedVe.getGheByMaGhe());
+
+            // Cập nhật gheDaChonMap
+            if (ghe != null && toaTau != null) {
+                boolean isDi = lichTrinh.getGaKhoiHanh().equals(gaDi);
+                Map<ToaTau, Set<Ghe>> gheDaChonMap = isDi ? gheDaChonMapDi : gheDaChonMapVe;
+                Set<Ghe> gheSet = gheDaChonMap.get(toaTau);
+                if (gheSet != null) {
+                    gheSet.remove(ghe);
+                    if (gheSet.isEmpty()) {
+                        gheDaChonMap.remove(toaTau);
+                    }
+                }
+            }
+
+            // Mở khóa ghế trên server dựa trên maLt
+            if (ghe != null && lichTrinh != null) {
+                Task<Void> unlockTask = new Task<>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        lichTrinhService.unlockSeat(ghe.getMaGhe(), lichTrinh.getMaLt());
+                        return null;
+                    }
+                };
+                unlockTask.setOnFailed(event -> {
+                    Platform.runLater(() -> {
+                        showAlert("Lỗi", "Không thể mở khóa ghế: " + unlockTask.getException().getMessage(), Alert.AlertType.ERROR);
+                    });
+                });
+                new Thread(unlockTask).start();
+            }
+
+            // Cập nhật giao diện
+            tableViewBanVe.refresh();
+            totalRecords = veList.size();
+            if (currentPage > getTotalPages()) {
+                currentPage = Math.toIntExact(Math.max(1, getTotalPages()));
+            }
+            updateDisplayedVeList();
+            updatePageInfo();
         } else if (selectedVe == null) {
             showAlert("Thông báo", "Vui lòng chọn một vé để xóa.", Alert.AlertType.INFORMATION);
         }
@@ -634,9 +721,40 @@ public class BanVeController implements Initializable {
 
     private void xoaTatCaVe() {
         if (!veList.isEmpty() && confirm("Bạn có chắc chắn muốn xóa tất cả vé?")) {
+            // Mở khóa tất cả ghế trên server dựa trên maLt
+            for (Ve ve : veList) {
+                Ghe ghe = ve.getGheByMaGhe();
+                LichTrinh lichTrinh = ve.getLichtrinhByMaLt();
+                if (ghe != null && lichTrinh != null) {
+                    Task<Void> unlockTask = new Task<>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            lichTrinhService.unlockSeat(ghe.getMaGhe(), lichTrinh.getMaLt());
+                            return null;
+                        }
+                    };
+                    unlockTask.setOnFailed(event -> {
+                        Platform.runLater(() -> {
+                            showAlert("Lỗi", "Không thể mở khóa ghế: " + unlockTask.getException().getMessage(), Alert.AlertType.ERROR);
+                        });
+                    });
+                    new Thread(unlockTask).start();
+                }
+            }
+
+            // Xóa dữ liệu
             veList.clear();
             gheDaChonMapDi.clear();
             gheDaChonMapVe.clear();
+
+            // Cập nhật giao diện
+            totalRecords = 0;
+            currentPage = 1;
+            updateDisplayedVeList();
+            updatePageInfo();
+            tableViewBanVe.refresh();
+            capNhatTongTien();
+            capNhatTongTienGiam();
         } else if (veList.isEmpty()) {
             showAlert("Thông báo", "Không có vé nào để xóa.", Alert.AlertType.INFORMATION);
         }
@@ -651,23 +769,83 @@ public class BanVeController implements Initializable {
 
         if (!validateInput()) return;
 
-        try {
-            double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
-            HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
-
-            for (Ve ve : hoaDon.getVeSet()) {
-                generateReport(ve);
+        for (Ve ve : veList) {
+            Ghe ghe = ve.getGheByMaGhe();
+            if (ghe != null && ghe.getToatauByMaTt() == null) {
+                showAlert("Lỗi", "Ghế " + ghe.getMaGhe() + " không có thông tin toa tàu.", Alert.AlertType.ERROR);
+                return;
             }
-            generateReport(hoaDon);
-
-            showAlert("Thông báo", "Lưu hóa đơn và vé thành công", Alert.AlertType.INFORMATION);
-            veList.clear();
-            tableViewBanVe.refresh();
-            FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Xảy ra lỗi", "Lưu thất bại! Xảy ra lỗi: " + e.getMessage(), Alert.AlertType.ERROR);
         }
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    double tienNhan = parseCurrency(tienKhachDuaTextField.getText());
+                    HoaDon hoaDon = hoaDonService.luuHoaDonVaVe(new ArrayList<>(veList), cccdTextField.getText(), tienNhan, nhanVien);
+
+                    // Tạo báo cáo vé
+                    for (Ve ve : hoaDon.getVeSet()) {
+                        JasperPrint veReport = hoaDonService.generateVeReport(ve.getMaVe());
+                        Platform.runLater(() -> displayJasperReport(veReport));
+                    }
+
+                    // Tạo báo cáo hóa đơn
+                    String recipientEmail = hoaDon.getHanhkhachByMaHk().getEmail();
+                    JasperPrint hoaDonReport = hoaDonService.generateHoaDonReport(hoaDon.getMaHd(), recipientEmail);
+                    Platform.runLater(() -> displayJasperReport(hoaDonReport));
+
+                    // Mở khóa ghế dựa trên maLt
+                    for (Ve ve : veList) {
+                        Ghe ghe = ve.getGheByMaGhe();
+                        LichTrinh lichTrinh = ve.getLichtrinhByMaLt();
+                        if (ghe != null && lichTrinh != null) {
+                            lichTrinhService.unlockSeat(ghe.getMaGhe(), lichTrinh.getMaLt());
+                        }
+                    }
+
+                    // Update UI sau khi lưu xong
+                    Platform.runLater(() -> {
+                        showAlert("Thông báo", "Lưu hóa đơn và vé thành công", Alert.AlertType.INFORMATION);
+                        veList.clear();
+                        gheDaChonMapDi.clear();
+                        gheDaChonMapVe.clear();
+                        totalRecords = 0;
+                        currentPage = 1;
+                        updateDisplayedVeList();
+                        updatePageInfo();
+                        tableViewBanVe.refresh();
+                        try {
+                            FXMLLoader loader = MenuNhanVienController.instance.readyUI("BanVe/TimVe");
+                            TimVeController controller = loader.getController();
+                            controller.setNhanVien(nhanVien);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            showAlert("Lỗi", "Không thể load lại giao diện tìm vé: " + e.getMessage(), Alert.AlertType.ERROR);
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> showAlert("Xảy ra lỗi", "Lưu thất bại! Xảy ra lỗi: " + e.getMessage(), Alert.AlertType.ERROR));
+                }
+                return null;
+            }
+        };
+
+        new Thread(task).start();
+    }
+
+    private void displayJasperReport(JasperPrint jasperPrint) {
+        Platform.runLater(() -> {
+            try {
+                JasperViewer viewer = new JasperViewer(jasperPrint, false);
+                viewer.setTitle(jasperPrint.getName());
+                viewer.setVisible(true);
+            } catch (Exception e) {
+                showAlert("Lỗi", "Không thể hiển thị báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        });
     }
 
     private boolean validateInput() {
@@ -738,43 +916,6 @@ public class BanVeController implements Initializable {
         return true;
     }
 
-    public void generateReport(Ve ve) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "1234567890")) {
-            HashMap<String, Object> para = new HashMap<>();
-            para.put("maVe", ve.getMaVe());
-            BufferedImage qrCodeImage = QRCodeUtil.generateQRCodeImage(ve.getMaVe(), 94, 90);
-            para.put("qrCodeImage", qrCodeImage);
-
-            JasperPrint jasperPrint = JasperFillManager.fillReport(
-                    JasperCompileManager.compileReport(getClass().getResourceAsStream("/view/report/Blank_Letter.jrxml")),
-                    para, connection);
-            JasperViewer.viewReport(jasperPrint, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Xảy ra lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-    public void generateReport(HoaDon hoaDon) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "1234567890")) {
-            HashMap<String, Object> para = new HashMap<>();
-            para.put("maHD", hoaDon.getMaHd());
-            BufferedImage qrCodeImage = BarcodeUtil.generateBarcodeImage(hoaDon.getMaHd(), 154, 50);
-            para.put("qrCodeImage", qrCodeImage);
-
-            JasperPrint jasperPrint = JasperFillManager.fillReport(
-                    JasperCompileManager.compileReport(getClass().getResourceAsStream("/view/report/Invoice.jrxml")),
-                    para, connection);
-
-            String recipient = hoaDon.getHanhkhachByMaHk().getEmail();
-            EmailSenderUlti.sendJasperReportAsPDF(recipient, "Hóa đơn của bạn", "Xin chào, đây là hóa đơn của bạn.", jasperPrint);
-            JasperViewer.viewReport(jasperPrint, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Xảy ra lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
     private void showPopOver(Node targetNode, String message) {
         Label errorLabel = new Label(message);
         errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
@@ -788,30 +929,34 @@ public class BanVeController implements Initializable {
     }
 
     private void showValidationError(int rowIndex, TableColumn<Ve, ?> column, String message) {
-        tableViewBanVe.scrollTo(rowIndex);
-        tableViewBanVe.getSelectionModel().select(rowIndex, column);
+        int globalIndex = rowIndex;
+        int displayIndex = globalIndex - (currentPage - 1) * rowsPerPage;
+        if (displayIndex >= 0 && displayIndex < displayedVeList.size()) {
+            tableViewBanVe.scrollTo(displayIndex);
+            tableViewBanVe.getSelectionModel().select(displayIndex, column);
 
-        TableCell<Ve, ?> cell = getCell(rowIndex, column);
-        if (cell != null && cell.getGraphic() != null) {
-            Node inputNode = null;
-            if (column == colTenKH) {
-                inputNode = cell.getGraphic();
-            } else if (column == colThongTinKH) {
-                Ve ve = veList.get(rowIndex);
-                if (ve.getLoaiKh() == null) {
-                    inputNode = cell.getGraphic().lookup("#comboBoxLoaiKH");
-                } else if (ve.getLoaiKh() == LoaiHanhKhach.NGUOI_LON || ve.getLoaiKh() == LoaiHanhKhach.NGUOI_CAO_TUOI || ve.getLoaiKh() == LoaiHanhKhach.HOC_SINH_SINH_VIEN) {
-                    inputNode = cell.getGraphic().lookup("#textFieldCCCD");
-                } else {
-                    inputNode = cell.getGraphic().lookup("#datePickerNgaySinh");
+            TableCell<Ve, ?> cell = getCell(displayIndex, column);
+            if (cell != null && cell.getGraphic() != null) {
+                Node inputNode = null;
+                if (column == colTenKH) {
+                    inputNode = cell.getGraphic();
+                } else if (column == colThongTinKH) {
+                    Ve ve = veList.get(globalIndex);
+                    if (ve.getLoaiKh() == null) {
+                        inputNode = cell.getGraphic().lookup("#comboBoxLoaiKH");
+                    } else if (ve.getLoaiKh() == LoaiHanhKhach.NGUOI_LON || ve.getLoaiKh() == LoaiHanhKhach.NGUOI_CAO_TUOI || ve.getLoaiKh() == LoaiHanhKhach.HOC_SINH_SINH_VIEN) {
+                        inputNode = cell.getGraphic().lookup("#textFieldCCCD");
+                    } else {
+                        inputNode = cell.getGraphic().lookup("#datePickerNgaySinh");
+                    }
                 }
-            }
-            if (inputNode != null) {
-                PopOver popOver = new PopOver(new Label(message));
-                popOver.setDetachable(false);
-                popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);
-                popOver.show(inputNode);
-                inputNode.requestFocus();
+                if (inputNode != null) {
+                    PopOver popOver = new PopOver(new Label(message));
+                    popOver.setDetachable(false);
+                    popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);
+                    popOver.show(inputNode);
+                    inputNode.requestFocus();
+                }
             }
         }
     }
@@ -931,6 +1076,24 @@ public class BanVeController implements Initializable {
     @FXML
     private void Huy() {
         if (confirm("Bạn có chắc chắn muốn hủy? Mọi thay đổi chưa lưu sẽ bị mất.")) {
+            for (Ve ve : veList) {
+                Ghe ghe = ve.getGheByMaGhe();
+                LichTrinh lichTrinh = ve.getLichtrinhByMaLt();
+                if (ghe != null && lichTrinh != null) {
+                    try {
+                        lichTrinhService.unlockSeat(ghe.getMaGhe(), lichTrinh.getMaLt());
+                    } catch (RemoteException e) {
+                        showAlert("Lỗi", "Không thể mở khóa ghế: " + e.getMessage(), Alert.AlertType.ERROR);
+                    }
+                }
+            }
+            veList.clear();
+            gheDaChonMapDi.clear();
+            gheDaChonMapVe.clear();
+            totalRecords = 0;
+            currentPage = 1;
+            updateDisplayedVeList();
+            updatePageInfo();
             MenuNhanVienController.instance.readyUI("BanVe/TimVe");
         }
     }
@@ -969,7 +1132,6 @@ public class BanVeController implements Initializable {
         alert.showAndWait();
     }
 
-    // Phương thức xác định loại vé (chuyển từ server)
     private void xacDinhLoaiVe(ObservableList<Ve> veList) {
         List<Ve> veListSort = new ArrayList<>(veList);
         veListSort.sort(Comparator
@@ -1005,7 +1167,6 @@ public class BanVeController implements Initializable {
         }
     }
 
-    // Phương thức tính tổng tiền giảm (chuyển từ server)
     private double tinhTongTienGiam(ObservableList<Ve> veList) {
         return veList.stream()
                 .mapToDouble(ve -> {
@@ -1016,7 +1177,6 @@ public class BanVeController implements Initializable {
                 .sum();
     }
 
-    // Phương thức tính tổng tiền (chuyển từ server)
     private double tinhTongTien(ObservableList<Ve> veList) {
         return veList.stream()
                 .mapToDouble(ve -> {
@@ -1030,7 +1190,6 @@ public class BanVeController implements Initializable {
                 .sum();
     }
 
-    // Phương thức cập nhật giá vé (chuyển từ server)
     private void capNhatGiaVe(Ve ve) {
         if (ve.getGheByMaGhe() == null) return;
         double giaGoc = ve.getGheByMaGhe().getGiaGhe();
