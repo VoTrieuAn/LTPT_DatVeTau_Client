@@ -5,9 +5,6 @@ import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXRadioButton;
 import common.LoaiGhe;
 import common.LoaiHanhKhach;
-import dao.impl.HoaDonDAOImpl;
-import dao.impl.LichTrinhDAOImpl;
-import dao.impl.VeDAOImpl;
 import entity.HoaDon;
 import entity.Ve;
 import javafx.fxml.FXML;
@@ -16,7 +13,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import rmi.RMIServiceLocator;
+import service.ThongKeService;
 
+import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -53,17 +53,10 @@ public class TongQuanController {
     @FXML
     private LineChart<String, Number> chartThoiGian;
 
+    private ThongKeService thongKeService = RMIServiceLocator.getThongKeService();
 
-    private final HoaDonDAOImpl hddao;
-    private final VeDAOImpl vedao;
-    private final LichTrinhDAOImpl ltdao;
-
-    public TongQuanController() {
-        this.ltdao = new LichTrinhDAOImpl();
-        this.hddao = new HoaDonDAOImpl();
-        this.vedao = new VeDAOImpl();
-    }
     DecimalFormat decimalFormat = new DecimalFormat("#,##0 VNĐ");
+
     @FXML
     public void initialize() {
         buttonGroup();
@@ -71,24 +64,24 @@ public class TongQuanController {
         displayData();
         chartDoanhThuTheoNam.setVisible(false);
         mainPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if(newScene != null){
+            if (newScene != null) {
                 newScene.setOnKeyPressed(keyEvent -> {
-                    if(keyEvent.getCode() == KeyCode.F5)
+                    if (keyEvent.getCode() == KeyCode.F5)
                         Btn_Loc.fire();
                 });
             }
         });
         Btn_Loc.setOnAction(actionEvent -> {
             displayData();
-            if(radio_cuThe.isSelected()) {
+            if (radio_cuThe.isSelected()) {
                 checkDatePicker();
             }
 
         });
     }
 
-    private void checkDatePicker(){
-        if(datepick_start.getValue().isAfter(LocalDate.now()) ||  datepick_end.getValue().isAfter(LocalDate.now())){
+    private void checkDatePicker() {
+        if (datepick_start.getValue().isAfter(LocalDate.now()) || datepick_end.getValue().isAfter(LocalDate.now())) {
             Alert alert = new Alert(Alert.AlertType.ERROR); // Loại thông báo là ERROR
             alert.setTitle("");
             alert.setHeaderText(null); // Không cần tiêu đề phụ
@@ -98,11 +91,12 @@ public class TongQuanController {
             datepick_end.setValue(LocalDate.now());
             datepick_start.setValue(LocalDate.now());
         }
-        if(datepick_end.getValue() == null) {
+        if (datepick_end.getValue() == null) {
             datepick_end.setValue(datepick_start.getValue());
         }
         if (datepick_end.getValue().isBefore(datepick_start.getValue())) {
             Alert alert = new Alert(Alert.AlertType.ERROR); // Loại thông báo là ERROR
+            alert.setTitle("Lỗi");
             alert.setTitle("Lỗi");
             alert.setHeaderText(null); // Không cần tiêu đề phụ
             alert.setContentText("Ngày kết thúc không thể trước ngày bắt đầu!"); // Nội dung thông báo
@@ -111,7 +105,8 @@ public class TongQuanController {
             datepick_end.setValue(datepick_start.getValue());
         }
     }
-    private void buttonGroup(){
+
+    private void buttonGroup() {
         radio_thangNam.setSelected(true);
         radio_thangNam.setOnAction(actionEvent -> radio_cuThe.setSelected(!radio_thangNam.isSelected()));
         radio_cuThe.setOnAction(actionEvent -> radio_thangNam.setSelected(!radio_cuThe.isSelected()));
@@ -135,117 +130,132 @@ public class TongQuanController {
     private void displayData() {
         if (radio_thangNam.isSelected()) {
             Integer selectedNam = cboboxNam.getValue();
-            if(cboboxThang.getValue() != 0){
+            if (cboboxThang.getValue() != 0) {
                 showMonthlyData(selectedNam);
-            }
-            else {
+            } else {
                 showYearlyData(selectedNam);
             }
-        }
-        else if(radio_cuThe.isSelected()){
+        } else if (radio_cuThe.isSelected()) {
             showCustomDateRangeData();
         }
     }
-    private void showMonthlyData(Integer selectedNam){
-        chartDoanhThuTheoNam.setVisible(false);
-        chartDoanhThu.setVisible(true);
 
-        Integer selectedThang = cboboxThang.getValue();
+    private void showMonthlyData(Integer selectedNam) {
+        try {
+            chartDoanhThuTheoNam.setVisible(false);
+            chartDoanhThu.setVisible(true);
+
+            Integer selectedThang = cboboxThang.getValue();
 //        ============ UpDate 4 Ô TOP ==============
-        List<HoaDon> dsHD = hddao.getAllHoaDonTheoThang(selectedThang, selectedNam);
-        List<Ve> dsVe = vedao.getAllVeTheoThang(selectedThang, selectedNam);
-        List<String> dsHK = vedao.getHanhKhachTheoThang(selectedThang, selectedNam);
-        Double tongDoanhThu = hddao.getTongDoanhThuTheoThang(selectedThang, selectedNam);
-        String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
-        numDoanhThu.setText(formattedDoanhThu);
-        updateHoaDonInfo(dsHD);
-        updateVeTauInfo(dsVe);
-        updateHanhKhachInfo(dsHK);
+            List<HoaDon> dsHD = thongKeService.layDanhSachHoaDon(selectedThang, selectedNam);
+            List<Ve> dsVe = thongKeService.layDanhSachVe(selectedThang, selectedNam);
+            List<String> dsHK = thongKeService.layDanhSachHanhKhach(selectedThang, selectedNam);
+            Double tongDoanhThu = thongKeService.layTongDoanhThu(selectedThang, selectedNam);
+            String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
+            numDoanhThu.setText(formattedDoanhThu);
+            updateHoaDonInfo(dsHD);
+            updateVeTauInfo(dsVe);
+            updateHanhKhachInfo(dsHK);
 //        ============ END - UpDate 4 Ô TOP ==============
 //        ============ UpDate Chart ==============
-        Map<Double, String> doanhThuTauTheoThang = vedao.doanhThuTauTheoThang(selectedThang, selectedNam);
-        Map<LoaiHanhKhach, Integer> countLoaiHK = vedao.countLoaiKhachHangTheoThang(selectedThang, selectedNam);
-        Map<LoaiGhe, Integer> countLoaiGhe = vedao.countLoaiGheTheoThang(selectedThang, selectedNam);
-        Map<String, Integer> countSoTuyenMoiTau = ltdao.countTuyenMoiTauTheoThang(selectedThang, selectedNam);
-        Map<String, Integer> countSoTuyen = vedao.countSoTuyenTheoThang(selectedThang, selectedNam);
-        Map<String, Integer> countSoGioDi = vedao.countThoiGianDiTheoThang(selectedThang, selectedNam);
+            Map<Double, String> doanhThuTauTheoThang = thongKeService.layDoanhThuTauTheoThang(selectedThang, selectedNam);
+            Map<LoaiHanhKhach, Integer> countLoaiHK = thongKeService.thongKeLoaiHanhKhach(selectedThang, selectedNam);
+            Map<LoaiGhe, Integer> countLoaiGhe = thongKeService.thongKeLoaiGhe(selectedThang, selectedNam);
+            Map<String, Integer> countSoTuyenMoiTau = thongKeService.thongKeTuyenMoiTau(selectedThang, selectedNam);
+            Map<String, Integer> countSoTuyen = thongKeService.thongKeSoTuyen(selectedThang, selectedNam);
+            Map<String, Integer> countSoGioDi = thongKeService.thongKeGioDi(selectedThang, selectedNam);
 
-        updateChartDoanhThu(dsHD);
-        updateChartSoVe(dsVe);
-        updateChartKhachHang(countLoaiHK);
-        updateChartGhe(countLoaiGhe);
-        updateChartDoanhThuTau(doanhThuTauTheoThang);
-        updateChartSoChuyenTau(countSoTuyenMoiTau);
-        updateChartSoTuyen(countSoTuyen);
-        updateChartGioDi(countSoGioDi);
+            updateChartDoanhThu(dsHD);
+            updateChartSoVe(dsVe);
+            updateChartKhachHang(countLoaiHK);
+            updateChartGhe(countLoaiGhe);
+            updateChartDoanhThuTau(doanhThuTauTheoThang);
+            updateChartSoChuyenTau(countSoTuyenMoiTau);
+            updateChartSoTuyen(countSoTuyen);
+            updateChartGioDi(countSoGioDi);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
     }
+
     private void showYearlyData(Integer selectedNam) {
-        chartDoanhThuTheoNam.setVisible(true);
-        chartDoanhThu.setVisible(false);
+        try {
+            chartDoanhThuTheoNam.setVisible(true);
+            chartDoanhThu.setVisible(false);
 
-        Map<String, Double> doanhThuTungThang = hddao.getDoanhThuTheoNam(selectedNam);
+            Map<String, Double> doanhThuTungThang = thongKeService.layDoanhThuTheoNam(selectedNam);
 //        ============ UpDate 4 Ô TOP ==============
-        List<HoaDon> dsHD = hddao.getHoaDonTheoNam(selectedNam);
-        List<Ve> dsVe = vedao.getAllVeTheoNam(selectedNam);
-        List<String> dsHK = vedao.getHanhKhachTheoNam(selectedNam);
-        Double tongDoanhThu = hddao.getTongDoanhThuTheoNam(selectedNam);
-        String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
-        numDoanhThu.setText(formattedDoanhThu);
-        updateHoaDonInfo(dsHD);
-        updateVeTauInfo(dsVe);
-        updateHanhKhachInfo(dsHK);
+            List<HoaDon> dsHD = thongKeService.layDanhSachHoaDonTheoNam(selectedNam);
+            List<Ve> dsVe = thongKeService.layDanhSachVeTheoNam(selectedNam);
+            List<String> dsHK = thongKeService.layDanhSachHanhKhachTheoNam(selectedNam);
+            Double tongDoanhThu = thongKeService.layTongDoanhThuTheoNam(selectedNam);
+            String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
+            numDoanhThu.setText(formattedDoanhThu);
+            updateHoaDonInfo(dsHD);
+            updateVeTauInfo(dsVe);
+            updateHanhKhachInfo(dsHK);
 //        ============ END - UpDate 4 Ô TOP ==============
 //        ============ UpDate Chart ==============
-        Map<Double, String> doanhThuTauTheoNam= vedao.doanhThuTauTheoNam(selectedNam);
-        Map<LoaiHanhKhach, Integer> countLoaiHK = vedao.countLoaiKhachHangTheoNam(selectedNam);
-        Map<LoaiGhe, Integer> countLoaiGhe = vedao.countLoaiGheTheoNam(selectedNam);
-        Map<String, Integer> countSoVe = vedao.countSoVeTheoNam(selectedNam);
-        Map<String, Integer> countSoTuyenMoiTau = ltdao.countTuyenMoiTauTheoNam(selectedNam);
-        Map<String, Integer> countSoTuyen = vedao.countSoTuyenTheoNam(selectedNam);
-        Map<String, Integer> countSoGioDi = vedao.countThoiGianDiTheoNam(selectedNam);
+            Map<Double, String> doanhThuTauTheoNam = thongKeService.layDoanhThuTauTheoNam(selectedNam);
+            Map<LoaiHanhKhach, Integer> countLoaiHK = thongKeService.thongKeLoaiHanhKhachTheoNam(selectedNam);
+            Map<LoaiGhe, Integer> countLoaiGhe = thongKeService.thongKeLoaiGheTheoNam(selectedNam);
+            Map<String, Integer> countSoVe = thongKeService.thongKeSoVeTheoNam(selectedNam);
+            Map<String, Integer> countSoTuyenMoiTau = thongKeService.thongKeTuyenMoiTauTheoNam(selectedNam);
+            Map<String, Integer> countSoTuyen = thongKeService.thongKeSoTuyenTheoNam(selectedNam);
+            Map<String, Integer> countSoGioDi = thongKeService.thongKeGioDiTheoNam(selectedNam);
 
-        updateChartDoanhThuTheoNam(doanhThuTungThang);
-        updateChartSoVeTheoNam(countSoVe);
-        updateChartKhachHang(countLoaiHK);
-        updateChartGhe(countLoaiGhe);
-        updateChartDoanhThuTau(doanhThuTauTheoNam);
-        updateChartSoChuyenTau(countSoTuyenMoiTau);
-        updateChartSoTuyen(countSoTuyen);
-        updateChartGioDi(countSoGioDi);
+            updateChartDoanhThuTheoNam(doanhThuTungThang);
+            updateChartSoVeTheoNam(countSoVe);
+            updateChartKhachHang(countLoaiHK);
+            updateChartGhe(countLoaiGhe);
+            updateChartDoanhThuTau(doanhThuTauTheoNam);
+            updateChartSoChuyenTau(countSoTuyenMoiTau);
+            updateChartSoTuyen(countSoTuyen);
+            updateChartGioDi(countSoGioDi);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
+
     private void showCustomDateRangeData() {
-        chartDoanhThuTheoNam.setVisible(false);
-        chartDoanhThu.setVisible(true);
-        LocalDate start = datepick_start.getValue();
-        LocalDate end = datepick_end.getValue();
+        try {
+            chartDoanhThuTheoNam.setVisible(false);
+            chartDoanhThu.setVisible(true);
+            LocalDate start = datepick_start.getValue();
+            LocalDate end = datepick_end.getValue();
 //        ============ UpDate 4 Ô TOP ==============
-        List<HoaDon> dsHD = hddao.getHoaDonTheoNgayCuThe(start, end);
-        List<Ve> dsVe = vedao.getAllVeTheoNgayCuThe(start, end);
-        List<String> dsHK = vedao.getHanhKhachTheoNgayCuThe(start, end);
-        Double tongDoanhThu = hddao.getTongDoanhThuTheoNgayCuThe(start, end);
-        String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
-        numDoanhThu.setText(formattedDoanhThu);
-        updateHoaDonInfo(dsHD);
-        updateVeTauInfo(dsVe);
-        updateHanhKhachInfo(dsHK);
+            List<HoaDon> dsHD = thongKeService.layDanhSachHoaDonTheoNgay(start, end);
+            List<Ve> dsVe = thongKeService.layDanhSachVeTheoNgay(start, end);
+            List<String> dsHK = thongKeService.layDanhSachHanhKhachTheoNgay(start, end);
+            Double tongDoanhThu = thongKeService.layTongDoanhThuTheoNgay(start, end);
+            String formattedDoanhThu = decimalFormat.format(tongDoanhThu);
+            numDoanhThu.setText(formattedDoanhThu);
+            updateHoaDonInfo(dsHD);
+            updateVeTauInfo(dsVe);
+            updateHanhKhachInfo(dsHK);
 //        ============ END - UpDate 4 Ô TOP ==============
 //        ============ UpDate Chart ==============
-        Map<LoaiGhe, Integer> countLoaiGhe = vedao.countLoaiGheTheoNgayCuThe(start, end);
-        Map<LoaiHanhKhach, Integer> countLoaiHK = vedao.countLoaiKhachHangTheoNgayCuThe(start, end);
-        Map<Double, String> doanhThuTau= vedao.doanhThuTauTheoNgayCuThe(start, end);
-        Map<String, Integer> countSoTuyenMoiTau = ltdao.countTuyenMoiTauTheoNgayCuThe(start, end);
-        Map<String, Integer> countSoTuyen = vedao.countSoTuyenTheoNgayCuThe(start, end);
-        Map<String, Integer> countSoGioDi = vedao.countThoiGianDiTheoNgayCuThe(start, end);
+            Map<LoaiGhe, Integer> countLoaiGhe = thongKeService.thongKeLoaiGheTheoNgay(start, end);
+            Map<LoaiHanhKhach, Integer> countLoaiHK = thongKeService.thongKeLoaiHanhKhachTheoNgay(start, end);
+            Map<Double, String> doanhThuTau = thongKeService.layDoanhThuTauTheoNgay(start, end);
+            Map<String, Integer> countSoTuyenMoiTau = thongKeService.thongKeTuyenMoiTauTheoNgay(start, end);
+            Map<String, Integer> countSoTuyen = thongKeService.thongKeSoTuyenTheoNgay(start, end);
+            Map<String, Integer> countSoGioDi = thongKeService.thongKeGioDiTheoNgay(start, end);
 
-        updateChartDoanhThu(dsHD);
-        updateChartSoVe(dsVe);
-        updateChartKhachHang(countLoaiHK);
-        updateChartGhe(countLoaiGhe);
-        updateChartDoanhThuTau(doanhThuTau);
-        updateChartSoChuyenTau(countSoTuyenMoiTau);
-        updateChartSoTuyen(countSoTuyen);
-        updateChartGioDi(countSoGioDi);
+            updateChartDoanhThu(dsHD);
+            updateChartSoVe(dsVe);
+            updateChartKhachHang(countLoaiHK);
+            updateChartGhe(countLoaiGhe);
+            updateChartDoanhThuTau(doanhThuTau);
+            updateChartSoChuyenTau(countSoTuyenMoiTau);
+            updateChartSoTuyen(countSoTuyen);
+            updateChartGioDi(countSoGioDi);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
+
     //        ============ UpDate 4 Ô TOP ==============
     private void updateHoaDonInfo(List<HoaDon> dsHD) {
         if (dsHD != null && !dsHD.isEmpty()) {
@@ -274,10 +284,11 @@ public class TongQuanController {
 
     //        ============ UpDate Các Biểu Đồ ==============
     private void updateChartDoanhThu(List<HoaDon> dsHD) {
+        try{
         chartDoanhThu.getData().clear();
         xAxis.setAutoRanging(true);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
-        if(radio_thangNam.isSelected()) {
+        if (radio_thangNam.isSelected()) {
             int selectedNam = cboboxNam.getValue();
             int selectedThang = cboboxThang.getValue();
 
@@ -328,7 +339,7 @@ public class TongQuanController {
             List<String> daysWithMinKhac0 = new ArrayList<>();
 
             int daysWithRevenue = 0; // Biến đếm số ngày có doanh thu khác 0
-            double previousTotalDoanhThu = hddao.getTongDoanhThuTheoThang(selectedThang - 1, selectedNam);
+            double previousTotalDoanhThu = thongKeService.layTongDoanhThu(selectedThang - 1, selectedNam);
             double revenueGrowth = 0; // Tăng trưởng doanh thu
 
             // Duyệt qua từng ngày để tính các thông số
@@ -394,12 +405,11 @@ public class TongQuanController {
                     decimalFormat.format(minDoanhThu), daysWithMinText,
                     decimalFormat.format(minDoanhThu2), daysWithMinText2,
                     decimalFormat.format(averageDoanhThu),
-                    daysWithRevenue,countDays,
+                    daysWithRevenue, countDays,
                     revenueGrowth
             );
             textThongTinDoanhThu.setText(infoText);
-        }
-        else if (radio_cuThe.isSelected()){
+        } else if (radio_cuThe.isSelected()) {
             LocalDate startDate = datepick_start.getValue();
             LocalDate endDate = datepick_end.getValue();
             // Tạo danh sách các ngày trong khoảng thời gian đã chọn
@@ -514,14 +524,19 @@ public class TongQuanController {
             textThongTinDoanhThu.setText(infoText);
 
         }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
+
     private void updateChartSoVe(List<Ve> dsVe) {
+        try{
         chartSoLuongVeBan.getData().clear();
         NumberAxis yAxis = (NumberAxis) chartSoLuongVeBan.getYAxis();
         xAxis.setAutoRanging(true);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
 
-        if(radio_thangNam.isSelected()){
+        if (radio_thangNam.isSelected()) {
             int selectedNam = cboboxNam.getValue();
             int selectedThang = cboboxThang.getValue();
 
@@ -529,13 +544,13 @@ public class TongQuanController {
             Map<String, Integer> veBanTheoNgay = new LinkedHashMap<>();
             YearMonth yearMonth = YearMonth.of(selectedNam, selectedThang);
             int daysInMonth = yearMonth.lengthOfMonth();
-            for(int day = 1; day <= daysInMonth; day++){
+            for (int day = 1; day <= daysInMonth; day++) {
                 LocalDate date = LocalDate.of(selectedNam, selectedThang, day);
                 veBanTheoNgay.put(date.format(formatter), 0); // Set số lượng vé là 0 cho mọi ngày trước tiên
             }
 
             // Cập nhật số lượng vé bán cụ thể trong Map
-            for (Ve ve : dsVe){
+            for (Ve ve : dsVe) {
                 LocalDate ngayLap = ve.getNgayMua().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 String ngay = ngayLap.format(formatter);
                 veBanTheoNgay.put(ngay, veBanTheoNgay.getOrDefault(ngay, 0) + 1); // Tăng số lượng vé bán
@@ -572,7 +587,7 @@ public class TongQuanController {
             List<String> daysWithMinKhac0 = new ArrayList<>();
 
             int daysWithRevenue = 0;
-            int previousTotalDoanhThu = vedao.getAllVeTheoThang(selectedThang - 1, selectedNam).size();
+            int previousTotalDoanhThu = thongKeService.layDanhSachVe(selectedThang - 1, selectedNam).size();
             double revenueGrowth = 0;
 
             // Duyệt qua từng ngày để tính các thông số
@@ -638,13 +653,12 @@ public class TongQuanController {
                     minSoVe, daysWithMinText,
                     minSoVe2, daysWithMinText2,
                     averageDoanhThu,
-                    daysWithRevenue,countDays,
+                    daysWithRevenue, countDays,
                     revenueGrowth
             );
             textThongTinVeBan.setText(infoText);
             yAxis.setUpperBound(maxSoVe + 1);
-        }
-        else if (radio_cuThe.isSelected()){
+        } else if (radio_cuThe.isSelected()) {
             LocalDate startDate = datepick_start.getValue();
             LocalDate endDate = datepick_end.getValue();
 
@@ -757,10 +771,13 @@ public class TongQuanController {
             );
             textThongTinVeBan.setText(infoText);
             yAxis.setUpperBound(maxSoVe + 1);
+        }} catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void updateChartDoanhThuTheoNam(Map<String, Double> dsMap){
+    private void updateChartDoanhThuTheoNam(Map<String, Double> dsMap) {
+        try{
         chartDoanhThuTheoNam.getData().clear();
         xAxis.setAutoRanging(true);
         int selectedNam = cboboxNam.getValue();
@@ -797,11 +814,11 @@ public class TongQuanController {
         // ========== Cập nhật thông tin Doanh Thu =============
         double maxDoanhThu = 0;
         double minDoanhThu = Double.MAX_VALUE;
-        double totalDoanhThu = hddao.getTongDoanhThuTheoNam(selectedNam);
+        double totalDoanhThu = thongKeService.layTongDoanhThuTheoNam(selectedNam);
         List<String> monthWithMaxRevenue = new ArrayList<>();
         List<String> monthWithMinRevenue = new ArrayList<>();
 
-        double previousTotalDoanhThu = hddao.getTongDoanhThuTheoNam(selectedNam - 1);
+        double previousTotalDoanhThu = thongKeService.layTongDoanhThuTheoNam(selectedNam - 1);
         double revenueGrowth = 0; // Tăng trưởng doanh thu
 
         // Duyệt qua từng ngày để tính các thông số
@@ -849,9 +866,13 @@ public class TongQuanController {
                 decimalFormat.format(averageDoanhThu),
                 revenueGrowth
         );
-        textThongTinDoanhThu.setText(infoText);
+        textThongTinDoanhThu.setText(infoText);} catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
-    private void updateChartSoVeTheoNam(Map<String, Integer> dsMap){
+
+    private void updateChartSoVeTheoNam(Map<String, Integer> dsMap) {
+        try{
         chartSoLuongVeBan.getData().clear();
         NumberAxis yAxis = (NumberAxis) chartSoLuongVeBan.getYAxis();
         xAxis.setAutoRanging(true);
@@ -895,7 +916,7 @@ public class TongQuanController {
         List<String> monthsWithMinRevenue = new ArrayList<>();
 
         int daysWithRevenue = 0;
-        int previousTotalDoanhThu = vedao.getAllVeTheoNam(selectedNam - 1).size();
+        int previousTotalDoanhThu = thongKeService.layDanhSachVeTheoNam(selectedNam - 1).size();
         double revenueGrowth = 0;
 
         // Duyệt qua từng tháng để tính các thông số
@@ -944,7 +965,9 @@ public class TongQuanController {
                 revenueGrowth
         );
         textThongTinVeBan.setText(infoText);
-        yAxis.setUpperBound(maxSoVe + 1);
+        yAxis.setUpperBound(maxSoVe + 1);} catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void updateChartKhachHang(Map<LoaiHanhKhach, Integer> dskh) {
@@ -1092,7 +1115,7 @@ public class TongQuanController {
         chartDoanhThuTau.getData().add(series);
     }
 
-    private void updateChartSoChuyenTau(Map<String, Integer> dsMap){
+    private void updateChartSoChuyenTau(Map<String, Integer> dsMap) {
         chartSoChuyenDi.getData().clear();
         NumberAxis yAxis = (NumberAxis) chartSoChuyenDi.getYAxis();
         xAxis.setAutoRanging(true);

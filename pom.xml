@@ -172,5 +172,10 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.2</version> <!-- Khớp với phiên bản bạn đang dùng -->
+        </dependency>
     </dependencies>
 </project>
