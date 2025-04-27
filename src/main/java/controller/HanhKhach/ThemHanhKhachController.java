@@ -189,7 +189,7 @@ public class ThemHanhKhachController {
             int age = Period.between(ngaySinh, today).getYears();
 
             if (age < 18) {
-                showAlert("Cảnh Báo", "Nhân viên chưa đủ 18 tuổi!", Alert.AlertType.WARNING);
+                showAlert("Cảnh Báo", "Hành khách chưa đủ 18 tuổi!", Alert.AlertType.WARNING);
                 return null;
             }
         }

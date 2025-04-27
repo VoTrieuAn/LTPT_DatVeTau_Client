@@ -82,7 +82,7 @@ public class LoginController {
                         showAlert("Cảnh báo", "Vui lòng nhập đầy đủ tài khoản mật khẩu", Alert.AlertType.WARNING);
                     } else {
                         Map<String, Object> filter = new HashMap<>();
-//                        filter.put("tenTaiKhoan", tenDangNhap);
+                        filter.put("tenTaiKhoan", tenDangNhap);
 //                        List<TaiKhoan> taiKhoans = TrainTicketApplication.getInstance()
 //                                .getDatabaseContext()
 //                                .newEntityDAO(TaiKhoanDAO.class)

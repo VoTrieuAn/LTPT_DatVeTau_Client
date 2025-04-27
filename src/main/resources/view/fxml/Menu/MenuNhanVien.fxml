@@ -114,24 +114,6 @@
                                     </VBox>
                                  </graphic>
                               </JFXButton>
-                              <JFXButton fx:id="ketCaButton" onAction="#handleKetCaAction" prefWidth="120.0" styleClass="button-custom" stylesheets="@../../css/QuanLi_GUI.css" text="">
-                                 <graphic>
-                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
-                                       <children>
-                                          <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
-                                             <image>
-                                                <Image url="@../../images/exit.png" />
-                                             </image>
-                                          </ImageView>
-                                          <Label text="Kết Ca">
-                                             <font>
-                                                <Font name="System Bold" size="16.0" />
-                                             </font>
-                                          </Label>
-                                       </children>
-                                    </VBox>
-                                 </graphic>
-                              </JFXButton>
                            </children>
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
