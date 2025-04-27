@@ -1,23 +1,11 @@
-package controller;
+package controller.DoiTra;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import common.LoaiDon;
 import common.LoaiVe;
-import config.TrainTicketApplication;
-import dao.LichTrinhDAO;
-import dao.ToaTauDAO;
-import dao.VeDAO;
-import dao.impl.DonDoiTraDAOImpl;
-import dao.impl.LichTrinhDAOImpl;
-import dao.impl.VeDAOImpl;
 import entity.*;
-import jakarta.persistence.*;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -25,33 +13,27 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.media.AudioClip;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import org.json.JSONException;
-import org.json.JSONObject;
+import rmi.RMIServiceLocator;
 import util.ExportExcelUtil;
-import util.HoadonCodeGeneratorUtil;
-import util.VeCodeGeneratorUtil;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 
 public class DoiTraController {
     public TextField phanTramTra_TraVe;
@@ -59,13 +41,9 @@ public class DoiTraController {
     public Button traVeBtn;
     public ScrollPane danhSachToa;
     public Button cancel;
-    public Label tienPhi;
     public Label TongTien;
-    public TextField giaVe_DoiVe;
-    public TextField tienBu;
     public TextField tienHoanTra;
     public TextField tienPhiDoi;
-    public Button tinhTien;
     public TextField giaVeCu_DoiVe;
     public Label TongTien1;
     public TextField giaVeMoi_DoiVe;
@@ -87,8 +65,6 @@ public class DoiTraController {
     public TableColumn<DonDoiTra, Double> tienPhiDon;
     public TableColumn<DonDoiTra, Double> tienHoanTraDon;
     //--------------------
-    private final VeDAOImpl veDAO;
-    private final DonDoiTraDAOImpl donDoiTraDAO;
 
     public Tab tab1;
     public Label cccd;
@@ -97,14 +73,11 @@ public class DoiTraController {
     public Label cccd1;
     @FXML
     public ScrollPane scrollPane;
-    public AnchorPane anchorPaneThanhToanRight;
     public AnchorPane anchorPaneDoiVeRight;
     public VBox vboxDoiVeLeft;
     public VBox vboxScrollPane1;
     public HBox hbox;
     public Button doiVe_Button;
-    public ImageView qr_Icon;
-    public Button quayLai_Button;
     @FXML
     public HBox hboxToaTaus;
     public TableView tableViewLoadTau;
@@ -120,10 +93,12 @@ public class DoiTraController {
     public TextField giaVe_TraVe;
     public Button timDonTheoNgay;
     public Tab tab3;
-    public Button qr_Button1;
     public TabPane tabPane;
-    public ImageView qr_Icon1;
     public Button clear;
+    @FXML
+    public ImageView urlImage;
+    public VBox hbox_CCCD;
+    public HBox hbox_GiaVe;
     @FXML
     private GridPane gridPane;
     public VBox vboxScrollPane;
@@ -131,8 +106,6 @@ public class DoiTraController {
     public TextField textField_CCCD_TraVe;
     public VBox vboxTraVeLeft;
     public AnchorPane panelInfoTicket;
-    @FXML
-    private Button qr_Button;
     private Image coachEmptyImage;
     private Image coachFullImage;
     private Image coachChoosingImage;
@@ -156,14 +129,6 @@ public class DoiTraController {
     private ImageView coachImage9;
     @FXML
     private ImageView coachImage10;
-
-    @FXML
-    private ImageView cameraView;
-    private HttpServer server;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private boolean isServerStarted = false;
-    private AudioClip successSound;
-    private MediaPlayer successSoundPlayer;
     @FXML
     private ToggleButton toggleCoach1;
     @FXML
@@ -206,8 +171,6 @@ public class DoiTraController {
     private TableColumn<Ve, String> columnLoaiVe;
 
     @FXML
-    private TableColumn<Ve, String> columnTrangThai;
-    @FXML
     private TableColumn<LichTrinh, String> columnTau;
     @FXML
     private TableColumn<LichTrinh, String> columnGioDi;
@@ -225,138 +188,56 @@ public class DoiTraController {
     private TableColumn<Ve, String> colGaDen;
     @FXML
     private TableColumn<Ve, String> colNgayMua;
-    @PersistenceContext
-    private EntityManager entityManager;
     private List<Ve> dsVe;
-    private final ObservableList<Ve> listVeTab1 = FXCollections.observableArrayList();
-    private final ObservableList<Ve> listVeTab2 = FXCollections.observableArrayList();
-    private final LichTrinhDAO lichTrinhDAO =  new LichTrinhDAOImpl();
-    private final EntityManagerFactory entityManagerFactory;
     private void setHgrow(ToggleButton button) {
         HBox.setHgrow(button, Priority.ALWAYS);
     }
-    private void handleToggle(ToggleButton toggleButton, ImageView imageView) {
-        if (toggleButton.isSelected()) {
-            imageView.setImage(coachChoosingImage);
-        } else {
-            imageView.setImage(coachEmptyImage);
-        }
-        if (toggleButton.isSelected()) {
-            for (ToggleButton button : new ToggleButton[]{toggleCoach1, toggleCoach2, toggleCoach3,
-                    toggleCoach4, toggleCoach5, toggleCoach6,
-                    toggleCoach7, toggleCoach8, toggleCoach9,
-                    toggleCoach10}) {
-                if (button != toggleButton) {
-                    button.setSelected(false);
-                }
-            }
-        }
-    }
-    private void startServer() throws IOException {
-        if (server == null) {
-            server = HttpServer.create(new InetSocketAddress(8080), 0);
-            server.createContext("/receive-qr", new QRHandler());
-            server.setExecutor(executorService);
-            server.start();
-            isServerStarted = true;
-            System.out.println("Server started on port 8080");
-        }
-    }
 
-    @FXML
-    public void handleQrButtonAction() {
-        if (!isServerStarted) {
-            try {
-                startServer();
-            } catch (IOException e) {
-                System.err.println("Lỗi khi khởi động server: " + e.getMessage());
-            }
-        }
-    }
-
-    private class QRHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            if ("POST".equals(exchange.getRequestMethod())) {
-                String qrCode = new String(exchange.getRequestBody().readAllBytes());
-                System.out.println("Mã QR nhận được: " + qrCode);
-                try {
-                    JSONObject jsonObject = new JSONObject(qrCode);
-                    if (jsonObject.has("qrcode")) {
-                        String qrValue = jsonObject.getString("qrcode");
-                        Ve ve = veDAO.timKiemId(qrValue);
-                        successSoundPlayer.setVolume(1.0);
-                        successSoundPlayer.play();
-                        Platform.runLater(() -> {
-                            successSoundPlayer.stop();
-                            successSoundPlayer.play();
-                            if (ve != null) {
-                                if ("tab1".equals(currentTab)) {
-                                    listVeTab1.clear();
-                                    listVeTab1.add(ve);
-                                    tableViewVe.setItems(FXCollections.observableArrayList(listVeTab1));
-                                } else if ("tab2".equals(currentTab)) {
-                                    listVeTab2.clear();
-                                    listVeTab2.add(ve);
-                                    tableViewTraVe.setItems(FXCollections.observableArrayList(listVeTab2));
-                                }
-                            } else {
-                                System.out.println("Không tìm thấy vé với mã QR: " + qrValue);
-                                Alert alert = new Alert(Alert.AlertType.WARNING);
-                                alert.setTitle("Không tìm thấy vé");
-                                alert.setHeaderText(null);
-                                alert.setContentText("Không tìm thấy vé với mã QR: " + qrValue);
-                                alert.showAndWait();
-                            }
-                        });
-                    } else {
-                        System.out.println("Khóa 'qrcode' không tồn tại trong JSON.");
-                    }
-                } catch (JSONException e) {
-                    System.err.println("Lỗi phân tích cú pháp JSON: " + e.getMessage());
-                }
-                String response = "QR Code received";
-                exchange.sendResponseHeaders(200, response.getBytes().length);
-                OutputStream os = exchange.getResponseBody();
-                os.write(response.getBytes());
-                os.close();
-            }
-        }
-    }
     private String currentTab = "tab1";
-    @Override
-    protected void finalize() throws Throwable {
-        if (server != null) {
-            server.stop(0);
-        }
-        executorService.shutdown();
-        super.finalize();
-    }
-    public DoiTraController(DonDoiTraDAOImpl donDoiTraDAO) {
-        this.donDoiTraDAO = donDoiTraDAO;
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        veDAO = new VeDAOImpl();
-    }
-    public DoiTraController() {
-        this.donDoiTraDAO = new DonDoiTraDAOImpl();
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        veDAO = new VeDAOImpl();
-    }
+
+
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final ObservableList<DonDoiTra> danhSachDon = FXCollections.observableArrayList();
+    public void update30_4(){
+        tab1.setStyle("-fx-background-color: #fa8484;");
+        tab2.setStyle("-fx-background-color: #fa8484;");
+        tab3.setStyle("-fx-background-color: #fa8484;");
+        hbox_CCCD.setStyle("-fx-background-color: #fa8484;");
+        hbox_GiaVe.setStyle("-fx-background-color: #fa8484;");
+        tableViewLoadTau.setStyle("-fx-background-color: #fa8484;");
+        tableViewVe.setStyle("-fx-background-color: #fa8484;");
+        tableXemLichSu.setStyle("-fx-background-color: #fa8484;");
+        hboxToaTaus.setStyle("-fx-background-color: #fa8484;");
+        scrollPane.setStyle("-fx-background-color: #fa8484;");
+        columnMaVe.setStyle("-fx-background-color: #fafa84;");
+        columnTenNguoiMua.setStyle("-fx-background-color: #fafa84;");
+        columnNgayMua.setStyle("-fx-background-color: #fafa84;");
+        columnLoaiVe.setStyle("-fx-background-color: #fafa84;");
+        textField_CCCD_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        giaVeCu_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        giaVeMoi_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        tienBuThem.setStyle("-fx-background-color: #fafa84;");
+        tienPhiDoi.setStyle("-fx-background-color: #fafa84;");
+        tienHoanTra.setStyle("-fx-background-color: #fafa84;");
+        columnTau.setStyle("-fx-background-color: #fafa84;");
+        columnGioDi.setStyle("-fx-background-color: #fafa84;");
+        columnGioDen.setStyle("-fx-background-color: #fafa84;");
+        columnNgayDi.setStyle("-fx-background-color: #fafa84;");
+        columnNgayDen.setStyle("-fx-background-color: #fafa84;");
+
+    }
     @FXML
     public void initialize() {
         refreshUI();
+        update30_4();
+        String imageUrl = "https://res.cloudinary.com/dbv9csgia/image/upload/v1745734131/download_c2yrd0.png";
+        Image image = new Image(imageUrl);
+        urlImage.setImage(image);
         coachEmptyImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_empty.png")));
         coachFullImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_full.png")));
         coachChoosingImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")));
-        String soundPath = Objects.requireNonNull(getClass().getResource("/view/media/notify-short.mp3")).toString();
-        Media successSound = new Media(soundPath);
-        successSoundPlayer = new MediaPlayer(successSound);
-        try {
-            startServer();
-        } catch (IOException ignored) {}
         AnchorPane.setLeftAnchor(panelInfoTicket, vboxTraVeLeft.getWidth());
+        // set cột table
         maDon.setCellValueFactory(new PropertyValueFactory<>("maDonDoiTra"));
         loaiDon.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getLoaiDon().getName())
@@ -368,66 +249,14 @@ public class DoiTraController {
         tienBuDon.setCellValueFactory(new PropertyValueFactory<>("tienBu"));
         tienPhiDon.setCellValueFactory(new PropertyValueFactory<>("tienPhi"));
         tienHoanTraDon.setCellValueFactory(new PropertyValueFactory<>("tienHoanTra"));
+
         // Gán dữ liệu cho bảng
         configureDatePicker(ngayLapDon1_DatePicker);
         configureDatePicker(ngayLapDon2_DatePicker);
         ngayLapDon2_DatePicker.setDisable(true);
-        ngayLapDon1_DatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                ngayLapDon2_DatePicker.setDisable(false);
-                ngayLapDon2_DatePicker.setValue(newValue);
-                ngayLapDon2_DatePicker.setDayCellFactory(picker -> new DateCell() {
-                    @Override
-                    public void updateItem(LocalDate date, boolean empty) {
-                        super.updateItem(date, empty);
-                        setDisable(empty || date.isBefore(newValue));
-                    }
-                });
-            }
-        });
-        ngayLapDon2_DatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && newValue.isBefore(ngayLapDon1_DatePicker.getValue())) {
-                // Đảm bảo người dùng không chọn ngày nhỏ hơn ngày ở ngayLapDon1_DatePicker
-                ngayLapDon2_DatePicker.setValue(ngayLapDon1_DatePicker.getValue());
-            }
-        });
-        timDonTheoNgay.setOnAction(event -> {
-            LocalDate ngayBatDau = ngayLapDon1_DatePicker.getValue();
-            LocalDate ngayKetThuc = ngayLapDon2_DatePicker.getValue();
-            if (ngayBatDau == null || ngayKetThuc == null) {
-                showAlert(Alert.AlertType.INFORMATION, "Lỗi", "Chưa chọn ngày!");
-                return;
-            }
-            if (ngayKetThuc.isBefore(ngayBatDau)) {
-                showAlert(Alert.AlertType.INFORMATION, "Lỗi", "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
-                return;
-            }
-            List<DonDoiTra> danhSachDon = donDoiTraDAO.timDonDoiTraTrongKhoangNgay(ngayBatDau, ngayKetThuc);
-            if (danhSachDon.isEmpty()) {
-                showAlert(Alert.AlertType.INFORMATION, "Kết quả", "Không tìm thấy đơn đổi trả vé trong khoảng ngày này!");
-            } else {
-                ObservableList<DonDoiTra> donDoiTraObservableList = FXCollections.observableArrayList(danhSachDon);
-                tableXemLichSu.setItems(donDoiTraObservableList);
-            }
-        });
-        timKiemTextField.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER) {
-                String maDDT = timKiemTextField.getText();
-                DonDoiTra donDoiTra = donDoiTraDAO.timKiemId(maDDT);
 
-                if (donDoiTra != null) {
-                    ObservableList<DonDoiTra> observableList = FXCollections.observableArrayList(donDoiTra);
-                    tableXemLichSu.setItems(observableList);
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Không tìm thấy");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Không tìm thấy đơn với mã: " + maDDT);
-                    alert.showAndWait();
-                }
-            }
-        });
         vboxTraVeLeft.widthProperty().addListener((observable, oldValue, newValue) -> AnchorPane.setLeftAnchor(panelInfoTicket, newValue.doubleValue()));
+
         Label customPlaceholder = new Label("Không Tìm Thấy");
         tableViewVe.setPlaceholder(customPlaceholder);
         TableColumn<Ve, String> gaDiColumn = new TableColumn<>("Ga Đi");
@@ -446,12 +275,6 @@ public class DoiTraController {
             LoaiVe loaiVe = cellData.getValue().getLoaiVe();
             return new SimpleStringProperty(loaiVe != null ? loaiVe.getName() : "");
         });
-        textField_CCCD_DoiVe.setOnKeyReleased(event -> {
-            if (event.getCode() == KeyCode.ENTER) {
-                String cccd = textField_CCCD_DoiVe.getText().trim();
-                loadVe(cccd);
-            }
-        });
         columnTau.setCellValueFactory(cellData -> {
             Tau tau = cellData.getValue().getTauByMaTau();
             return new SimpleStringProperty(tau != null ? tau.getTenTau() : "");
@@ -469,12 +292,6 @@ public class DoiTraController {
                 loadToaTaus(maTau,selectedLichTrinh);
             }
         });
-        textField_CCCD_TraVe.setOnKeyReleased(event -> {
-            if (event.getCode() == KeyCode.ENTER) {
-                String cccd = textField_CCCD_TraVe.getText().trim();
-                loadVeTraVe(cccd);
-            }
-        });
         colTau.setCellValueFactory(cellData -> {
             Ve ve = cellData.getValue();
             if (ve.getLichtrinhByMaLt() != null
@@ -490,49 +307,48 @@ public class DoiTraController {
                 new SimpleStringProperty(cellData.getValue().getLichtrinhByMaLt().getGaKetThuc())
         );
         colNgayMua.setCellValueFactory(new PropertyValueFactory<>("ngayMua"));
+
+
+        //Done =========================================================
         tableViewTraVe.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 updateFieldsTra(newValue);
-                Double tien = tinhTienHoanTra(newValue);
+                Map<String, Double> result = null;
+                try {
+                    result = RMIServiceLocator.getVeService().tinhTienHoanTra(newValue);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+                if (result != null) {
+                    double tienHoanTra = result.get("tienHoanTra");
+                    double phanTram = result.get("phanTram");
+
+                    tienHoanTra_TraVe.setText(String.valueOf((int) tienHoanTra));
+                    phanTramTra_TraVe.setText(String.valueOf((int) (phanTram * 100)));
+                } else {
+                    showAlert(Alert.AlertType.INFORMATION, "Thất bại", "Không thể tính tiền hoàn trả!");
+                }
             }
         });
-        traVeBtn.setOnAction(event -> {
-            Ve ve = tableViewTraVe.getSelectionModel().getSelectedItem();
-            Double tienPhi = 0.0;
-            Double tienHoanTra = Double.parseDouble(tienHoanTra_TraVe.getText().trim());
-            Double tienBu= 0.0;
-            taoDonDoiTra(ve,tienPhi,tienHoanTra,tienBu);
-            String maVe = maVe_TraVe.getText().trim();
-            if (maVe.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa chọn vé");
-                return;
-            }
-            //Có Vé
-            boolean success = traVe(ve);
-            if (success) {
-                // Vé đang 1
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Trả vé thành công!");
-                refreshUI();
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không tìm thấy vé hoặc vé không thể trả!");
-            }
-        });
-        doiVe_Button.setOnAction(event -> onDoiVeButtonClicked());
         tab1.setOnSelectionChanged(event -> refreshUI());
         tab2.setOnSelectionChanged(event -> refreshUI());
         tab3.setOnSelectionChanged(event -> refreshUI());
+
         tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> currentTab = newTab.getId());
-        clear.setOnAction(event -> {
-            refreshUI();
-        });
-        btnXuatExcel.setOnAction(event -> {
-            try {
-                xuatExcel();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+        LocalDate today = LocalDate.now();
+        ngayLapDon1_DatePicker.setValue(today);
+        ngayLapDon2_DatePicker.setValue(today);
+        ngayLapDon2_DatePicker.setDisable(false);
+        ngayLapDon2_DatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isBefore(today));
             }
         });
     }
+
     private void configureDatePicker(DatePicker datePicker) {
         datePicker.setConverter(new StringConverter<>() {
             @Override
@@ -551,15 +367,197 @@ public class DoiTraController {
             }
         });
     }
+    @FXML
+    private void setNgayBatDauEQNgayKetThuc() {
+        ngayLapDon1_DatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                ngayLapDon2_DatePicker.setDisable(false);
+                ngayLapDon2_DatePicker.setValue(newValue);
+                ngayLapDon2_DatePicker.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(empty || date.isBefore(newValue));
+                    }
+                });
+            }
+        });
+    }
+    @FXML
+    private void setNgayKetThucGTENgayBatDau() {
+        ngayLapDon2_DatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            LocalDate ngayBatDau = ngayLapDon1_DatePicker.getValue();
+            if (newValue != null && ngayBatDau != null && newValue.isBefore(ngayBatDau)) {
+                ngayLapDon2_DatePicker.setValue(ngayBatDau);
+            }
+        });
+    }
+    @FXML
+    private void exportExcel() {
+        btnXuatExcel.setOnAction(event -> {
+            try {
+                xuatExcel();
+            } catch (IOException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Xuất Excel thất bại!\n" + e.getMessage());
+            }
+        });
+    }
+    @FXML
+    private void ClearForm() {
+        clear.setOnAction(event -> refreshUI());
+    }
+
+    //Done ===========================
+    @FXML
+    private void traVe() {
+        traVeBtn.setOnAction(event -> {
+            Ve ve = tableViewTraVe.getSelectionModel().getSelectedItem();
+            String maVe = maVe_TraVe.getText().trim();
+
+            if (ve == null || maVe.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa chọn vé");
+                return;
+            }
+
+            try {
+                Double tienHoanTra = Double.parseDouble(tienHoanTra_TraVe.getText().trim());
+                Double tienPhi = 0.0;
+                Double tienBu = 0.0;
+
+                RMIServiceLocator.getDonDoiTraService().taoDonDoiTra(ve,tienPhi,tienHoanTra,tienBu);
+                boolean success = RMIServiceLocator.getVeService().traVe(ve);
+                if (success) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Trả vé thành công!");
+                    refreshUI();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không tìm thấy vé hoặc vé không thể trả!");
+                }
+
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Số tiền hoàn trả không hợp lệ!");
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+    @FXML
+    private void doiVe(){
+        doiVe_Button.setOnAction(event -> onDoiVeButtonClicked());
+    }
+    private boolean isNgayHopLe(LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        if (ngayBatDau == null || ngayKetThuc == null) {
+            showAlert(Alert.AlertType.INFORMATION, "Lỗi", "Chưa chọn ngày!");
+            return false;
+        }
+        if (ngayKetThuc.isBefore(ngayBatDau)) {
+            showAlert(Alert.AlertType.INFORMATION, "Lỗi", "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+            return false;
+        }
+        return true;
+    }
+
+    //Done ================================================
+    @FXML
+    private void timDonDoiTra(ActionEvent event){
+        LocalDate ngayBatDau = ngayLapDon1_DatePicker.getValue();
+        LocalDate ngayKetThuc = ngayLapDon2_DatePicker.getValue();
+
+        if (!isNgayHopLe(ngayBatDau, ngayKetThuc)) return;
+        java.sql.Date start = java.sql.Date.valueOf(ngayBatDau);
+        java.sql.Date end = java.sql.Date.valueOf(ngayKetThuc);
+        List<DonDoiTra> danhSachDon = null;
+        try {
+            danhSachDon = RMIServiceLocator.getDonDoiTraService().timDonDoiTraTrongKhoangNgay(start, end);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (danhSachDon.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION, "Kết quả", "Không tìm thấy đơn đổi trả vé trong khoảng ngày này!");
+        } else {
+            tableXemLichSu.setItems(FXCollections.observableArrayList(danhSachDon));
+        }
+    }
+    @FXML
+    private void timDonDoiTraTheoMa(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            String ma = timKiemTextField.getText().trim();
+
+            if (ma.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Lỗi", "Vui lòng nhập mã đơn đổi trả.");
+                return;
+            }
+
+            try {
+                DonDoiTra don = RMIServiceLocator.getDonDoiTraService().timKiemId(ma);
+                if (don == null) {
+                    showAlert(Alert.AlertType.INFORMATION, "Kết quả", "Không tìm thấy đơn đổi trả với mã đã nhập.");
+                } else {
+                    tableXemLichSu.setItems(FXCollections.observableArrayList(don));
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tìm đơn đổi trả.");
+            }
+        }
+    }
+
+    @FXML
+    private void inputDoiVe(KeyEvent event){
+            if (event.getCode() == KeyCode.ENTER) {
+                String cccd = textField_CCCD_DoiVe.getText().trim();
+                loadVe(cccd);
+            }
+    }
+    @FXML
+    private void inputTraVe(KeyEvent event){
+            if (event.getCode() == KeyCode.ENTER) {
+                String cccd = textField_CCCD_TraVe.getText().trim();
+                loadVeTraVe(cccd);
+            }
+    }
+
+    //Done ====================================================
+    @FXML
+    private void enterDeTimKiem(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            String maVe = timKiemTextField.getText().trim();
+            System.out.println(maVe);
+            if (maVe.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng nhập cccd/passport!");
+                return;
+            }
+
+            DonDoiTra donDoiTra = null;
+            try {
+                donDoiTra = RMIServiceLocator.getDonDoiTraService().timKiemId(maVe);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (donDoiTra != null) {
+                ObservableList<DonDoiTra> list = FXCollections.observableArrayList(donDoiTra);
+                tableXemLichSu.setItems(list);
+            } else {
+                showAlert(Alert.AlertType.INFORMATION, "Không tìm thấy", "Không tìm thấy đơn với mã: " + maVe);
+            }
+        }
+    }
+
+    // Done =======================================================
     private void loadToaTaus(String maTau, LichTrinh lichTrinh) {
-        toggleGroup = new ToggleGroup();
-        List<ToaTau> toaTaus = TrainTicketApplication.getInstance()
-                .getDatabaseContext()
-                .newEntityDAO(ToaTauDAO.class)
-                .timToaTauTheoMaTau(maTau);
+        List<ToaTau> toaTaus = null;
+        try {
+            toaTaus = RMIServiceLocator.getToaTauService().getToaTauByMaTau(maTau);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         if (toaTaus.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, maTau, "Không tìm đươợc");
             return;
         }
+
+        toggleGroup = new ToggleGroup();
         hboxToaTaus.getChildren().clear();
         for (ToaTau toa : toaTaus) {
             VBox vboxToa = new VBox();
@@ -579,7 +577,11 @@ public class DoiTraController {
                     toggleButton.setGraphic(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")))));
                 }
                 selectedToa = (ToaTau) toggleButton.getUserData();
-                refreshGhe(selectedToa, lichTrinh);
+                try {
+                    refreshGhe(selectedToa, lichTrinh);
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
             });
             vboxToa.getChildren().add(toggleButton);
             Label label = new Label("Toa " + toa.getSoToa());
@@ -588,6 +590,7 @@ public class DoiTraController {
             hboxToaTaus.getChildren().add(vboxToa);
         }
     }
+
     private void loadGhevaTinhTien(ToaTau toaTau, LichTrinh lichTrinh, List<Ghe> danhSachGhe, List<Ghe> gheDaDat) {
         gridPane.getChildren().clear();
         toggleGroupGhe = new ToggleGroup();
@@ -627,13 +630,23 @@ public class DoiTraController {
                         }
                         updateSeatGraphic(seatButton, true);
                         Ve ve = tableViewVe.getSelectionModel().getSelectedItem();
-                        HoaDon hoaDon = getHoaDonTuVe(ve);
+                        //======================================
+                        HoaDon hoaDon = ve.getHoadonByMaHd();
+                        //====================================== Note
                         selectedGhe = (Ghe) seatButton.getUserData();
                         giaVeCu_DoiVe.setText(String.valueOf((int)ve.getGiaVe()));
                         giaVeMoi_DoiVe.setText(String.valueOf((int)selectedGhe.getGiaGhe()));
-                        double tienHT = selectedGhe.getGiaGhe() < ve.getGiaVe() ? ve.getGiaVe() - selectedGhe.getGiaGhe() : 0;
-                        double tienBu = selectedGhe.getGiaGhe() > ve.getGiaVe() ? selectedGhe.getGiaGhe() - ve.getGiaVe() : 0;
-                        double tienPhi = 20000;
+                        // Done ==================================
+                        double[] tien = null;
+                        try {
+                            tien = RMIServiceLocator.getVeService().tinhTienHoanTraVaChenhLech(selectedGhe, ve);
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        double tienHT = tien[0];
+                        double tienBu = tien[1];
+                        double tienPhi = tien[2];
+
                         tienBuThem.setText(String.valueOf((int)tienBu));
                         tienPhiDoi.setText(String.valueOf((int)tienPhi));
                         tienHoanTra.setText(String.valueOf((int)tienHT));
@@ -673,14 +686,14 @@ public class DoiTraController {
         }
         return false;
     }
-    public void refreshGhe(ToaTau toaTau, LichTrinh lichTrinh) {
-        List<Ghe> gheDaDat = veDAO.getGheDaDatTrongToa(toaTau, lichTrinh);
-        List<Ghe> danhSachGhe = getDanhSachGhe(toaTau);
+
+    // NOTE======================
+    public void refreshGhe(ToaTau toaTau, LichTrinh lichTrinh) throws RemoteException {
+        List<Ghe> gheDaDat = RMIServiceLocator.getVeService().getGheDaDat(toaTau, lichTrinh);
+        List<Ghe> danhSachGhe = toaTau.getGheList();
         loadGhevaTinhTien(toaTau, lichTrinh, danhSachGhe, gheDaDat);
     }
-    private List<Ghe> getDanhSachGhe(ToaTau toaTau) {
-        return toaTau.getGheList();
-    }
+
     @FXML
     public void onTableViewVeClickedDoiVe(MouseEvent event) {
         if (tableViewVe.getSelectionModel().getSelectedItem() != null) {
@@ -716,75 +729,79 @@ public class DoiTraController {
         });
     }
     private final ObservableList<Ve> listVe = FXCollections.observableArrayList();
+
+    //Done =============================
     public void loadVe(String cccd) {
         System.out.println("Danh sách vé: " + dsVe);
-        List<Ve> dsVe = TrainTicketApplication.getInstance()
-                .getDatabaseContext()
-                .newEntityDAO(VeDAO.class)
-                .timVeTheoCCCD(cccd);
+        List<Ve> dsVe = null;
+        try {
+            dsVe = RMIServiceLocator.getVeService().getVeById(cccd);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         if(dsVe == null){
             showAlert(Alert.AlertType.INFORMATION, "Thất bại", "Không tìm thấy vé!");
         }
         listVe.clear();
+        assert dsVe != null;
         listVe.addAll(dsVe);
         System.out.println("Danh sách vé: " + dsVe);
         tableViewVe.setItems(listVe);
     }
+
+    //Done==================================================================
     public void loadChuyenTauCungGa(String gaDi, String gaDen) {
-        List<LichTrinh> chuyenTauList = lichTrinhDAO.getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
+        List<LichTrinh> chuyenTauList = null;
+        try {
+            chuyenTauList = RMIServiceLocator.getLichTrinhService().getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         ObservableList<LichTrinh> chuyensTauObservableList = FXCollections.observableArrayList(chuyenTauList);
         tableViewLoadTau.setItems(chuyensTauObservableList);
     }
+
+    //Done ===============================================================
     public Ve doiVe(Ve veCu, Ghe gheMoi, LichTrinh lichTrinhMoi, HoaDon hoaDonMoi, ToaTau toaTauMoi) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        Ve veMoi = new Ve();
+        Ve veMoi = null;
         try {
-            entityManager.getTransaction().begin();
-            veCu.setTrangThaiVe(false);
-            entityManager.merge(veCu);
-            veMoi.setMaVe(taoMaVe(toaTauMoi, lichTrinhMoi, gheMoi));
-            veMoi.setGiaVe(gheMoi.getGiaGhe());
-            System.out.println(veMoi.getGiaVe());
-            veMoi.setThueSuatGtgt(veCu.getThueSuatGtgt());
-            veMoi.setNgayMua(veCu.getNgayMua());
-            veMoi.setLoaiVe(veCu.getLoaiVe());
-            veMoi.setHoTen(veCu.getHoTen());
-            veMoi.setCccd(veCu.getCccd());
-            veMoi.setNgaySinhTreEm(veCu.getNgaySinhTreEm());
-            veMoi.setLoaiKh(veCu.getLoaiKh());
-            veMoi.setTrangThaiVe(true);
-            veMoi.setNgaySuaDoi(new Timestamp(System.currentTimeMillis()));
-            veMoi.setGheByMaGhe(gheMoi);
-            veMoi.setLichtrinhByMaLt(lichTrinhMoi);
-            veMoi.setHoadonByMaHd(hoaDonMoi);
-            entityManager.persist(veMoi);
-            entityManager.getTransaction().commit();
+            veMoi = RMIServiceLocator.getVeService().updateVe(veCu, toaTauMoi, lichTrinhMoi, gheMoi, hoaDonMoi);
         } catch (Exception e) {
-            if (entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
             e.printStackTrace();
-        } finally {
-            entityManager.close();
         }
         return veMoi;
     }
     private ToaTau selectedToa;
     private Ghe selectedGhe;
+
+    //Done =================================
     @FXML
     private void onDoiVeButtonClicked() {
         if (tableViewVe.getSelectionModel().getSelectedItem() != null) {
             Ve ve = tableViewVe.getSelectionModel().getSelectedItem();
             LichTrinh lichTrinh = (LichTrinh) tableViewLoadTau.getSelectionModel().getSelectedItem();
-            HoaDon hoaDon = getHoaDonTuVe(ve);
+            HoaDon hoaDon = ve.getHoadonByMaHd();
             System.out.println("Ok");
             if (lichTrinh != null && selectedGhe != null && selectedToa != null) {
                 Ve veMoi = doiVe(ve, selectedGhe, lichTrinh, hoaDon, selectedToa);
-                luuDoiVe(veMoi);
+                if (veMoi != null) {
+                    try {
+                        RMIServiceLocator.getVeService().luuDoiVe(veMoi);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException("Lỗi khi lưu vé mới sau khi đổi vé.", e);
+                    }
+                } else {
+                    System.out.println("Đổi vé thất bại, không có vé mới để lưu.");
+                }
                 double tienHT = veMoi.getGiaVe() < ve.getGiaVe() ? ve.getGiaVe() - veMoi.getGiaVe() : 0;
                 double tienBu = veMoi.getGiaVe() > ve.getGiaVe() ? veMoi.getGiaVe() - ve.getGiaVe() : 0;
                 double tienPhi = 20000;
-                DonDoiTra donDoiTra = taoDonDoiTra(veMoi, tienPhi,tienHT,tienBu);
+                try {
+                    DonDoiTra donDoiTra = RMIServiceLocator.getDonDoiTraService().taoDonDoiTra(ve,tienPhi,tienHT,tienBu);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
                 showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đổi vé thành công!");
                 refreshUI();
             } else {
@@ -794,43 +811,24 @@ public class DoiTraController {
             showAlert(Alert.AlertType.INFORMATION, "Thất bại", "Chưa chọn vé!");
         }
     }
-    private void luuDoiVe(Ve veMoi) {
-        try {
-            EntityManager em = entityManagerFactory.createEntityManager();
-            em.getTransaction().begin();
-            em.persist(veMoi);
-            em.getTransaction().commit();
-            System.out.println("Vé mới đã được lưu.");
-        } catch (Exception e) {
-            System.err.println("Lỗi khi lưu vé mới: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    public HoaDon getHoaDonTuVe(Ve ve) {
-        return ve.getHoadonByMaHd();
-    }
-    // Refund
+    //DOne ========================================
     public void loadVeTraVe(String cccd) {
-        List<Ve> dsVe = TrainTicketApplication.getInstance()
-                .getDatabaseContext()
-                .newEntityDAO(VeDAO.class)
-                .timVeTheoCCCD(cccd);
+        List<Ve> dsVe = null;
+        try {
+            dsVe = RMIServiceLocator.getVeService().getVeById(cccd);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println(dsVe);
         if(dsVe == null){
             showAlert(Alert.AlertType.INFORMATION, "Thất bại", "Không tìm thấy vé!");
         }
         listVe.clear();
+        assert dsVe != null;
         listVe.addAll(dsVe);
         tableViewTraVe.setItems(listVe);
     }
-    public boolean traVe(Ve ve) {
-        if (ve == null) {
-            return false;
-        }
-        ve.setTrangThaiVe(false);
-        veDAO.capNhatVe(ve);
-        return true;
-    }
+
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -840,7 +838,8 @@ public class DoiTraController {
     }
     public void refreshUI() {
         textField_CCCD_TraVe.clear();
-        maVe_TraVe.clear();
+        if (maVe_TraVe != null)
+            maVe_TraVe.clear();
         tenNguoiMua_TraVe.clear();
         tenTau_TraVe.clear();
         gaDi_TraVe.clear();
@@ -879,91 +878,14 @@ public class DoiTraController {
         soGhe_TraVe.setText(selectedVe.getGheByMaGhe().getMaGhe());
         giaVe_TraVe.setText(String.valueOf((int) selectedVe.getGiaVe()));
     }
-    public Double tinhTienHoanTra(Ve ve) {
-        LocalDateTime now = LocalDateTime.now();
-        java.sql.Date ngayKhoiHanh = ve.getLichtrinhByMaLt().getNgayKhoiHanh();
-        Time gioDi = ve.getLichtrinhByMaLt().getGioDi();
-        LocalDateTime ngayGioKhoiHanh = convertToLocalDateTime(ngayKhoiHanh, gioDi);
-        long hoursToDeparture = ChronoUnit.HOURS.between(now, ngayGioKhoiHanh);
-        Double giaVe = ve.getGiaVe();
-        Double tienHoanTra = 0.0;
-        Double phanTram = 0.0;
-        if (hoursToDeparture >= 48) {
-            // Trả vé trước từ 48 giờ trở lên
-            // 10% giá vé
-            phanTram = 0.1;
-            tienHoanTra = giaVe * phanTram;
-        } else if (hoursToDeparture >= 4) {
-            // Trả vé trước từ 4 giờ đến dưới 48 giờ
-            // 20% giá vé
-            phanTram = 0.2;
-            tienHoanTra = giaVe * phanTram;
-        }
-        phanTramTra_TraVe.setText(String.valueOf((int) (phanTram * 100)));
-        tienHoanTra_TraVe.setText(String.valueOf(tienHoanTra.intValue()));
-        return tienHoanTra;
-    }
+
     public LocalDateTime convertToLocalDateTime(java.sql.Date ngayKhoiHanh, Time gioDi) {
         LocalDateTime dateTime = ngayKhoiHanh.toLocalDate().atStartOfDay();
         LocalDateTime finalDateTime = dateTime.plusHours(gioDi.getHours())
                 .plusMinutes(gioDi.getMinutes());
         return finalDateTime;
     }
-    public DonDoiTra taoDonDoiTra(Ve ve, Double tienPhi,Double tienHoanTra,Double tienBu ) {
-        DonDoiTra donDoiTra = new DonDoiTra();
-        donDoiTra.setMaDonDoiTra(taoMaDonDoiTra());
-        donDoiTra.setTienPhi(tienPhi);
-        donDoiTra.setTienHoanTra(tienHoanTra);
-        donDoiTra.setTienBu(tienBu);
-        LoaiDon loaiDon = (tienPhi == 0.0) ? LoaiDon.Don_Tra : LoaiDon.Don_Doi;
-        donDoiTra.setLoaiDon(loaiDon);
-        donDoiTra.setNgayLap(Timestamp.valueOf(LocalDateTime.now()));
-        donDoiTra.setVeByMaVe(ve);
-        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default"); // Sử dụng tên Persistence Unit của bạn
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        try {
-            entityManager.getTransaction().begin();
-            DonDoiTra donDoiTraMerged = entityManager.merge(donDoiTra);
-            entityManager.getTransaction().commit();
-            return donDoiTraMerged;
-        } catch (RuntimeException e) {
-            if (entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            entityManager.close();
-            entityManagerFactory.close();
-        }
-    }
-    public String taoMaDonDoiTra() {
-        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        try {
-            LocalDate today = LocalDate.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String todayStr = today.format(formatter);
-            String jpql = "SELECT COUNT(d) FROM DonDoiTra d WHERE CAST(d.ngayLap AS LocalDate) = :today";
-            TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
-            query.setParameter("today", today);
-            Long count = query.getSingleResult();
-            int soTuTang = count.intValue() + 1;
-            String maDonDoiTra = String.format("DDT-%s%04d", today.format(DateTimeFormatter.ofPattern("ddMMyyyy")), soTuTang);
-            return maDonDoiTra;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            entityManager.close();
-            entityManagerFactory.close();
-        }
-    }
-    public String taoMaVe(ToaTau toaTau, LichTrinh lichTrinh, Ghe ghe) {
-        String maTau = toaTau.getTauByMaTau().getMaTau();
-        String maToa = toaTau.getMaTt();
-        String maGhe = ghe.getMaGhe();
-        return VeCodeGeneratorUtil.generateMaVe(maTau, maToa, maGhe);
-    }
+
     private void xuatExcel() throws IOException {
         Stage stage = (Stage) tableXemLichSu.getScene().getWindow();
         if(tableXemLichSu.getItems() == null){
