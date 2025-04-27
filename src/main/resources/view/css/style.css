@@ -551,3 +551,23 @@
 
 .button_Login {
 }
+.background-img{
+    -fx-background-image: url("/view/images/bangron304.png");
+    -fx-background-size: 70% 100%; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-cogiaiphong{
+    -fx-background-image: url("/view/images/cogiaiphong.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-ngoisao{
+    -fx-background-image: url("/view/images/ngoisao.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
