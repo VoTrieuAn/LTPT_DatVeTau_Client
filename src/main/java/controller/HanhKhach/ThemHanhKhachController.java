@@ -13,7 +13,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.HanhKhachServiceImpl;
 import util.PassengerCodeGeneratorUtil;
 
 import java.io.IOException;

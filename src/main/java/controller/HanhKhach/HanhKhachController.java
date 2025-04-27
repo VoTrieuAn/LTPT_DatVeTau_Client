@@ -17,7 +17,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import service.impl.HanhKhachServiceImpl;
 import util.ComponentUtil;
 import util.ExportExcelUtil;
 
@@ -241,7 +240,7 @@ public class HanhKhachController {
     }
     // Hàm để tải dữ liệu vào TableView
     private void loadData() throws RemoteException {
-        EntityService<HanhKhach> hanhKhachService = (EntityService<HanhKhach>) RMIServiceLocator.getHanhKhachService();
+        EntityService<HanhKhach> hanhKhachService =  RMIServiceLocator.getHanhKhachService();
         danhSachHanhKhachDB = hanhKhachService.getDanhSach("HanhKhach.list",HanhKhach.class);
         List<HanhKhach> top15HanhKhach = danhSachHanhKhachDB.subList(0, Math.min(danhSachHanhKhachDB.size(), LIMIT));
         danhSachHanhKhach.addAll(top15HanhKhach);

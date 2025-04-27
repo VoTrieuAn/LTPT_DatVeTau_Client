@@ -1,8 +1,6 @@
 package controller.lichTrinh;
 
 import com.jfoenix.controls.JFXCheckBox;
-import config.DatabaseContext;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
 import entity.LichTrinh;
 import entity.Tau;
@@ -866,7 +864,7 @@ public class ThemLichTrinhController111 {
     }
     private void xacNhanLuu(){
         if(!danhSachLichTrinh.isEmpty()){
-            Optional<ButtonType> buttonType = showAlertConfirm("Bạn có muốn lưu không?");
+            Optional<ButtonType> buttonType = AlertHelper.showConfirm("Bạn có muốn lưu không?");
             if (buttonType.get().getButtonData() == ButtonBar.ButtonData.NO) {
                 trangLichTrinh();
             } else if (buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
@@ -940,15 +938,5 @@ public class ThemLichTrinhController111 {
         result.add(last);
 
         return result;
-    }
-    private Optional<ButtonType> showAlertConfirm(String content) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Thông báo");
-        alert.setHeaderText(content);
-        ButtonType buttonLuu = new ButtonType("Có", ButtonBar.ButtonData.YES);
-        ButtonType buttonKhongLuu = new ButtonType("Không", ButtonBar.ButtonData.NO);
-        ButtonType buttonHuy = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(buttonLuu, buttonKhongLuu, buttonHuy);
-        return alert.showAndWait();
     }
 }

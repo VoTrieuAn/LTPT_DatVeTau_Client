@@ -2,9 +2,6 @@
 package controller.Menu;
 
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
-import dao.HoaDonDAO;
-import dao.VeDAO;
 import entity.HoaDon;
 import entity.NhanVien;
 import entity.TaiKhoan;
@@ -15,7 +12,9 @@ import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import rmi.RMIServiceLocator;
 
+import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -81,11 +80,11 @@ public class ThongTinCaNhanController {
     void mouseClicked(MouseEvent event) {
 
     }
-    public void setTaiKhoan(TaiKhoan taiKhoan) {
+    public void setTaiKhoan(TaiKhoan taiKhoan) throws RemoteException {
         this.taiKhoan = taiKhoan;
         setNhanVien(taiKhoan.getNhanvienByMaNv());
     }
-    public void setNhanVien(NhanVien nhanVien) {
+    public void setNhanVien(NhanVien nhanVien) throws RemoteException {
         setThongTinCongViec(nhanVien);
         setThongTinCongViecNangCao(nhanVien);
         setThongTinCaNhan(nhanVien);
@@ -102,13 +101,14 @@ public class ThongTinCaNhanController {
         chucVuNVLabel.setText(chucVu);
         trangThaiLabel.setText(trangThai);
     }
-    private void setThongTinCongViecNangCao(NhanVien nhanVien) {
+    private void setThongTinCongViecNangCao(NhanVien nhanVien) throws RemoteException {
         Map<String, Object> filter = new HashMap<>();
         filter.put("nhanvienByMaNv", nhanVien);
-        List<HoaDon> hoaDons = TrainTicketApplication.getInstance()
-                .getDatabaseContext()
-                .newEntityDAO(HoaDonDAO.class)
-                .getDanhSach(HoaDon.class, filter);
+//        List<HoaDon> hoaDons = TrainTicketApplication.getInstance()
+//                .getDatabaseContext()
+//                .newEntityDAO(HoaDonDAO.class)
+//                .getDanhSach(HoaDon.class, filter);
+        List<HoaDon> hoaDons = RMIServiceLocator.getHoaDonService().getDanhSach(HoaDon.class, filter);
         if (this.taiKhoan != null) {
             String gioPhutGiay = String.format(
                     "%02d:%02d:%02d",
@@ -126,10 +126,11 @@ public class ThongTinCaNhanController {
                 Map<String, Object> filterHD = new HashMap<>();
                 filterHD.put("hoadonByMaHd", hoaDon);
                 System.out.println(filterHD.size());
-                List<Ve> veDanhSach = TrainTicketApplication.getInstance()
-                        .getDatabaseContext()
-                        .newEntityDAO(VeDAO.class)
-                        .getDanhSach(Ve.class, filterHD);
+//                List<Ve> veDanhSach = TrainTicketApplication.getInstance()
+//                        .getDatabaseContext()
+//                        .newEntityDAO(VeDAO.class)
+//                        .getDanhSach(Ve.class, filterHD);
+                List<Ve> veDanhSach = RMIServiceLocator.getVeService().getDanhSach(Ve.class, filterHD);
                 tongSoVe += veDanhSach.size();
             }
         }

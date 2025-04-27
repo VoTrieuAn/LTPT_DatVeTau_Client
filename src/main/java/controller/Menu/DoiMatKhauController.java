@@ -1,16 +1,16 @@
 package controller.Menu;
 
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
-import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
+import rmi.RMIServiceLocator;
 import util.PasswordUtil;
 
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -37,7 +37,7 @@ public class DoiMatKhauController {
             luuLai();
         }
     }
-    private void luuLai() {
+    private void luuLai()  {
         String matKhauCu = mkCuTextField.getText();
         if (this.taiKhoan.kiemTraDoiMatKhau(matKhauCu)) {
             String matKhauMoi = mkMoiTextField.getText();
@@ -45,10 +45,15 @@ public class DoiMatKhauController {
             if (matKhauMoi.equalsIgnoreCase(matKhauMoiNhapLai)) {
                 this.taiKhoan.setMatKhau(PasswordUtil.hashPassword(matKhauMoi));
                 this.taiKhoan.setNgaySuaDoi(Timestamp.valueOf(LocalDateTime.now()));
-                TrainTicketApplication.getInstance()
-                        .getDatabaseContext()
-                        .newEntityDAO(TaiKhoanDAO.class)
-                        .capNhat(this.taiKhoan);
+                try {
+                    RMIServiceLocator.getTaiKhoanService().capNhat(this.taiKhoan);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+//                TrainTicketApplication.getInstance()
+//                        .getDatabaseContext()
+//                        .newEntityDAO(TaiKhoanDAO.class)
+//                        .capNhat(this.taiKhoan);
                 showAlert("Thông báo", "Đổi mật khẩu thành công", Alert.AlertType.INFORMATION);
                 if (this.taiKhoan.getNhanvienByMaNv().getLoaiNv() == LoaiNhanVien.QUAN_LI_BAN_VE) {
                     MenuController.instance.readyUI("Menu/ThongTinCaNhan");
