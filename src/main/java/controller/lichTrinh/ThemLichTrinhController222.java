@@ -1,8 +1,6 @@
 package controller.lichTrinh;
 
 import com.jfoenix.controls.JFXCheckBox;
-import config.DatabaseContext;
-import config.TrainTicketApplication;
 import controller.Menu.MenuController;
 import entity.LichTrinh;
 import entity.Tau;
@@ -17,6 +15,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import rmi.RMIServiceLocator;
+import service.LichTrinhService;
+import service.TauService;
+import util.maLTGenerator;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -27,16 +32,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import rmi.RMIServiceLocator;
-import service.KhuyenMaiService;
-import service.LichTrinhService;
-import service.TauService;
-import util.*;
-
-public class ThemLichTrinhController111 {
+public class ThemLichTrinhController222 {
     @FXML
     private AnchorPane map_pane, anchorPane;
     @FXML
@@ -707,88 +703,86 @@ public class ThemLichTrinhController111 {
             // Lấy thông tin ban đầu: thời gian khởi hành và ngày khởi hành
             Time timeKH = Time.valueOf(LocalTime.of(cboxGioKH.getValue(), cboxPhutKH.getValue()));
             LocalDate ngayKH = ngayKH_DatePicker.getValue();
-            Date dateKhoiHanh = Date.valueOf(ngayKH);
             String maTau = cboxTau.getValue();
             Tau tauByMa = tauService.timKiemId(maTau);
 
-            List<java.sql.Time> gioDiList = new ArrayList<>();
-            List<java.sql.Time> gioDenList = new ArrayList<>();
-            List<java.sql.Date> ngayKhoiHanhList = new ArrayList<>();
-            List<java.sql.Date> ngayKetThucList = new ArrayList<>();
-            List<LichTrinh> dsLT = new ArrayList<>();
-            Map<String, Time> gaToTime = new HashMap<>();  // Map lưu trữ thời gian khởi hành của từng ga
-
-            // Lặp qua danh sách ga để tính toán thời gian và ngày khởi hành, đến
-            for (int i = 0; i < list.size() - 1; i++) {
-                // Tính tổng thời gian giữa 2 ga
-                int thoigian = tinhTongThoiGianTheo2Ga(list.get(i), list.get(i + 1));
-
-                // Tính số phút vượt qua 24 giờ
-                long daysToAdd = thoigian / 1440; // 1 ngày = 1440 phút
-                long minutesRemaining = thoigian % 1440; // Số phút còn lại sau khi trừ đi số ngày
-
-                String gaKH = layTenGaDayDu(list.get(i));
-                if (!gaToTime.containsKey(gaKH)) {
-                    gaToTime.put(gaKH, timeKH); // Lưu thời gian khởi hành cho ga này
-                }
-
-                Time timeKhoiHanhMoi = gaToTime.get(gaKH); // Lấy thời gian khởi hành của ga hiện tại
-                LocalTime gioKhoiHanhLocalTime = timeKhoiHanhMoi.toLocalTime();
-
-                // Tính giờ đến (gioDen)
-                LocalTime gioDenLocalTime = gioKhoiHanhLocalTime.plusMinutes(minutesRemaining);
-                Time gioDen = Time.valueOf(gioDenLocalTime);
-
-                // Tính ngày đến và ngày khởi hành
-                LocalDate ngayKhoiHanhMoi = ngayKH.plusDays(daysToAdd);
-                if (gioDenLocalTime.isBefore(gioKhoiHanhLocalTime)) {
-                    // Nếu giờ đến nhỏ hơn giờ khởi hành, nghĩa là chuyển qua ngày mới
-                    ngayKhoiHanhMoi = ngayKhoiHanhMoi.plusDays(1);
-                }
-
-                Date dateKhoiHanhMoi = Date.valueOf(ngayKhoiHanhMoi);
-                Date dateDen = Date.valueOf(ngayKhoiHanhMoi);
-
-                String gaKT = layTenGaDayDu(list.get(i + 1));
-
-                // Thêm vào list giờ và ngày
-                gioDiList.add(timeKhoiHanhMoi);
-                gioDenList.add(gioDen);
-                ngayKhoiHanhList.add(dateKhoiHanhMoi);
-                ngayKetThucList.add(dateDen);
-
-                // Cập nhật thời gian khởi hành cho ga tiếp theo
-                gaToTime.put(gaKT, Time.valueOf(gioDenLocalTime.plusMinutes(10)));
-
-                // Cập nhật ngày khởi hành (ngayKH) cho vòng lặp kế tiếp
-                ngayKH = ngayKhoiHanhMoi;
-            }
-
-            // Sửa phần này với cú pháp chính xác khi truy cập vào các phần tử trong danh sách
-            for (int i = 0; i < list.size() - 1; i++) { // Ga khởi hành
-                for (int j = i + 1; j < list.size(); j++) { // Ga kết thúc
-                    // Sử dụng các giá trị tương ứng từ các danh sách thời gian và ngày
-                    Time gioDi = gioDiList.get(i); // Sửa từ gioDiList[i] thành gioDiList.get(i)
-                    Time gioDen = gioDenList.get(j - 1); // Sửa từ gioDenList[j - 1] thành gioDenList.get(j - 1)
-                    Date ngayKhoiHanh = ngayKhoiHanhList.get(i); // Sử dụng get(i) thay cho i
-                    Date ngayKetThuc = ngayKetThucList.get(j - 1); // Sử dụng get(j - 1)
-
-                    String gaKH = layTenGaDayDu(list.get(i));
-                    String gaKT = layTenGaDayDu(list.get(j));
-
-                    LocalTime gioKhoiHanhLocalTime = gioDi.toLocalTime();
-                    LocalDate ngayKhoiHanhLocalDate = ngayKhoiHanh.toLocalDate();
-                    // Tạo mã lịch trình
-                    String maLT = maLTGenerator.generateMaLT(gaKH, gaKT, ngayKhoiHanhLocalDate, gioKhoiHanhLocalTime);
-                    // Thêm Lịch Trình vào danh sách
-                    dsLT.add(new LichTrinh(maLT, gaKH, gaKT, ngayKhoiHanh, gioDen, gioDi, ngayKetThuc, 0, tauByMa));
-                }
-            }
-            return dsLT;
+            return ScheduleBuilder.buildMultiSchedule(list, ngayKH, timeKH.toLocalTime(), maTau );
         }catch (RemoteException e){
             e.printStackTrace();
             return null;
         }
+
+//            // Lặp qua danh sách ga để tính toán thời gian và ngày khởi hành, đến
+//            for (int i = 0; i < list.size() - 1; i++) {
+//                // Tính tổng thời gian giữa 2 ga
+//                int thoigian = tinhTongThoiGianTheo2Ga(list.get(i), list.get(i + 1));
+//
+//                // Tính số phút vượt qua 24 giờ
+//                long daysToAdd = thoigian / 1440; // 1 ngày = 1440 phút
+//                long minutesRemaining = thoigian % 1440; // Số phút còn lại sau khi trừ đi số ngày
+//
+//                String gaKH = layTenGaDayDu(list.get(i));
+//                if (!gaToTime.containsKey(gaKH)) {
+//                    gaToTime.put(gaKH, timeKH); // Lưu thời gian khởi hành cho ga này
+//                }
+//
+//                Time timeKhoiHanhMoi = gaToTime.get(gaKH); // Lấy thời gian khởi hành của ga hiện tại
+//                LocalTime gioKhoiHanhLocalTime = timeKhoiHanhMoi.toLocalTime();
+//
+//                // Tính giờ đến (gioDen)
+//                LocalTime gioDenLocalTime = gioKhoiHanhLocalTime.plusMinutes(minutesRemaining);
+//                Time gioDen = Time.valueOf(gioDenLocalTime);
+//
+//                // Tính ngày đến và ngày khởi hành
+//                LocalDate ngayKhoiHanhMoi = ngayKH.plusDays(daysToAdd);
+//                if (gioDenLocalTime.isBefore(gioKhoiHanhLocalTime)) {
+//                    // Nếu giờ đến nhỏ hơn giờ khởi hành, nghĩa là chuyển qua ngày mới
+//                    ngayKhoiHanhMoi = ngayKhoiHanhMoi.plusDays(1);
+//                }
+//
+//                Date dateKhoiHanhMoi = Date.valueOf(ngayKhoiHanhMoi);
+//                Date dateDen = Date.valueOf(ngayKhoiHanhMoi);
+//
+//                String gaKT = layTenGaDayDu(list.get(i + 1));
+//
+//                // Thêm vào list giờ và ngày
+//                gioDiList.add(timeKhoiHanhMoi);
+//                gioDenList.add(gioDen);
+//                ngayKhoiHanhList.add(dateKhoiHanhMoi);
+//                ngayKetThucList.add(dateDen);
+//
+//                // Cập nhật thời gian khởi hành cho ga tiếp theo
+//                gaToTime.put(gaKT, Time.valueOf(gioDenLocalTime.plusMinutes(10)));
+//
+//                // Cập nhật ngày khởi hành (ngayKH) cho vòng lặp kế tiếp
+//                ngayKH = ngayKhoiHanhMoi;
+//            }
+//
+//            // Sửa phần này với cú pháp chính xác khi truy cập vào các phần tử trong danh sách
+//            for (int i = 0; i < list.size() - 1; i++) { // Ga khởi hành
+//                for (int j = i + 1; j < list.size(); j++) { // Ga kết thúc
+//                    // Sử dụng các giá trị tương ứng từ các danh sách thời gian và ngày
+//                    Time gioDi = gioDiList.get(i); // Sửa từ gioDiList[i] thành gioDiList.get(i)
+//                    Time gioDen = gioDenList.get(j - 1); // Sửa từ gioDenList[j - 1] thành gioDenList.get(j - 1)
+//                    Date ngayKhoiHanh = ngayKhoiHanhList.get(i); // Sử dụng get(i) thay cho i
+//                    Date ngayKetThuc = ngayKetThucList.get(j - 1); // Sử dụng get(j - 1)
+//
+//                    String gaKH = layTenGaDayDu(list.get(i));
+//                    String gaKT = layTenGaDayDu(list.get(j));
+//
+//                    LocalTime gioKhoiHanhLocalTime = gioDi.toLocalTime();
+//                    LocalDate ngayKhoiHanhLocalDate = ngayKhoiHanh.toLocalDate();
+//                    // Tạo mã lịch trình
+//                    String maLT = maLTGenerator.generateMaLT(gaKH, gaKT, ngayKhoiHanhLocalDate, gioKhoiHanhLocalTime);
+//                    // Thêm Lịch Trình vào danh sách
+//                    dsLT.add(new LichTrinh(maLT, gaKH, gaKT, ngayKhoiHanh, gioDen, gioDi, ngayKetThuc, 0, tauByMa));
+//                }
+//            }
+//            return dsLT;
+//        }catch (RemoteException e){
+//            e.printStackTrace();
+//            return null;
+//        }
 
         // In danh sách Lịch Trình để kiểm tra
 //        list.forEach(x -> System.out.println(x));
