@@ -10,7 +10,7 @@ import java.util.Objects;
 // Luồng hoạt động 3 - tier: view <-> controller<-> dao <-> DB
 public class Main extends Application {
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/view/fxml/DoiTra.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/view/fxml/Menu/Menu.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         String css = Objects.requireNonNull(getClass().getResource("/view/css/style.css")).toExternalForm();
         scene.getStylesheets().add(css);

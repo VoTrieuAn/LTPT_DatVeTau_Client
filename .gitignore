@@ -36,3 +36,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/.idea/.gitignore
+/.idea/encodings.xml
+/.idea/material_theme_project_new.xml
+/.idea/misc.xml
+/.idea/vcs.xml

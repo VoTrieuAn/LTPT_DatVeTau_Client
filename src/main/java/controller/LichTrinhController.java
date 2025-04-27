@@ -1,8 +1,6 @@
 package controller;
 
 import controller.Menu.MenuController;
-import dao.LichTrinhDAO;
-import dao.impl.LichTrinhDAOImpl;
 import entity.LichTrinh;
 import entity.Tau;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,50 +12,39 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import rmi.RMIServiceLocator;
+import service.LichTrinhService;
 import util.ExportExcelUtil;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class LichTrinhController {
-    public TableColumn<LichTrinh, String> trangThaiColumn;
     @FXML
-    private TableColumn<LichTrinh, String> maLTColumn;
+    private TableView<LichTrinh> tableLichTrinh;
     @FXML
-    private TableColumn<LichTrinh, String> gaKhoiHanhColumn;
+    private TableColumn<LichTrinh, String> maLTColumn, gaKhoiHanhColumn, gaKetThucColumn, trangThaiColumn, maTauColumn;
     @FXML
-    private TableColumn<LichTrinh, String> gaKetThucColumn;
+    private TableColumn<LichTrinh, LocalDate> ngayDiColumn, ngayDenColumn;
     @FXML
-    private TableColumn<LichTrinh, LocalDate> ngayDiColumn;
-    @FXML
-    private TableColumn<LichTrinh, LocalTime> gioDiColumn;
-    @FXML
-    private TableColumn<LichTrinh, LocalDate> ngayDenColumn;
-    @FXML
-    private TableColumn<LichTrinh, LocalTime> gioDenColumn;
-    @FXML
-    private TableColumn<LichTrinh, String> maTauColumn;
-    @FXML
-    private Button btnLamMoi, btn_XuatExcel;
+    private TableColumn<LichTrinh, LocalTime> gioDiColumn, gioDenColumn;
+
     @FXML
     private DatePicker picker_NgayDI;
     @FXML
-    private Button btnThem, btn_Loc;
+    private Button btnLamMoi, btn_XuatExcel, btnThem, btn_Loc;
     @FXML
-    private ToggleButton toggle_ChuaKhoiHanh;
-    @FXML
-    private ToggleButton toggle_DaHuy;
-    @FXML
-    private ToggleButton toggle_DaKhoiHanh;
-    @FXML
-    private TableView<LichTrinh> tableLichTrinh;
-    private LichTrinhDAO ltdao = new LichTrinhDAOImpl();
+    private ToggleButton toggle_ChuaKhoiHanh, toggle_DaHuy, toggle_DaKhoiHanh;
+
+    private LichTrinhService lichTrinhService = RMIServiceLocator.getLichTrinhService();
     private Map<ToggleButton, Integer> toggleTrangThaiMap = new HashMap<>();
     @FXML
     private CheckBox checkbox_LocCacNgaySau;
+
     public void initialize() {
         loadDataVaoTable();
 
@@ -72,7 +59,7 @@ public class LichTrinhController {
                 toggle.setOnAction(event -> capNhatLichTrinh())
         );
         picker_NgayDI.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue != null)
+            if (newValue != null)
                 capNhatLichTrinh();
         });
 
@@ -81,11 +68,7 @@ public class LichTrinhController {
         });
     }
 
-    private void loadDataVaoTable(){
-        if (ltdao == null) {
-            System.err.println("LichTrinhDAO chưa được khởi tạo!");
-            return;
-        }
+    private void loadDataVaoTable() {
         // Ánh xạ các cột với các thuộc tính của Entity
         maLTColumn.setCellValueFactory(new PropertyValueFactory<>("maLt"));
         gaKhoiHanhColumn.setCellValueFactory(new PropertyValueFactory<>("gaKhoiHanh"));
@@ -111,80 +94,93 @@ public class LichTrinhController {
 
         loadData();
     }
+
     private void loadData() {
-        List<LichTrinh> lichTrinhList = ltdao.getAllLichTrinh();
-        if (lichTrinhList != null) {
-            tableLichTrinh.getItems().setAll(lichTrinhList);
-        } else {
-            System.err.println("Không có dữ liệu nào từ database!");
+        try {
+            List<LichTrinh> lichTrinhList = lichTrinhService.getAllLichTrinh();
+            if (lichTrinhList != null) {
+                tableLichTrinh.getItems().setAll(lichTrinhList);
+            } else {
+                System.err.println("Không có dữ liệu nào từ database!");
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
+
     public void showThemLichTrinh() {
         MenuController.instance.readyUI("LichTrinh/ThemLichTrinh");
     }
 
     public void capNhatLichTrinh() {
-        // Lấy các trạng thái được chọn từ toggle buttons
-        Set<Integer> trangThaiSet = toggleTrangThaiMap.entrySet().stream()
-                .filter(entry -> entry.getKey().isSelected())  // Kiểm tra toggleButton có được chọn không
-                .map(Map.Entry::getValue)  // Lấy giá trị trạng thái (trangThai)
-                .collect(Collectors.toSet());  // Tạo set chứa các trạng thái
+        try {
+            // Lấy các trạng thái được chọn từ toggle buttons
+            Set<Integer> trangThaiSet = toggleTrangThaiMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().isSelected())  // Kiểm tra toggleButton có được chọn không
+                    .map(Map.Entry::getValue)  // Lấy giá trị trạng thái (trangThai)
+                    .collect(Collectors.toSet());  // Tạo set chứa các trạng thái
 
-        // Lấy giá trị ngày đi từ DatePicker (cần kiểm tra nếu ngày không null)
-        LocalDate ngayDi = picker_NgayDI.getValue();  // picker_NgayDI là đối tượng DatePicker
+            // Lấy giá trị ngày đi từ DatePicker (cần kiểm tra nếu ngày không null)
+            LocalDate ngayDi = picker_NgayDI.getValue();  // picker_NgayDI là đối tượng DatePicker
 
-        // Nếu ngày đi không được chọn (null), gọi hàm với chỉ trạng thái
-        List<LichTrinh> dsLT;
-        if (ngayDi != null) {
-            if(checkbox_LocCacNgaySau.isSelected()){
-                dsLT = ltdao.getLichTrinhSauHoacBangNgayDi(trangThaiSet, ngayDi);
+            // Nếu ngày đi không được chọn (null), gọi hàm với chỉ trạng thái
+            List<LichTrinh> dsLT;
+            if (ngayDi != null) {
+                if (checkbox_LocCacNgaySau.isSelected()) {
+                    dsLT = lichTrinhService.getLichTrinhSauHoacBangNgayDi(trangThaiSet, ngayDi);
+                }
+                // Lọc thêm theo ngày đi nếu đã chọn ngày
+                else {
+                    dsLT = lichTrinhService.getLichTrinhTheoTrangThai(trangThaiSet, ngayDi);
+                }
+            } else {
+                // Nếu không có ngày, chỉ lọc theo trạng thái
+                dsLT = lichTrinhService.getLichTrinhTheoTrangThai(trangThaiSet, null);
             }
-            // Lọc thêm theo ngày đi nếu đã chọn ngày
-            else{
-                dsLT = ltdao.getLichTrinhTheoTrangThai(trangThaiSet, ngayDi);
-            }
-        } else {
-            // Nếu không có ngày, chỉ lọc theo trạng thái
-            dsLT = ltdao.getLichTrinhTheoTrangThai(trangThaiSet, null);
+
+            // Cập nhật dữ liệu vào tableView
+            tableLichTrinh.getItems().setAll(dsLT);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-
-        // Cập nhật dữ liệu vào tableView
-        tableLichTrinh.getItems().setAll(dsLT);
     }
 
     @FXML
-    private void handleHuyLichTrinh(ActionEvent event){
-        LichTrinh lichTrinhDuocChon = tableLichTrinh.getSelectionModel().getSelectedItem();
-        System.out.println(lichTrinhDuocChon);
-        if(lichTrinhDuocChon == null){
-            showAlert("Cảnh báo", "Vui lòng chọn lịch trình muốn hủy", Alert.AlertType.WARNING);
-            return;
-        }
-        if(lichTrinhDuocChon.getTrangThai() == 1){
-            showAlert("Lỗi", "Không thể xóa lịch trình đã khởi hành", Alert.AlertType.ERROR);
-            return;
-        }
-        LocalDate ngayKhoiHanh = lichTrinhDuocChon.getNgayKhoiHanh().toLocalDate();
-        if (ngayKhoiHanh.isBefore(LocalDate.now().plusDays(80))) {
-            showAlert("Lỗi", "Không thể xóa lịch trình trước 80 ngày", Alert.AlertType.ERROR);
-            return;
-        }
-
-        Optional<ButtonType> result = showAlertConfirm("Bạn có chắc chắn muốn xóa lịch trình?");
-        if(result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.YES){
-            boolean isUpdated = ltdao.updateTrangThai(lichTrinhDuocChon.getMaLt(), -1);
-            if(isUpdated){
-                // Cập nhật trạng thái của đối tượng trong ObservableList
-                lichTrinhDuocChon.setTrangThai(-1);
-
-                // Refresh TableView để hiển thị thay đổi
-                tableLichTrinh.refresh();
-
-                showAlert("Thông báo", "Xóa lịch trình thành công", Alert.AlertType.INFORMATION);
+    private void handleHuyLichTrinh(ActionEvent event) {
+        try {
+            LichTrinh lichTrinhDuocChon = tableLichTrinh.getSelectionModel().getSelectedItem();
+            System.out.println(lichTrinhDuocChon);
+            if (lichTrinhDuocChon == null) {
+                showAlert("Cảnh báo", "Vui lòng chọn lịch trình muốn hủy", Alert.AlertType.WARNING);
+                return;
             }
-            else {
-                showAlert("Lỗi", "Đã có lỗi xảy ra, vui lòng thử lại", Alert.AlertType.ERROR);
+            if (lichTrinhDuocChon.getTrangThai() == 1) {
+                showAlert("Lỗi", "Không thể xóa lịch trình đã khởi hành", Alert.AlertType.ERROR);
+                return;
             }
+            LocalDate ngayKhoiHanh = lichTrinhDuocChon.getNgayKhoiHanh().toLocalDate();
+            if (ngayKhoiHanh.isBefore(LocalDate.now().plusDays(80))) {
+                showAlert("Lỗi", "Không thể xóa lịch trình trước 80 ngày", Alert.AlertType.ERROR);
+                return;
+            }
+
+            Optional<ButtonType> result = showAlertConfirm("Bạn có chắc chắn muốn xóa lịch trình?");
+            if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.YES) {
+                boolean isUpdated = lichTrinhService.updateTrangThai(lichTrinhDuocChon.getMaLt(), -1);
+                if (isUpdated) {
+                    // Cập nhật trạng thái của đối tượng trong ObservableList
+                    lichTrinhDuocChon.setTrangThai(-1);
+
+                    // Refresh TableView để hiển thị thay đổi
+                    tableLichTrinh.refresh();
+
+                    showAlert("Thông báo", "Xóa lịch trình thành công", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Lỗi", "Đã có lỗi xảy ra, vui lòng thử lại", Alert.AlertType.ERROR);
+                }
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -192,16 +188,17 @@ public class LichTrinhController {
         Stage stage = (Stage) tableLichTrinh.getScene().getWindow();
         ExportExcelUtil.exportTableViewToExcel(tableLichTrinh, stage);
     }
+
     @FXML
     void controller(ActionEvent event) throws IOException {
         Object source = event.getSource();
         if (source == btnThem) {
             showThemLichTrinh();
         }
-        if(source == btnLamMoi){
+        if (source == btnLamMoi) {
             MenuController.instance.readyUI("LichTrinh");
         }
-        if(source == btn_XuatExcel){
+        if (source == btn_XuatExcel) {
             xuatExcel();
         }
     }
@@ -209,7 +206,7 @@ public class LichTrinhController {
     @FXML
     void keyPressed(KeyEvent event) {
         Object source = event.getSource();
-        if(event.getCode() == KeyCode.F5) MenuController.instance.readyUI("LichTrinh");
+        if (event.getCode() == KeyCode.F5) MenuController.instance.readyUI("LichTrinh");
     }
 
     @FXML
