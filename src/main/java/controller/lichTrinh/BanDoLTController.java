@@ -8,81 +8,14 @@ import javafx.scene.shape.Line;
 
 public class BanDoLTController {
     @FXML
-    private Circle circle_DaNang;
-
+    private Circle circle_DaNang, circle_DongHoi, circle_HaNoi, circle_HaiPhong, circle_Hue, circle_LaoCai, circle_NhaTrang, circle_PhanThiet, circle_QuyNhon, circle_SaiGon,
+            circle_ThanhHoa, circle_Vinh, circle_VungTau;
     @FXML
-    private Circle circle_DongHoi;
-
-    @FXML
-    private Circle circle_HaNoi;
-
-    @FXML
-    private Circle circle_HaiPhong;
-
-    @FXML
-    private Circle circle_Hue;
-
-    @FXML
-    private Circle circle_LaoCai;
-
-    @FXML
-    private Circle circle_NhaTrang;
-
-    @FXML
-    private Circle circle_PhanThiet;
-
-    @FXML
-    private Circle circle_QuyNhon;
-
-    @FXML
-    private Circle circle_SaiGon;
-
-    @FXML
-    private Circle circle_ThanhHoa;
-
-    @FXML
-    private Circle circle_Vinh;
-
-    @FXML
-    private Circle circle_VungTau;
-    @FXML
-    private Line line_DaNang_QuyNhon;
-
-    @FXML
-    private Line line_DongHoi_Hue;
-
-    @FXML
-    private Line line_HaNoi_HaiPhong;
-
-    @FXML
-    private Line line_HaNoi_ThanhHoa;
-
-    @FXML
-    private Line line_Hue_DaNang;
-
-    @FXML
-    private Line line_LaoCai_HaNoi;
-
-    @FXML
-    private Line line_NhaTrang_PhanThiet;
-
-    @FXML
-    private Line line_PhanThiet_SaiGon;
-
-    @FXML
-    private Line line_QuyNhon_NhaTrang;
-
-    @FXML
-    private Line line_SaiGon_VungTau;
-
-    @FXML
-    private Line line_ThanhHoa_Vinh;
-
-    @FXML
-    private Line line_Vinh_DongHoi;
+    private Line line_DaNang_QuyNhon, line_DongHoi_Hue, line_HaNoi_HaiPhong, line_HaNoi_ThanhHoa, line_Hue_DaNang, line_LaoCai_HaNoi, line_NhaTrang_PhanThiet, line_PhanThiet_SaiGon, line_QuyNhon_NhaTrang, line_SaiGon_VungTau, line_ThanhHoa_Vinh, line_Vinh_DongHoi;
 
     private Circle selectedCircle1, selectedCircle2;
     private Line selectedLine;
+
     public void onCircleClick(MouseEvent mouseEvent) {
         // Lấy đối tượng Circle từ sự kiện
         Circle circle = (Circle) mouseEvent.getSource();
@@ -126,18 +59,24 @@ public class BanDoLTController {
             selectedLine = line_PhanThiet_SaiGon;
         } else if (selectedCircle1 == circle_NhaTrang && selectedCircle2 == circle_PhanThiet) {
             selectedLine = line_NhaTrang_PhanThiet;
+        } else if (selectedCircle1 == circle_QuyNhon && selectedCircle2 == circle_NhaTrang) {
+            selectedLine = line_QuyNhon_NhaTrang;
         } else if (selectedCircle1 == circle_QuyNhon && selectedCircle2 == circle_DaNang) {
             selectedLine = line_DaNang_QuyNhon;
         } else if (selectedCircle1 == circle_DaNang && selectedCircle2 == circle_Hue) {
             selectedLine = line_Hue_DaNang;
         } else if (selectedCircle1 == circle_Hue && selectedCircle2 == circle_DongHoi) {
             selectedLine = line_DongHoi_Hue;
+        } else if (selectedCircle1 == circle_Vinh && selectedCircle2 == circle_DongHoi) {
+            selectedLine = line_Vinh_DongHoi;
         } else if (selectedCircle1 == circle_Vinh && selectedCircle2 == circle_ThanhHoa) {
             selectedLine = line_ThanhHoa_Vinh;
         } else if (selectedCircle1 == circle_ThanhHoa && selectedCircle2 == circle_HaNoi) {
             selectedLine = line_HaNoi_ThanhHoa;
         } else if (selectedCircle1 == circle_LaoCai && selectedCircle2 == circle_HaNoi) {
             selectedLine = line_LaoCai_HaNoi;
+        } else if (selectedCircle1 == circle_HaiPhong && selectedCircle2 == circle_HaNoi) {
+            selectedLine = line_HaNoi_HaiPhong;
         }
 
         // Đổi màu đường line nếu có

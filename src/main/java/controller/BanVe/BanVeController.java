@@ -1021,7 +1021,7 @@ public class BanVeController implements Initializable {
         AutoCompletionBinding<String> binding = TextFields.bindAutoCompletion(tienKhachDuaTextField, request -> {
             String userInput = request.getUserText().replaceAll("[^0-9]", "");
             if (userInput.isEmpty() || userInput.length() > 9) return Collections.emptyList();
-            return generateSuggestions(userInput).stream().map(this::formatCurrency).collect(java.util.stream.Collectors.toList());
+            return generateSuggestions(userInput).stream().map(this::formatCurrency).collect(Collectors.toList());
         });
 
         binding.setOnAutoCompleted(event -> {

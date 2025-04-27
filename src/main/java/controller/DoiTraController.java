@@ -376,7 +376,7 @@ public class DoiTraController {
             if (newValue != null) {
                 ngayLapDon2_DatePicker.setDisable(false);
                 ngayLapDon2_DatePicker.setValue(newValue);
-                ngayLapDon2_DatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+                ngayLapDon2_DatePicker.setDayCellFactory(picker -> new DateCell() {
                     @Override
                     public void updateItem(LocalDate date, boolean empty) {
                         super.updateItem(date, empty);
