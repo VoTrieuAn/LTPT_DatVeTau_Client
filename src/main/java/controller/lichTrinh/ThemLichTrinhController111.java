@@ -711,10 +711,10 @@ public class ThemLichTrinhController111 {
             String maTau = cboxTau.getValue();
             Tau tauByMa = tauService.timKiemId(maTau);
 
-            List<java.sql.Time> gioDiList = new ArrayList<>();
-            List<java.sql.Time> gioDenList = new ArrayList<>();
-            List<java.sql.Date> ngayKhoiHanhList = new ArrayList<>();
-            List<java.sql.Date> ngayKetThucList = new ArrayList<>();
+            List<Time> gioDiList = new ArrayList<>();
+            List<Time> gioDenList = new ArrayList<>();
+            List<Date> ngayKhoiHanhList = new ArrayList<>();
+            List<Date> ngayKetThucList = new ArrayList<>();
             List<LichTrinh> dsLT = new ArrayList<>();
             Map<String, Time> gaToTime = new HashMap<>();  // Map lưu trữ thời gian khởi hành của từng ga
 
