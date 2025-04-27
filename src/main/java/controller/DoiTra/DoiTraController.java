@@ -99,6 +99,7 @@ public class DoiTraController {
     public ImageView urlImage;
     public VBox hbox_CCCD;
     public HBox hbox_GiaVe;
+    public AnchorPane banner_XemLSDT;
     @FXML
     private GridPane gridPane;
     public VBox vboxScrollPane;
@@ -200,39 +201,75 @@ public class DoiTraController {
     private final ObservableList<DonDoiTra> danhSachDon = FXCollections.observableArrayList();
     public void update30_4(){
         tab1.setStyle("-fx-background-color: #fa8484;");
-        tab2.setStyle("-fx-background-color: #fa8484;");
-        tab3.setStyle("-fx-background-color: #fa8484;");
-        hbox_CCCD.setStyle("-fx-background-color: #fa8484;");
-        hbox_GiaVe.setStyle("-fx-background-color: #fa8484;");
-        tableViewLoadTau.setStyle("-fx-background-color: #fa8484;");
-        tableViewVe.setStyle("-fx-background-color: #fa8484;");
-        tableXemLichSu.setStyle("-fx-background-color: #fa8484;");
-        hboxToaTaus.setStyle("-fx-background-color: #fa8484;");
-        scrollPane.setStyle("-fx-background-color: #fa8484;");
+        tab2.setStyle("-fx-background-color: #fafa84;");
+        tab3.setStyle("-fx-background-color: #04a8e1;");
+        tableViewLoadTau.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/30thang4bangron.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+        tableViewVe.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/img_3.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+        tableViewTraVe.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/img_3.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+        tableXemLichSu.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/img.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+        panelInfoTicket.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/img_6.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+        banner_XemLSDT.setStyle(
+                "-fx-background-image: url('./view/images/30thang4/img_1.png');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
+
+        String imageUrl = "./view/images/30thang4/img_4.png";
+        Image image = new Image(imageUrl);
+        urlImage.setImage(image);
+        urlImage.setStyle(
+                        "-fx-background-size: cover;" +
+                        "-fx-background-repeat: no-repeat;" +
+                        "-fx-background-position: center center;"
+        );
         columnMaVe.setStyle("-fx-background-color: #fafa84;");
         columnTenNguoiMua.setStyle("-fx-background-color: #fafa84;");
         columnNgayMua.setStyle("-fx-background-color: #fafa84;");
         columnLoaiVe.setStyle("-fx-background-color: #fafa84;");
-        textField_CCCD_DoiVe.setStyle("-fx-background-color: #fafa84;");
-        giaVeCu_DoiVe.setStyle("-fx-background-color: #fafa84;");
-        giaVeMoi_DoiVe.setStyle("-fx-background-color: #fafa84;");
-        tienBuThem.setStyle("-fx-background-color: #fafa84;");
-        tienPhiDoi.setStyle("-fx-background-color: #fafa84;");
-        tienHoanTra.setStyle("-fx-background-color: #fafa84;");
         columnTau.setStyle("-fx-background-color: #fafa84;");
         columnGioDi.setStyle("-fx-background-color: #fafa84;");
         columnGioDen.setStyle("-fx-background-color: #fafa84;");
         columnNgayDi.setStyle("-fx-background-color: #fafa84;");
         columnNgayDen.setStyle("-fx-background-color: #fafa84;");
-
+        maDon.setStyle("-fx-background-color: #fafa84;");
+        loaiDon.setStyle("-fx-background-color: #fafa84;");
+        ngayLapDon.setStyle("-fx-background-color: #fafa84;");
+        maVe.setStyle("-fx-background-color: #fafa84;");
+        tienBuDon.setStyle("-fx-background-color: #fafa84;");
+        tienBuThem.setStyle("-fx-background-color: #fafa84;");
+        tienPhiDon.setStyle("-fx-background-color: #fafa84;");
+        tienHoanTraDon.setStyle("-fx-background-color: #fafa84;");
     }
     @FXML
     public void initialize() {
         refreshUI();
         update30_4();
-        String imageUrl = "https://res.cloudinary.com/dbv9csgia/image/upload/v1745734131/download_c2yrd0.png";
-        Image image = new Image(imageUrl);
-        urlImage.setImage(image);
         coachEmptyImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_empty.png")));
         coachFullImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_full.png")));
         coachChoosingImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")));
@@ -636,11 +673,13 @@ public class DoiTraController {
                         //====================================== Note
                         selectedGhe = (Ghe) seatButton.getUserData();
                         giaVeCu_DoiVe.setText(String.valueOf((int)ve.getGiaVe()));
-                        giaVeMoi_DoiVe.setText(String.valueOf((int)selectedGhe.getGiaGhe()));
+                        double gtriKM = ve.getKhuyenmaiByMaKm().getGiaTriKhuyenMai() / 100;
+                        int giaVe = (int) (selectedGhe.getGiaGhe() - (int)(selectedGhe.getGiaGhe() * gtriKM));
+                        giaVeMoi_DoiVe.setText(String.valueOf((int)giaVe));
                         // Done ==================================
                         double[] tien = null;
                         try {
-                            tien = RMIServiceLocator.getVeService().tinhTienHoanTraVaChenhLech(selectedGhe, ve);
+                            tien = RMIServiceLocator.getVeService().tinhTienDoiVeVaChenhLech(selectedGhe, ve);
                         } catch (RemoteException ex) {
                             throw new RuntimeException(ex);
                         }
