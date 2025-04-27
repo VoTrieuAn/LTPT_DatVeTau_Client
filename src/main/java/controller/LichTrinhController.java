@@ -46,35 +46,38 @@ public class LichTrinhController {
     private CheckBox checkbox_LocCacNgaySau;
 
     public void initialize() {
-        // BẬT toggle Chưa khởi hành trước
-        toggle_ChuaKhoiHanh.setSelected(true);
-
-        // Gọi luôn load bảng đúng theo trạng thái được chọn
-        loadDataVaoTable();
-        capNhatLichTrinh();
-
-        // Khởi tạo ánh xạ ToggleButton với trạng thái
-        toggleTrangThaiMap.put(toggle_ChuaKhoiHanh, 0); // Trạng thái 0: Chưa khởi hành
-        toggleTrangThaiMap.put(toggle_DaKhoiHanh, 1);   // Trạng thái 1: Đã khởi hành
+        // 1. GÁN map toggle trước
+        toggleTrangThaiMap.put(toggle_ChuaKhoiHanh, 0);
+        toggleTrangThaiMap.put(toggle_DaKhoiHanh, 1);
         toggleTrangThaiMap.put(toggle_DaHuy, -1);
 
-        // Thêm sự kiện cho toggle
+        // 2. GÁN sự kiện trước
         toggleTrangThaiMap.keySet().forEach(toggle ->
                 toggle.setOnAction(event -> capNhatLichTrinh())
         );
 
-        // Lắng nghe DatePicker và CheckBox
+        // 3. Các event khác
         picker_NgayDI.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null)
                 capNhatLichTrinh();
         });
-
         checkbox_LocCacNgaySau.setOnAction(event -> capNhatLichTrinh());
+
+        // 4. BẬT toggle
+        toggle_ChuaKhoiHanh.setSelected(true); // bật mặc định Chưa khởi hành
+
+        // 5. Ánh xạ cột table
+        loadDataVaoTable();
+
+        // 6. Cập nhật bảng
+        capNhatLichTrinh();
     }
 
 
+
+
     private void loadDataVaoTable() {
-        // Ánh xạ các cột với các thuộc tính của Entity
+        // Ánh xạ các cột
         maLTColumn.setCellValueFactory(new PropertyValueFactory<>("maLt"));
         gaKhoiHanhColumn.setCellValueFactory(new PropertyValueFactory<>("gaKhoiHanh"));
         gaKetThucColumn.setCellValueFactory(new PropertyValueFactory<>("gaKetThuc"));
@@ -83,7 +86,7 @@ public class LichTrinhController {
         ngayDenColumn.setCellValueFactory(new PropertyValueFactory<>("ngayDen"));
         gioDenColumn.setCellValueFactory(new PropertyValueFactory<>("gioDen"));
         maTauColumn.setCellValueFactory(cellData -> {
-            Tau tau = cellData.getValue().getTauByMaTau(); // Lấy đối tượng Tau
+            Tau tau = cellData.getValue().getTauByMaTau();
             return tau != null ? new SimpleStringProperty(tau.getMaTau()) : new SimpleStringProperty("");
         });
         trangThaiColumn.setCellValueFactory(cellData -> {
@@ -97,8 +100,9 @@ public class LichTrinhController {
             return new SimpleStringProperty(text);
         });
 
-        loadData();
+        // KHÔNG GỌI loadData() ở đây nữa
     }
+
 
     private void loadData() {
         try {
@@ -119,36 +123,35 @@ public class LichTrinhController {
 
     public void capNhatLichTrinh() {
         try {
-            // Lấy các trạng thái được chọn từ toggle buttons
             Set<Integer> trangThaiSet = toggleTrangThaiMap.entrySet().stream()
-                    .filter(entry -> entry.getKey().isSelected())  // Kiểm tra toggleButton có được chọn không
-                    .map(Map.Entry::getValue)  // Lấy giá trị trạng thái (trangThai)
-                    .collect(Collectors.toSet());  // Tạo set chứa các trạng thái
+                    .filter(entry -> entry.getKey().isSelected())
+                    .map(Map.Entry::getValue)
+                    .collect(Collectors.toSet());
 
-            // Lấy giá trị ngày đi từ DatePicker (cần kiểm tra nếu ngày không null)
-            LocalDate ngayDi = picker_NgayDI.getValue();  // picker_NgayDI là đối tượng DatePicker
+            if (trangThaiSet.isEmpty()) {
+                tableLichTrinh.getItems().clear(); // Không có trạng thái nào được chọn -> clear luôn
+                return;
+            }
 
-            // Nếu ngày đi không được chọn (null), gọi hàm với chỉ trạng thái
+            LocalDate ngayDi = picker_NgayDI.getValue();
+
             List<LichTrinh> dsLT;
             if (ngayDi != null) {
                 if (checkbox_LocCacNgaySau.isSelected()) {
                     dsLT = lichTrinhService.getLichTrinhSauHoacBangNgayDi(trangThaiSet, ngayDi);
-                }
-                // Lọc thêm theo ngày đi nếu đã chọn ngày
-                else {
+                } else {
                     dsLT = lichTrinhService.getLichTrinhTheoTrangThai(trangThaiSet, ngayDi);
                 }
             } else {
-                // Nếu không có ngày, chỉ lọc theo trạng thái
                 dsLT = lichTrinhService.getLichTrinhTheoTrangThai(trangThaiSet, null);
             }
 
-            // Cập nhật dữ liệu vào tableView
             tableLichTrinh.getItems().setAll(dsLT);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
+
 
     @FXML
     private void handleHuyLichTrinh(ActionEvent event) {
