@@ -636,11 +636,13 @@ public class DoiTraController {
                         //====================================== Note
                         selectedGhe = (Ghe) seatButton.getUserData();
                         giaVeCu_DoiVe.setText(String.valueOf((int)ve.getGiaVe()));
-                        giaVeMoi_DoiVe.setText(String.valueOf((int)selectedGhe.getGiaGhe()));
+                        double gtriKM = ve.getKhuyenmaiByMaKm().getGiaTriKhuyenMai() / 100;
+                        int giaVe = (int) (selectedGhe.getGiaGhe() - (int)(selectedGhe.getGiaGhe() * gtriKM));
+                        giaVeMoi_DoiVe.setText(String.valueOf((int)giaVe));
                         // Done ==================================
                         double[] tien = null;
                         try {
-                            tien = RMIServiceLocator.getVeService().tinhTienHoanTraVaChenhLech(selectedGhe, ve);
+                            tien = RMIServiceLocator.getVeService().tinhTienDoiVeVaChenhLech(selectedGhe, ve);
                         } catch (RemoteException ex) {
                             throw new RuntimeException(ex);
                         }

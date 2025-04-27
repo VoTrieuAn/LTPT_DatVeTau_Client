@@ -551,7 +551,7 @@
                                                 <Font name="System Bold" size="16.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="textField_CCCD_TraVe" onKeyPressed="#enterDeTimKiem" prefHeight="35.0" prefWidth="237.0" promptText="Ấn Enter để tìm" styleClass="text-field-default" stylesheets="@../css/style.css">
+                                          <TextField fx:id="textField_CCCD_TraVe" onKeyPressed="#inputTraVe" prefHeight="35.0" prefWidth="237.0" promptText="Ấn Enter để tìm" styleClass="text-field-default" stylesheets="@../css/style.css">
                                              <font>
                                                 <Font size="16.0" />
                                              </font></TextField>
