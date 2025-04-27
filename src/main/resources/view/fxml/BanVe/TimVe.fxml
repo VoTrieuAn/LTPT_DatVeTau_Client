@@ -197,7 +197,7 @@
                         </HBox>
                         <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="2">
                            <children>
-                              <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="20.0" stroke="#2bbaba" strokeType="INSIDE" strokeWidth="3.0" width="20.0" />
+                              <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="20.0" stroke="#FFD700" strokeType="INSIDE" strokeWidth="3.0" width="20.0" />
                               <Label text="Đang chọn">
                                  <font>
                                     <Font size="14.0" />

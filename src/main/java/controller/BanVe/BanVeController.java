@@ -20,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -75,6 +76,10 @@ public class BanVeController implements Initializable {
     @FXML private Button btnPrevious;
     @FXML private Button btnNext;
     @FXML private Label lblPageInfo;
+    @FXML private HBox buttonHBox;
+    @FXML private HBox progressHBox;
+    @FXML private ProgressIndicator progressIndicator;
+    @FXML private Label progressLabel;
 
     private ObservableList<Ve> veList = FXCollections.observableArrayList();
     private ObservableList<Ve> displayedVeList = FXCollections.observableArrayList();
@@ -149,12 +154,44 @@ public class BanVeController implements Initializable {
         tableViewBanVe.setItems(displayedVeList);
         tableViewBanVe.setEditable(true);
 
-        maHoaDonTextField.setText(HoadonCodeGeneratorUtil.generateMaHoadon());
+        // Đặt giá trị tạm thời cho maHoaDonTextField
+        maHoaDonTextField.setText("Đang tạo mã...");
+        maHoaDonTextField.setDisable(true); // Vô hiệu hóa để tránh người dùng chỉnh sửa trong lúc tạo mã
+
         ngayTaoDatePicker.setValue(LocalDate.now());
         ngayTaoDatePicker.addEventFilter(MouseEvent.ANY, event -> event.consume());
 
+        // Generate mã hóa đơn trong luồng nền
+        Task<String> generateMaHoaDonTask = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return HoadonCodeGeneratorUtil.generateMaHoadon();
+            }
+        };
+
+        generateMaHoaDonTask.setOnSucceeded(event -> {
+            Platform.runLater(() -> {
+                maHoaDonTextField.setText(generateMaHoaDonTask.getValue());
+                maHoaDonTextField.setDisable(false); // Kích hoạt lại TextField
+            });
+        });
+
+        generateMaHoaDonTask.setOnFailed(event -> {
+            Platform.runLater(() -> {
+                maHoaDonTextField.setText("Lỗi tạo mã");
+                maHoaDonTextField.setDisable(false);
+            });
+        });
+
+        // Chạy Task trong luồng nền
+        new Thread(generateMaHoaDonTask).start();
+
         setupListeners();
         updatePageInfo();
+
+        progressHBox.setVisible(false);
+        progressIndicator.setProgress(-1); // Hiển thị vòng xoay vô hạn
+        progressLabel.setText("Đang xử lý...");
     }
 
     private void setupListeners() {
@@ -774,6 +811,12 @@ public class BanVeController implements Initializable {
             }
         }
 
+        Platform.runLater(() -> {
+            buttonHBox.setDisable(true);
+            progressHBox.setVisible(true);
+            updateProgressStatus(0, veList.size() + 1, "Đang khởi tạo...");
+        });
+
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -830,7 +873,22 @@ public class BanVeController implements Initializable {
             }
         };
 
+        task.setOnFailed(event -> {
+            Platform.runLater(() -> {
+                progressHBox.setVisible(false);
+                buttonHBox.setDisable(false);
+                showAlert("Xảy ra lỗi", "Xử lý thất bại: " + task.getException().getMessage(), Alert.AlertType.ERROR);
+            });
+        });
+
         new Thread(task).start();
+    }
+
+    private void updateProgressStatus(int current, int total, String message) {
+        Platform.runLater(() -> {
+            progressLabel.setText(message);
+            progressIndicator.setProgress((double) current / total);
+        });
     }
 
     private void displayJasperReport(JasperPrint jasperPrint) {

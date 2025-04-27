@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.ProgressIndicator?>
 <AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BanVe.BanVeController">
    <children>
       <BorderPane prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
@@ -208,39 +209,50 @@
             </VBox>
          </center>
          <bottom>
-            <HBox spacing="10.0" BorderPane.alignment="CENTER">
+            <VBox spacing="10.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button id="qrButton" fx:id="btnTroLai" contentDisplay="CENTER" mnemonicParsing="false" onAction="#chuyenSangTimVe" prefHeight="40.0" prefWidth="78.0" stylesheets="@../../css/style.css" text="Trở lại">
-                     <font>
-                        <Font name="System Bold" size="16.0" />
-                     </font>
-                  </Button>
-                  <HBox HBox.hgrow="ALWAYS" />
-                  <Button id="qrButton" fx:id="btnThem" contentDisplay="CENTER" mnemonicParsing="false" onAction="#Huy" prefHeight="40.0" prefWidth="76.0" stylesheets="@../../css/style.css" text="Hủy">
-                     <font>
-                        <Font name="System Bold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button id="qrButton" fx:id="btnXoa" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="40.0" prefWidth="86.0" stylesheets="@../../css/style.css" text="Xóa">
-                     <font>
-                        <Font name="System Bold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button id="qrButton" fx:id="btnXoaTatCa" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="40.0" prefWidth="102.0" stylesheets="@../../css/style.css" text="Xóa tất cả">
-                     <font>
-                        <Font name="System Bold" size="16.0" />
-                     </font>
-                  </Button>
-                  <!-- Nút thanh toán -->
-                  <Button fx:id="btnTraVaIn" onAction="#controller" prefWidth="311.0" stylesheets="@../../css/style.css" text="Thanh toán">
-                     <styleClass>
-                        <String fx:value="btn" />
-                        <String fx:value="btn-success" />
-                     </styleClass>
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
+                  <!-- HBox chứa các nút -->
+                  <HBox fx:id="buttonHBox" spacing="10.0" alignment="CENTER">
+                     <children>
+                        <Button id="qrButton" fx:id="btnTroLai" contentDisplay="CENTER" mnemonicParsing="false" onAction="#chuyenSangTimVe" prefHeight="40.0" prefWidth="78.0" stylesheets="@../../css/style.css" text="Trở lại">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Button>
+                        <HBox HBox.hgrow="ALWAYS" />
+                        <Button id="qrButton" fx:id="btnThem" contentDisplay="CENTER" mnemonicParsing="false" onAction="#Huy" prefHeight="40.0" prefWidth="76.0" stylesheets="@../../css/style.css" text="Hủy">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Button>
+                        <Button id="qrButton" fx:id="btnXoa" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="40.0" prefWidth="86.0" stylesheets="@../../css/style.css" text="Xóa">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Button>
+                        <Button id="qrButton" fx:id="btnXoaTatCa" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="40.0" prefWidth="102.0" stylesheets="@../../css/style.css" text="Xóa tất cả">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="btnTraVaIn" onAction="#controller" prefWidth="311.0" stylesheets="@../../css/style.css" text="Thanh toán">
+                           <styleClass>
+                              <String fx:value="btn" />
+                              <String fx:value="btn-success" />
+                           </styleClass>
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <!-- HBox chứa ProgressIndicator và Label trạng thái -->
+                  <HBox fx:id="progressHBox" spacing="10.0" alignment="CENTER" visible="false">
+                     <children>
+                        <ProgressIndicator fx:id="progressIndicator" prefWidth="30.0" prefHeight="30.0" />
+                        <Label fx:id="progressLabel" text="Đang xử lý..." />
+                     </children>
+                  </HBox>
                </children>
                <BorderPane.margin>
                   <Insets bottom="10.0" top="5.0" />
@@ -248,7 +260,7 @@
                <padding>
                   <Insets top="10.0" />
                </padding>
-            </HBox>
+            </VBox>
          </bottom>
       </BorderPane>
    </children>
