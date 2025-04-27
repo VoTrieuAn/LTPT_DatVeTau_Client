@@ -59,8 +59,8 @@
             </HBox>
             <HBox layoutX="297.0" layoutY="26.0" prefHeight="30.0" spacing="12.0">
                <children>
-                  <ToggleButton fx:id="toggle_DaKhoiHanh" mnemonicParsing="false" prefHeight="37.0" prefWidth="140.0" styleClass="toggle_button" stylesheets="@../css/QuanLi_GUI.css" text="Đã khởi hành" />
                   <ToggleButton fx:id="toggle_ChuaKhoiHanh" mnemonicParsing="false" prefHeight="37.0" prefWidth="150.0" styleClass="toggle_button" stylesheets="@../css/QuanLi_GUI.css" text="Chưa khởi hành" />
+                  <ToggleButton fx:id="toggle_DaKhoiHanh" mnemonicParsing="false" prefHeight="37.0" prefWidth="140.0" styleClass="toggle_button" stylesheets="@../css/QuanLi_GUI.css" text="Đã khởi hành" />
                   <ToggleButton fx:id="toggle_DaHuy" mnemonicParsing="false" prefHeight="37.0" prefWidth="120.0" styleClass="toggle_button" stylesheets="@../css/QuanLi_GUI.css" text="Đã hủy" />
                </children>
             </HBox>

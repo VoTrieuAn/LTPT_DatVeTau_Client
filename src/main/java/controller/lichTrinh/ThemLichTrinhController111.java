@@ -777,7 +777,7 @@ public class ThemLichTrinhController111 {
                     LocalTime gioKhoiHanhLocalTime = gioDi.toLocalTime();
                     LocalDate ngayKhoiHanhLocalDate = ngayKhoiHanh.toLocalDate();
                     // Tạo mã lịch trình
-                    String maLT = maLTGenerator.generateMaLT(gaKH, gaKT, ngayKhoiHanhLocalDate, gioKhoiHanhLocalTime);
+                    String maLT = lichTrinhService.generateMaLT(gaKH, gaKT, ngayKhoiHanhLocalDate, gioKhoiHanhLocalTime);
                     // Thêm Lịch Trình vào danh sách
                     dsLT.add(new LichTrinh(maLT, gaKH, gaKT, ngayKhoiHanh, gioDen, gioDi, ngayKetThuc, 0, tauByMa));
                 }

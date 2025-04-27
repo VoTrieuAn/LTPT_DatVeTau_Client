@@ -46,27 +46,32 @@ public class LichTrinhController {
     private CheckBox checkbox_LocCacNgaySau;
 
     public void initialize() {
-        loadDataVaoTable();
+        // BẬT toggle Chưa khởi hành trước
+        toggle_ChuaKhoiHanh.setSelected(true);
 
+        // Gọi luôn load bảng đúng theo trạng thái được chọn
+        loadDataVaoTable();
+        capNhatLichTrinh();
 
         // Khởi tạo ánh xạ ToggleButton với trạng thái
         toggleTrangThaiMap.put(toggle_ChuaKhoiHanh, 0); // Trạng thái 0: Chưa khởi hành
         toggleTrangThaiMap.put(toggle_DaKhoiHanh, 1);   // Trạng thái 1: Đã khởi hành
         toggleTrangThaiMap.put(toggle_DaHuy, -1);
 
-        // Thêm sự kiện thay đổi trạng thái cho tất cả ToggleButton
+        // Thêm sự kiện cho toggle
         toggleTrangThaiMap.keySet().forEach(toggle ->
                 toggle.setOnAction(event -> capNhatLichTrinh())
         );
+
+        // Lắng nghe DatePicker và CheckBox
         picker_NgayDI.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null)
                 capNhatLichTrinh();
         });
 
-        checkbox_LocCacNgaySau.setOnAction(event -> {
-            capNhatLichTrinh();
-        });
+        checkbox_LocCacNgaySau.setOnAction(event -> capNhatLichTrinh());
     }
+
 
     private void loadDataVaoTable() {
         // Ánh xạ các cột với các thuộc tính của Entity
@@ -196,7 +201,11 @@ public class LichTrinhController {
             showThemLichTrinh();
         }
         if (source == btnLamMoi) {
-            MenuController.instance.readyUI("LichTrinh");
+                toggle_ChuaKhoiHanh.setSelected(true);
+                toggle_DaKhoiHanh.setSelected(false);
+                toggle_DaHuy.setSelected(false);
+                MenuController.instance.readyUI("LichTrinh");
+
         }
         if (source == btn_XuatExcel) {
             xuatExcel();
