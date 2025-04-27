@@ -33,7 +33,7 @@
                      <children>
                         <HBox>
                            <children>
-                              <VBox id="vbox-doitra" prefHeight="66.0" prefWidth="1280.0" spacing="10.0" style="-fx-background-color: fff;" stylesheets="@../css/style.css">
+                              <VBox id="vbox-doitra" fx:id="hbox_CCCD" prefHeight="72.0" prefWidth="379.0" spacing="10.0" style="-fx-background-color: fff;" stylesheets="@../css/style.css">
                                  <children>
                                     <Label text="Nhập thông tin để tìm vé">
                                        <font>
@@ -56,6 +56,7 @@
                                     </HBox>
                                  </children>
                               </VBox>
+                              <ImageView fx:id="urlImage" fitHeight="71.0" fitWidth="76.0" pickOnBounds="true" preserveRatio="true" />
                            </children>
                         </HBox>
                         <VBox id="vboxTableView" fx:id="vboxScrollPane1" prefHeight="625.0" prefWidth="506.0" stylesheets="@../css/style.css" VBox.vgrow="ALWAYS">
@@ -219,7 +220,7 @@
                                     <GridPane fx:id="gridPane" alignment="CENTER" hgap="10.0" prefWidth="738.0" vgap="10.0">
                         </GridPane>
                                  </ScrollPane>
-                                 <HBox prefHeight="16.0" prefWidth="824.0" VBox.vgrow="ALWAYS">
+                                 <HBox fx:id="hbox_GiaVe" prefHeight="16.0" prefWidth="824.0" VBox.vgrow="ALWAYS">
                                     <children>
                                        <VBox prefHeight="66.0" prefWidth="645.0" spacing="5.0">
                                           <children>

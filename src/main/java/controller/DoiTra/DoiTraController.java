@@ -96,6 +96,10 @@ public class DoiTraController {
     public TabPane tabPane;
     public Button clear;
     @FXML
+    public ImageView urlImage;
+    public VBox hbox_CCCD;
+    public HBox hbox_GiaVe;
+    @FXML
     private GridPane gridPane;
     public VBox vboxScrollPane;
     public TextField textField_CCCD_DoiVe;
@@ -194,14 +198,45 @@ public class DoiTraController {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final ObservableList<DonDoiTra> danhSachDon = FXCollections.observableArrayList();
+    public void update30_4(){
+        tab1.setStyle("-fx-background-color: #fa8484;");
+        tab2.setStyle("-fx-background-color: #fa8484;");
+        tab3.setStyle("-fx-background-color: #fa8484;");
+        hbox_CCCD.setStyle("-fx-background-color: #fa8484;");
+        hbox_GiaVe.setStyle("-fx-background-color: #fa8484;");
+        tableViewLoadTau.setStyle("-fx-background-color: #fa8484;");
+        tableViewVe.setStyle("-fx-background-color: #fa8484;");
+        tableXemLichSu.setStyle("-fx-background-color: #fa8484;");
+        hboxToaTaus.setStyle("-fx-background-color: #fa8484;");
+        scrollPane.setStyle("-fx-background-color: #fa8484;");
+        columnMaVe.setStyle("-fx-background-color: #fafa84;");
+        columnTenNguoiMua.setStyle("-fx-background-color: #fafa84;");
+        columnNgayMua.setStyle("-fx-background-color: #fafa84;");
+        columnLoaiVe.setStyle("-fx-background-color: #fafa84;");
+        textField_CCCD_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        giaVeCu_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        giaVeMoi_DoiVe.setStyle("-fx-background-color: #fafa84;");
+        tienBuThem.setStyle("-fx-background-color: #fafa84;");
+        tienPhiDoi.setStyle("-fx-background-color: #fafa84;");
+        tienHoanTra.setStyle("-fx-background-color: #fafa84;");
+        columnTau.setStyle("-fx-background-color: #fafa84;");
+        columnGioDi.setStyle("-fx-background-color: #fafa84;");
+        columnGioDen.setStyle("-fx-background-color: #fafa84;");
+        columnNgayDi.setStyle("-fx-background-color: #fafa84;");
+        columnNgayDen.setStyle("-fx-background-color: #fafa84;");
+
+    }
     @FXML
     public void initialize() {
         refreshUI();
+        update30_4();
+        String imageUrl = "https://res.cloudinary.com/dbv9csgia/image/upload/v1745734131/download_c2yrd0.png";
+        Image image = new Image(imageUrl);
+        urlImage.setImage(image);
         coachEmptyImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_empty.png")));
         coachFullImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_full.png")));
         coachChoosingImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")));
         AnchorPane.setLeftAnchor(panelInfoTicket, vboxTraVeLeft.getWidth());
-
         // set cột table
         maDon.setCellValueFactory(new PropertyValueFactory<>("maDonDoiTra"));
         loaiDon.setCellValueFactory(cellData ->
