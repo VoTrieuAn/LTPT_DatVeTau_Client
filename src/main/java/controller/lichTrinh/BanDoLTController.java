@@ -19,12 +19,14 @@ public class BanDoLTController {
     public void onCircleClick(MouseEvent mouseEvent) {
         // Lấy đối tượng Circle từ sự kiện
         Circle circle = (Circle) mouseEvent.getSource();
+
         // Kiểm tra nếu người dùng nhấp lại vào ga đã chọn trước đó (bỏ chọn)
         if (circle == selectedCircle1) {
             // Bỏ chọn circle1
             selectedCircle1.setFill(Color.WHITE); // Đổi màu về màu ban đầu (màu trắng)
             selectedCircle1 = null; // Xóa circle1
             selectedLine = null; // Xóa line
+
             if (selectedCircle2 != null) {
                 // Nếu có selectedCircle2, hãy giữ màu của nó và kiểm tra lại đường line
                 selectedCircle2.setFill(Color.WHITE);
@@ -43,13 +45,14 @@ public class BanDoLTController {
                 circle.setFill(Color.RED); // Đổi màu circle1 thành đỏ
             } else if (selectedCircle2 == null) {
                 selectedCircle2 = circle;
-                circle.setFill(Color.RED); // Đổi màu circle2 thành đỏ
+                circle.setFill(Color.BLUE); // Đổi màu circle2 thành xanh
 
                 // Cập nhật màu đường line giữa hai ga
                 updateLine();
             }
         }
     }
+
 
     private void updateLine() {
         // Xác định các cặp ga liên quan
@@ -81,7 +84,7 @@ public class BanDoLTController {
 
         // Đổi màu đường line nếu có
         if (selectedLine != null) {
-            selectedLine.setStroke(Color.RED);
+            selectedLine.setStroke(Color.ORANGE);
         }
     }
 }

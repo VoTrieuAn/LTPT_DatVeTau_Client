@@ -1,8 +1,6 @@
 package controller.Menu;
 
 import com.jfoenix.controls.JFXButton;
-import config.TrainTicketApplication;
-import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,8 +10,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import rmi.RMIServiceLocator;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -107,10 +107,15 @@ public class MenuController {
         if (buttonType.isPresent() && buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
             // Cập nhật lại ngày giờ đăng nhập
             this.taiKhoan.setNgayDangXuat(Timestamp.valueOf(LocalDateTime.now()));
-            TrainTicketApplication.getInstance()
-                    .getDatabaseContext()
-                    .newEntityDAO(TaiKhoanDAO.class)
-                    .capNhat(taiKhoan);
+            try {
+                RMIServiceLocator.getTaiKhoanService().capNhat(this.taiKhoan);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+//            TrainTicketApplication.getInstance()
+//                    .getDatabaseContext()
+//                    .newEntityDAO(TaiKhoanDAO.class)
+//                    .capNhat(taiKhoan);
             // Để Nhân chỉnh lại - load lên bị lỗi
             try {
                 if (!(source instanceof MenuItem menuItem)) {

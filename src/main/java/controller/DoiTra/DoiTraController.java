@@ -315,6 +315,7 @@ public class DoiTraController {
                 updateFieldsTra(newValue);
                 Map<String, Double> result = null;
                 try {
+
                     result = RMIServiceLocator.getVeService().tinhTienHoanTra(newValue);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
@@ -751,12 +752,7 @@ public class DoiTraController {
 
     //Done==================================================================
     public void loadChuyenTauCungGa(String gaDi, String gaDen) {
-        List<LichTrinh> chuyenTauList = null;
-        try {
-            chuyenTauList = RMIServiceLocator.getLichTrinhService().getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+        List<LichTrinh> chuyenTauList = RMIServiceLocator.getLichTrinhService().getChuyenTauCungGaLonHonNgayHienTai(gaDi,gaDen);
         ObservableList<LichTrinh> chuyensTauObservableList = FXCollections.observableArrayList(chuyenTauList);
         tableViewLoadTau.setItems(chuyensTauObservableList);
     }

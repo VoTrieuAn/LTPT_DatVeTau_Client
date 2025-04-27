@@ -1,10 +1,8 @@
 package controller;
 
 import common.LoaiNhanVien;
-import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
 import controller.Menu.MenuController;
-import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;

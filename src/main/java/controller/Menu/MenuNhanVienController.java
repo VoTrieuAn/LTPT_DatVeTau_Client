@@ -1,10 +1,7 @@
 package controller.Menu;
 
 import com.jfoenix.controls.JFXButton;
-import config.TrainTicketApplication;
 import controller.BanVe.TimVeController;
-import controller.KetCaController;
-import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,8 +11,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import rmi.RMIServiceLocator;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -63,7 +62,7 @@ public class MenuNhanVienController {
         instance = this;
     }
     @FXML
-    void controller(ActionEvent event) {
+    void controller(ActionEvent event) throws RemoteException {
         Object source = event.getSource();
         if (source == dangXuatButton) {
             dangXuat(source);
@@ -93,12 +92,6 @@ public class MenuNhanVienController {
         readyUI("HoaDon/HoaDon");
     }
 
-    // Cho kết ca
-    @FXML
-    void handleKetCaAction(ActionEvent event) {
-        KetCaController ketCaController = readyUI("KetCaNhanVien").getController();
-        ketCaController.setTaiKhoan(taiKhoan);
-    }
     // End kết ca
     // Chức năng
     private void dangXuat(Object source)  {
@@ -109,10 +102,15 @@ public class MenuNhanVienController {
         if (buttonType.isPresent() && buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
             // Cập nhật lại ngày giờ đăng nhập
             this.taiKhoan.setNgayDangXuat(Timestamp.valueOf(LocalDateTime.now()));
-            TrainTicketApplication.getInstance()
-                    .getDatabaseContext()
-                    .newEntityDAO(TaiKhoanDAO.class)
-                    .capNhat(taiKhoan);
+            try {
+                RMIServiceLocator.getTaiKhoanService().capNhat(this.taiKhoan);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+//            TrainTicketApplication.getInstance()
+//                    .getDatabaseContext()
+//                    .newEntityDAO(TaiKhoanDAO.class)
+//                    .capNhat(taiKhoan);
             // Để Nhân chỉnh lại - load lên bị lỗi
             try {
                 if (!(source instanceof MenuItem menuItem)) {
@@ -132,7 +130,7 @@ public class MenuNhanVienController {
             // Để Nhân chỉnh lại - load lên bị lỗi
         }
     }
-    private void thongTinCaNhan() {
+    private void thongTinCaNhan() throws RemoteException {
         ThongTinCaNhanController thongTinCaNhanController = readyUI("Menu/ThongTinCaNhan").getController();
         thongTinCaNhanController.setTaiKhoan(this.taiKhoan);
     }
@@ -166,7 +164,7 @@ public class MenuNhanVienController {
         return alert.showAndWait();
     }
 
-    public void setThongTin(TaiKhoan taiKhoan) {
+    public void setThongTin(TaiKhoan taiKhoan) throws RemoteException {
         this.taiKhoan = taiKhoan;
         String hoTen = taiKhoan.getNhanvienByMaNv().getHoTenDem() + " " + taiKhoan.getNhanvienByMaNv().getTen();
         hoTenNVLabel.setText(hoTen);

@@ -30,6 +30,14 @@ public class RMIServiceLocator {
     public static KhuyenMaiService getKhuyenMaiService() {
         return safeLookup("KhuyenMaiService");
     }
+
+    public static DonDoiTraService getDonDoiTraService() {
+        return safeLookup("DonDoiTraService");
+    }
+
+    public static ToaTauService getToaTauService() {
+        return safeLookup("ToaTauService");
+    }
     public static TauService getTauService() {
         return safeLookup2("TauService", TauService.class);
     }

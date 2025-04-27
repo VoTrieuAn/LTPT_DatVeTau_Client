@@ -2,9 +2,7 @@ package controller.BanVe;
 
 import common.LoaiHanhKhach;
 import common.LoaiVe;
-import config.TrainTicketApplication;
 import controller.Menu.MenuNhanVienController;
-import dao.KhuyenMaiDAO;
 import entity.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -151,8 +149,7 @@ public class BanVeController implements Initializable {
         tableViewBanVe.setItems(displayedVeList);
         tableViewBanVe.setEditable(true);
 
-        maHoaDonTextField.setText(HoadonCodeGeneratorUtil.generateMaHoadon(
-                TrainTicketApplication.getInstance().getEntityManagerFactory().createEntityManager()));
+        maHoaDonTextField.setText(HoadonCodeGeneratorUtil.generateMaHoadon());
         ngayTaoDatePicker.setValue(LocalDate.now());
         ngayTaoDatePicker.addEventFilter(MouseEvent.ANY, event -> event.consume());
 
