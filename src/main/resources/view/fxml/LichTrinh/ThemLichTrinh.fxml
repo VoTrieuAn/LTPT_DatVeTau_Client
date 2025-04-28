@@ -212,7 +212,7 @@
                                             <Insets top="10.0" />
                                         </padding>
                                     </GridPane>
-                                    <TableView fx:id="tableThemLT" layoutY="319.0" onMouseClicked="#mouseClickedEvent" prefHeight="315.0" prefWidth="850.0" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="319.0">
+                                    <TableView fx:id="tableThemLT" layoutY="319.0" onMouseClicked="#mouseClickedEvent" prefHeight="315.0" prefWidth="850.0" styleClass="background-covn" stylesheets="@../../css/style.css" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="319.0">
                                         <columns>
                                             <TableColumn fx:id="maLTColumn" prefWidth="75.0" sortable="false" text="Mã LT" />
                                             <TableColumn fx:id="gaKHColumn" prefWidth="75.0" sortable="false" text="Ga KH" />

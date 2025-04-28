@@ -571,3 +571,10 @@
     -fx-background-position: center center; /* Căn giữa ảnh */
     -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
 }
+
+.background-covn{
+    -fx-background-image: url("/view/images/hinh-nen-co-viet-nam.jpg");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
