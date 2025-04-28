@@ -235,7 +235,7 @@
                                                       <children>
                                                          <Label prefHeight="27.0" prefWidth="217.0" text="Giá Vé Cũ:">
                                                             <font>
-                                                               <Font size="18.0" />
+                                                               <Font name="System Bold" size="18.0" />
                                                             </font>
                                                          </Label>
                                                          <TextField fx:id="giaVeCu_DoiVe" editable="false" prefHeight="25.0" prefWidth="247.0" styleClass="text-field-default" stylesheets="@../css/style.css">
@@ -261,7 +261,7 @@
                                                       <children>
                                                          <Label prefHeight="27.0" prefWidth="217.0" text="Giá Vé Mới:">
                                                             <font>
-                                                               <Font size="18.0" />
+                                                               <Font name="System Bold" size="18.0" />
                                                             </font>
                                                          </Label>
                                                          <TextField fx:id="giaVeMoi_DoiVe" editable="false" prefHeight="25.0" prefWidth="247.0" styleClass="text-field-default" stylesheets="@../css/style.css">
@@ -277,7 +277,7 @@
                                                 <children>
                                                    <Label prefHeight="27.0" prefWidth="217.0" text="Tiền Bù Thêm:">
                                                       <font>
-                                                         <Font size="18.0" />
+                                                         <Font name="System Bold" size="18.0" />
                                                       </font>
                                                    </Label>
                                                    <TextField fx:id="tienBuThem" editable="false" prefHeight="25.0" prefWidth="247.0" styleClass="text-field-default" stylesheets="@../css/style.css">
@@ -291,7 +291,7 @@
                                                 <children>
                                                    <Label prefHeight="27.0" prefWidth="217.0" text="Tiền Phí Đổi:">
                                                       <font>
-                                                         <Font size="18.0" />
+                                                         <Font name="System Bold" size="18.0" />
                                                       </font>
                                                    </Label>
                                                    <TextField fx:id="tienPhiDoi" editable="false" prefHeight="25.0" prefWidth="247.0" styleClass="text-field-default" stylesheets="@../css/style.css">
@@ -305,7 +305,7 @@
                                                 <children>
                                                    <Label prefHeight="27.0" prefWidth="217.0" text="Tiền Hoàn Trả: ">
                                                       <font>
-                                                         <Font size="18.0" />
+                                                         <Font name="System Bold" size="18.0" />
                                                       </font>
                                                    </Label>
                                                    <TextField fx:id="tienHoanTra" editable="false" prefHeight="25.0" prefWidth="247.0" styleClass="text-field-default" stylesheets="@../css/style.css">
@@ -324,7 +324,7 @@
                                           <children>
                                              <Button fx:id="doiVe_Button" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#doiVe" prefHeight="47.0" prefWidth="98.0" styleClass="btn-success" stylesheets="@../css/style.css" text="Đổi Vé">
                                                 <font>
-                                                   <Font name="System Bold" size="16.0" />
+                                                   <Font name="System Italic" size="16.0" />
                                                 </font></Button>
                                              <Button fx:id="cancel" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onMouseClicked="#onActionCancel" prefHeight="47.0" prefWidth="98.0" styleClass="btn-danger" text="Hủy Đổi ">
                                                 <font>
@@ -612,7 +612,7 @@
                                  <children>
                                     <Label alignment="CENTER" prefHeight="32.0" prefWidth="101.0" text="Tìm kiếm:">
                                        <font>
-                                          <Font size="18.0" />
+                                          <Font name="System Bold" size="18.0" />
                                        </font>
                                        <HBox.margin>
                                           <Insets />
@@ -635,7 +635,7 @@
                                        <children>
                                           <Label text="Từ Ngày:">
                                              <font>
-                                                <Font size="18.0" />
+                                                <Font name="System Bold" size="18.0" />
                                              </font>
                                           </Label>
                                           <DatePicker fx:id="ngayLapDon1_DatePicker" onAction="#setNgayBatDauEQNgayKetThuc" prefHeight="32.0" promptText="dd/mm/yyy" styleClass="text-field-default" stylesheets="@../css/style.css" />
@@ -645,13 +645,13 @@
                                        <children>
                                           <Label text="Đến Ngày:">
                                              <font>
-                                                <Font size="18.0" />
+                                                <Font name="System Bold" size="18.0" />
                                              </font>
                                           </Label>
                                           <DatePicker fx:id="ngayLapDon2_DatePicker" disable="true" onAction="#setNgayKetThucGTENgayBatDau" prefHeight="32.0" promptText="dd/mm/yyy" styleClass="text-field-default" stylesheets="@../css/style.css" />
                                        </children>
                                     </VBox>
-                                    <Button fx:id="timDonTheoNgay" alignment="CENTER" mnemonicParsing="false" onAction="#timDonDoiTra" prefHeight="64.0" prefWidth="86.0" styleClass="btn-success" text="Tìm " textOverrun="CENTER_ELLIPSIS" HBox.hgrow="ALWAYS">
+                                    <Button fx:id="timDonTheoNgay" alignment="CENTER" mnemonicParsing="false" onAction="#timDonDoiTra" prefHeight="64.0" prefWidth="86.0" styleClass="btn-success" stylesheets="@../css/style.css" text="Tìm " textOverrun="CENTER_ELLIPSIS" HBox.hgrow="ALWAYS">
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>

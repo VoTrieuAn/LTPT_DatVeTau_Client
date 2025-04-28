@@ -551,3 +551,14 @@
 
 .button_Login {
 }
+
+
+.tooltip {
+    -fx-background-color: #e4f36a;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;              /
+-fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 4, 0, 2, 2);
+}
