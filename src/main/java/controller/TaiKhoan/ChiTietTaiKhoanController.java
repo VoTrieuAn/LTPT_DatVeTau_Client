@@ -134,8 +134,8 @@ public class ChiTietTaiKhoanController {
     private void setThongTinTaiKhoan(TaiKhoan taiKhoan) {
         maTKLabel.setText(taiKhoan.getMaTk());
         tenTKLabel.setText(taiKhoan.getTenTaiKhoan());
-        ngayDNLabel.setText(String.valueOf(taiKhoan.getNgayDangNhap()));
-        ngayDXLabel.setText(String.valueOf(taiKhoan.getNgayDangXuat()));
+        ngayDNLabel.setText(!String.valueOf(taiKhoan.getNgayDangNhap()).equals("null") ? String.valueOf(taiKhoan.getNgayDangNhap()) : "Chưa đăng nhập");
+        ngayDXLabel.setText(!String.valueOf(taiKhoan.getNgayDangXuat()).equals("null") ? String.valueOf(taiKhoan.getNgayDangXuat()) : "Chưa đăng xuất");
         ngaySDLabel.setText(String.valueOf(taiKhoan.getNgaySuaDoi()));
     }
     private void setThongTinNhanVien(NhanVien nhanVien) {
