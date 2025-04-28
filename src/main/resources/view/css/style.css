@@ -551,6 +551,16 @@
 
 .button_Login {
 }
+
+
+.tooltip {
+    -fx-background-color: #e4f36a;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;              /
+-fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 4, 0, 2, 2);
 .background-img{
     -fx-background-image: url("/view/images/30thang4/bangron30415.png");
     -fx-background-size: 70% 100%; /* Đảm bảo ảnh không bị cắt */

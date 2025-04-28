@@ -17,6 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import rmi.RMIServiceLocator;
 import util.ExportExcelUtil;
@@ -282,6 +283,15 @@ public class DoiTraController {
     public void initialize() {
         refreshUI();
         update30_4();
+        Tooltip tooltip = new Tooltip("Có thể nhập mã vé nhé!☺");
+        Tooltip tooltip2 = new Tooltip("Có thể nhập mã vé nhé!☺");
+        tooltip2.setShowDelay(Duration.millis(50));
+        tooltip2.setHideDelay(Duration.millis(100));
+        tooltip.setShowDelay(Duration.millis(50));
+        tooltip.setHideDelay(Duration.millis(100));
+        textField_CCCD_DoiVe.setTooltip(tooltip);
+        textField_CCCD_TraVe.setTooltip(tooltip2);
+
         coachEmptyImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_empty.png")));
         coachFullImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_full.png")));
         coachChoosingImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/view/images/Coach_choosing.png")));
@@ -784,11 +794,11 @@ public class DoiTraController {
     private final ObservableList<Ve> listVe = FXCollections.observableArrayList();
 
     //Done =============================
-    public void loadVe(String cccd) {
+    public void loadVe(String input) {
         System.out.println("Danh sách vé: " + dsVe);
         List<Ve> dsVe = null;
         try {
-            dsVe = RMIServiceLocator.getVeService().getVeById(cccd);
+            dsVe = RMIServiceLocator.getVeService().getVeConHieuLuc(input);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -865,10 +875,10 @@ public class DoiTraController {
         }
     }
     //DOne ========================================
-    public void loadVeTraVe(String cccd) {
+    public void loadVeTraVe(String input) {
         List<Ve> dsVe = null;
         try {
-            dsVe = RMIServiceLocator.getVeService().getVeById(cccd);
+            dsVe = RMIServiceLocator.getVeService().getVeConHieuLuc(input);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
