@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 import rmi.RMIServiceLocator;
 import service.EntityService;
+import service.NhanVienService;
 import service.TaiKhoanService;
 import util.*;
 
@@ -227,14 +228,14 @@ public class ThemNhanVienController {
     private void luuLai() throws RemoteException {
         int index = tableThemNv.getSelectionModel().getFocusedIndex();
         EntityService<NhanVien> nhanVienService = RMIServiceLocator.getNhanVienService();
-        EntityService<TaiKhoan> taiKhoanService = RMIServiceLocator.getTaiKhoanService();
+        TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
         if (index >= 0) {
             NhanVien nhanVien = tableThemNv.getSelectionModel().getSelectedItem();
             if (nhanVien != null) {
                 try {
                     nhanVienService.them(nhanVien);
                     String matKhau = PasswordGeneratorUtil.generatePassword();
-                    String maTk = ((TaiKhoanService) taiKhoanService).generateAccountCode();
+                    String maTk = taiKhoanService.generateAccountCode();
                     String tenTK = nhanVien.getMaNv();
                     String matKhauHash = PasswordUtil.hashPassword(matKhau);
                     TaiKhoan taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
@@ -381,7 +382,7 @@ public class ThemNhanVienController {
         String email = diaChiTextField.getText().trim();
         String cccd = cccdTextField.getText().trim();
 
-        EntityService<NhanVien> nhanVienService = RMIServiceLocator.getNhanVienService();
+        NhanVienService nhanVienService = RMIServiceLocator.getNhanVienService();
         if (hoTenDem.isEmpty()) {
             showAlert("Cảnh Báo", "Vui lòng nhập họ tên đệm!", Alert.AlertType.WARNING);
             hotenDemTextField.requestFocus();
@@ -455,7 +456,7 @@ public class ThemNhanVienController {
             }
         }
         try {
-            String maNv = taiKhoanService.generateEmployeeCode();
+            String maNv = nhanVienService.generateEmployeeCode();
             boolean gioiTinh = gioiTinhCombobox.getValue().contentEquals("Nữ");
             LoaiNhanVien chucVu = chucVuCombobox.getValue().contentEquals(LoaiNhanVien.BAN_VE.getName()) ? LoaiNhanVien.BAN_VE : LoaiNhanVien.QUAN_LI_BAN_VE;
             boolean trangThai = trangThaiCombobox.getValue().contentEquals("Đang làm việc");

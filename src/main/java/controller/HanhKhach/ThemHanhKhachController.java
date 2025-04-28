@@ -13,17 +13,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import rmi.RMIServiceLocator;
 import service.EntityService;
-import util.PassengerCodeGeneratorUtil;
+import service.HanhKhachService;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class ThemHanhKhachController {
@@ -55,6 +50,8 @@ public class ThemHanhKhachController {
 
     @FXML
     private TextField tenTextField;
+
+    private final HanhKhachService hanhKhachService = RMIServiceLocator.getHanhKhachService();
     private String ui = "ThemHanhKhach";
     private HanhKhach hanhKhach;
 
@@ -168,78 +165,49 @@ public class ThemHanhKhachController {
         String sdt = soDienThoaiTextField.getText().trim();
         String email = diaChiTextField.getText().trim();
         String cccd = cccdTextField.getText().trim();
-        EntityService<HanhKhach> hanhKhachService = (EntityService<HanhKhach>) RMIServiceLocator.getHanhKhachService();
+
+        HanhKhach hanhKhachNew = null;
+        try {
+            hanhKhachNew = hanhKhachService.createHanhKhach(hoTenDem, ten, ngaySinh, sdt, email, cccd);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        if (hanhKhachNew == null) {
+            showValidationError(hoTenDem, ten, ngaySinh, sdt, email, cccd);
+        }
+        return hanhKhachNew;
+    }
+    private void showValidationError(String hoTenDem, String ten, LocalDate ngaySinh, String sdt, String email, String cccd) {
         if (hoTenDem.isEmpty()) {
             showAlert("Cảnh Báo", "Vui lòng nhập họ tên đệm!", Alert.AlertType.WARNING);
             hotenDemTextField.requestFocus();
-            return null;
-        }
-        if (ten.isEmpty()) {
+        } else if (ten.isEmpty()) {
             showAlert("Cảnh Báo", "Vui lòng nhập tên!", Alert.AlertType.WARNING);
             tenTextField.requestFocus();
-            return null;
-        }
-
-        if (ngaySinh == null) {
+        } else if (ngaySinh == null) {
             showAlert("Cảnh Báo", "Vui lòng chọn ngày sinh!", Alert.AlertType.WARNING);
             ngaySinhTextField.requestFocus();
-            return null;
-        } else {
-            LocalDate today = LocalDate.now();
-            int age = Period.between(ngaySinh, today).getYears();
-
-            if (age < 18) {
-                showAlert("Cảnh Báo", "Hành khách chưa đủ 18 tuổi!", Alert.AlertType.WARNING);
-                return null;
-            }
-        }
-
-        if (sdt.isEmpty()) {
-            showAlert("Cảnh Báo", "Vui lòng nhập số điện thoại!", Alert.AlertType.WARNING);
+        } else if (Period.between(ngaySinh, LocalDate.now()).getYears() < 18) {
+            showAlert("Cảnh Báo", "Nhân viên chưa đủ 18 tuổi!", Alert.AlertType.WARNING);
+        } else if (sdt.isEmpty() || !sdt.matches("(84|0)[987531][0-9]{8,9}\\b")) {
+            showAlert("Cảnh Báo", "Số điện thoại không hợp lệ", Alert.AlertType.WARNING);
             soDienThoaiTextField.requestFocus();
-            return null;
-        } else {
-            String regexPhone = "(84|0)[987531][0-9]{8,9}\\b";
-            if (!sdt.matches(regexPhone)) {
-                showAlert("Cảnh Báo", "Số điện thoại không hơp lệ", Alert.AlertType.WARNING);
-                soDienThoaiTextField.requestFocus();
-                return null;
-            }
-        }
-
-        if (email.isEmpty()) {
-            showAlert("Cảnh Báo", "Vui lòng nhập email!", Alert.AlertType.WARNING);
+        } else if (email.isEmpty() || !email.matches("^[a-zA-Z][a-zA-Z0-9]+@[a-zA-Z]+(\\.[a-zA-Z]+)+$")) {
+            showAlert("Cảnh Báo", "Email không hợp lệ!", Alert.AlertType.WARNING);
             diaChiTextField.requestFocus();
-            return null;
-        } else {
-            if (!email.matches("^[a-zA-Z][a-zA-Z0-9]+@[a-zA-Z]+(\\.[a-zA-Z]+)+$")) {
-                showAlert("Cảnh Báo", "Email không hợp lệ!", Alert.AlertType.WARNING);
-                diaChiTextField.requestFocus();
-                return null;
-            }
-        }
-
-        if (cccd.isEmpty()) {
-            showAlert("Cảnh Báo", "Vui lòng nhập CCCD!", Alert.AlertType.WARNING);
+        } else if (cccd.isEmpty() || !cccd.matches("[0-9]{12}")) {
+            showAlert("Cảnh Báo", "Số CCCD không hợp lệ!", Alert.AlertType.WARNING);
             cccdTextField.requestFocus();
-            return null;
         } else {
-            if (!cccd.matches("[0-9]{12}")) {
-                showAlert("Cảnh Báo", "Số CCCD không hợp lệ!", Alert.AlertType.WARNING);
-                cccdTextField.requestFocus();
-                return null;
-            } else {
-                Map<String, Object> filter = new HashMap<>();
-                filter.put("cccd", cccd);
-                List<HanhKhach> hanhKhachs = hanhKhachService.getDanhSach(HanhKhach.class, filter);
-                if (!hanhKhachs.isEmpty()) {
+            try {
+                if (hanhKhachService.isCccdExists(cccd)) {
                     showAlert("Cảnh Báo", "Số CCCD đã tồn tại!", Alert.AlertType.WARNING);
-                    return null;
+                    cccdTextField.requestFocus();
                 }
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         }
-        String maHk = PassengerCodeGeneratorUtil.generateCustomerCode(Date.valueOf(ngaySinh).getYear());
-        return new HanhKhach(maHk, hoTenDem, ten, cccd, sdt, email, Date.valueOf(ngaySinh), new Timestamp(System.currentTimeMillis()));
     }
 
     private void showAlert(String title, String content, Alert.AlertType alertType) {
