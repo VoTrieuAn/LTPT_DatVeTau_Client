@@ -13,6 +13,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import rmi.RMIServiceLocator;
 import service.EntityService;
+import service.HanhKhachService;
 import util.PassengerCodeGeneratorUtil;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class ThemHanhKhachController {
     private TextField tenTextField;
     private String ui = "ThemHanhKhach";
     private HanhKhach hanhKhach;
-
+    HanhKhachService hanhKhachService = RMIServiceLocator.getHanhKhachService();
     @FXML
     public void initialize() {
         Platform.runLater(() -> hotenDemTextField.requestFocus());
@@ -67,11 +68,7 @@ public class ThemHanhKhachController {
     void controller(ActionEvent event) throws RemoteException {
         Object source = event.getSource();
         if (source == btnTroLai) {
-            if (!labelDanhSachHanhKhach.getText().equalsIgnoreCase("Danh sách hành khách")) {
-                xacNhanLuu("TimVe"); // Chổ này Phương Sửa lại cho hợp lý
-            } else {
-                xacNhanLuu("HanhKhach/HanhKhach");
-            }
+            xacNhanLuu("HanhKhach/HanhKhach");
         } else if (source == btnLuuLai) {
             luuLai();
         }
@@ -81,11 +78,7 @@ public class ThemHanhKhachController {
     void mouseClicked(MouseEvent event) throws RemoteException {
         Object source = event.getSource();
         if (source == labelDanhSachHanhKhach) {
-            if (!labelDanhSachHanhKhach.getText().equalsIgnoreCase("Danh sách hành khách")) {
-                xacNhanLuu("TimVe"); // Chổ này Phương Sửa lại cho hợp lý
-            } else {
-                xacNhanLuu("HanhKhach/HanhKhach");
-            }
+            xacNhanLuu("HanhKhach/HanhKhach");
         }
     }
 
@@ -96,11 +89,7 @@ public class ThemHanhKhachController {
             if (event.isControlDown() && event.getCode() == KeyCode.S) {
                 luuLai();
             } else if (event.getCode() == KeyCode.ESCAPE) {
-                if (!labelDanhSachHanhKhach.getText().equalsIgnoreCase("Danh sách hành khách")) {
-                    xacNhanLuu("TimVe"); // Chổ này Phương Sửa lại cho hợp lý
-                } else {
-                    xacNhanLuu("HanhKhach/HanhKhach");
-                }
+                xacNhanLuu("HanhKhach/HanhKhach");
             }
         }
     }
@@ -113,7 +102,6 @@ public class ThemHanhKhachController {
             if (buttonType.get().getButtonData() == ButtonBar.ButtonData.NO) {
                 troLai(ui);
             } else if (buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
-                EntityService<HanhKhach> hanhKhachService = (EntityService<HanhKhach>) RMIServiceLocator.getHanhKhachService();
                 boolean check = hanhKhachService.them(hanhKhachNew);
                 if (check) {
                     showAlert("Thông báo", "Thêm hành khách thành công!", Alert.AlertType.INFORMATION);
@@ -132,7 +120,6 @@ public class ThemHanhKhachController {
         HanhKhach hanhKhachNew = getHanhKhachNew();
         try {
             if (hanhKhachNew != null) {
-                EntityService<HanhKhach> hanhKhachService = (EntityService<HanhKhach>) RMIServiceLocator.getHanhKhachService();
                 boolean check = hanhKhachService.them(hanhKhachNew);
                 if (check) {
                     showAlert("Thông báo", "Thêm hành khách thành công!", Alert.AlertType.INFORMATION);
@@ -168,7 +155,7 @@ public class ThemHanhKhachController {
         String sdt = soDienThoaiTextField.getText().trim();
         String email = diaChiTextField.getText().trim();
         String cccd = cccdTextField.getText().trim();
-        EntityService<HanhKhach> hanhKhachService = (EntityService<HanhKhach>) RMIServiceLocator.getHanhKhachService();
+
         if (hoTenDem.isEmpty()) {
             showAlert("Cảnh Báo", "Vui lòng nhập họ tên đệm!", Alert.AlertType.WARNING);
             hotenDemTextField.requestFocus();
@@ -238,7 +225,7 @@ public class ThemHanhKhachController {
                 }
             }
         }
-        String maHk = PassengerCodeGeneratorUtil.generateCustomerCode(Date.valueOf(ngaySinh).getYear());
+        String maHk = hanhKhachService.generateCustomerCode(Date.valueOf(ngaySinh).getYear());
         return new HanhKhach(maHk, hoTenDem, ten, cccd, sdt, email, Date.valueOf(ngaySinh), new Timestamp(System.currentTimeMillis()));
     }
 

@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 import rmi.RMIServiceLocator;
 import service.EntityService;
+import service.NhanVienService;
 import service.TaiKhoanService;
 import util.*;
 
@@ -102,7 +103,7 @@ public class ThemNhanVienController {
     @FXML
     private TextField tenTextField;
     private ObservableList<NhanVien> danhSachNhanVien = FXCollections.observableArrayList();
-
+    NhanVienService nhanVienService = RMIServiceLocator.getNhanVienService();
     private TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
     //    Gọi sự kiện
     @FXML
@@ -224,17 +225,16 @@ public class ThemNhanVienController {
             }
         }
     }
-    private void luuLai() throws RemoteException {
+    private void luuLai()  {
         int index = tableThemNv.getSelectionModel().getFocusedIndex();
-        EntityService<NhanVien> nhanVienService = RMIServiceLocator.getNhanVienService();
-        EntityService<TaiKhoan> taiKhoanService = RMIServiceLocator.getTaiKhoanService();
+        TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
         if (index >= 0) {
             NhanVien nhanVien = tableThemNv.getSelectionModel().getSelectedItem();
             if (nhanVien != null) {
                 try {
                     nhanVienService.them(nhanVien);
                     String matKhau = PasswordGeneratorUtil.generatePassword();
-                    String maTk = ((TaiKhoanService) taiKhoanService).generateAccountCode();
+                    String maTk = taiKhoanService.generateAccountCode();
                     String tenTK = nhanVien.getMaNv();
                     String matKhauHash = PasswordUtil.hashPassword(matKhau);
                     TaiKhoan taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
@@ -256,37 +256,47 @@ public class ThemNhanVienController {
         } else {
             try{
                 // Thêm danh sách nhân viên
-//                databaseContext.newEntityDAO(NhanVienDAO.class).themNhieu(danhSachNhanVien);
-                nhanVienService.themNhieu(danhSachNhanVien);
+                danhSachNhanVien.forEach(nhanVien -> {
+                    try {
+                        nhanVienService.them(nhanVien);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
                 //Một list mật khẩu và tài khoản
                 List<String> matKhaus = new ArrayList<>();
                 List<TaiKhoan> taiKhoans = new ArrayList<>();
                 danhSachNhanVien.forEach(nhanVien -> {
                     String matKhau = PasswordGeneratorUtil.generatePassword();
                     matKhaus.add(matKhau);
-                    String maTk = AccountCodeGeneratorUtil.generateAccountCode();
+                    String maTk = null;
+                    try {
+                        maTk = taiKhoanService.generateAccountCode();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     String tenTK = nhanVien.getMaNv();
                     matKhau = PasswordUtil.hashPassword(matKhau);
-                    TaiKhoan taiKhoan = taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
+                    TaiKhoan taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
                     taiKhoans.add(taiKhoan);
                 });
                 // Thêm toàn bộ tài khoản vào
-//                databaseContext.newEntityDAO(TaiKhoanDAO.class).themNhieu(taiKhoans);
                 taiKhoanService.themNhieu(taiKhoans);
-                // Tạo ra 5 luồng để chuyển email
-                ExecutorService emailService = Executors.newFixedThreadPool(5);
-                for(NhanVien nhanVien : danhSachNhanVien) {
+                ExecutorService emailService = Executors.newSingleThreadExecutor();
+                for (int i = 0; i < danhSachNhanVien.size(); i++) {
+                    NhanVien nhanVien = danhSachNhanVien.get(i);
+                    String matKhau = matKhaus.get(i);
                     emailService.submit(() -> {
                         String content = "Tên đăng nhập là: " + nhanVien.getMaNv() + "\n"
-                                + "Mật khẩu của bạn là: " + matKhaus.get(0);
+                                + "Mật khẩu của bạn là: " + matKhau;
                         EmailSenderUlti.sendEmail(nhanVien.getEmail(), "Tài khoản và mật khẩu", content);
-                        matKhaus.remove(0);
                     });
                 }
                 emailService.shutdown();
                 showAlert("Thông báo", "Lưu thành công", Alert.AlertType.CONFIRMATION);
                 resetAllFiled();
             } catch (Exception e) {
+                e.printStackTrace();
                 showAlert("Xãy ra lỗi", "Lưu thất bại! Xãy ra lỗi", Alert.AlertType.ERROR);
             }
             danhSachNhanVien.clear();
@@ -381,7 +391,7 @@ public class ThemNhanVienController {
         String email = diaChiTextField.getText().trim();
         String cccd = cccdTextField.getText().trim();
 
-        EntityService<NhanVien> nhanVienService = RMIServiceLocator.getNhanVienService();
+        NhanVienService nhanVienService = RMIServiceLocator.getNhanVienService();
         if (hoTenDem.isEmpty()) {
             showAlert("Cảnh Báo", "Vui lòng nhập họ tên đệm!", Alert.AlertType.WARNING);
             hotenDemTextField.requestFocus();
@@ -455,7 +465,7 @@ public class ThemNhanVienController {
             }
         }
         try {
-            String maNv = taiKhoanService.generateEmployeeCode();
+            String maNv = nhanVienService.generateEmployeeCode();
             boolean gioiTinh = gioiTinhCombobox.getValue().contentEquals("Nữ");
             LoaiNhanVien chucVu = chucVuCombobox.getValue().contentEquals(LoaiNhanVien.BAN_VE.getName()) ? LoaiNhanVien.BAN_VE : LoaiNhanVien.QUAN_LI_BAN_VE;
             boolean trangThai = trangThaiCombobox.getValue().contentEquals("Đang làm việc");

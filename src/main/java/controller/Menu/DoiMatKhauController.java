@@ -50,10 +50,6 @@ public class DoiMatKhauController {
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
-//                TrainTicketApplication.getInstance()
-//                        .getDatabaseContext()
-//                        .newEntityDAO(TaiKhoanDAO.class)
-//                        .capNhat(this.taiKhoan);
                 showAlert("Thông báo", "Đổi mật khẩu thành công", Alert.AlertType.INFORMATION);
                 if (this.taiKhoan.getNhanvienByMaNv().getLoaiNv() == LoaiNhanVien.QUAN_LI_BAN_VE) {
                     MenuController.instance.readyUI("Menu/ThongTinCaNhan");

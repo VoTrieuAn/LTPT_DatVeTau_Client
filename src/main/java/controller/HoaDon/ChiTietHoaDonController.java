@@ -19,10 +19,16 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.view.JasperViewer;
 import rmi.RMIServiceLocator;
 import service.EntityService;
+import util.BarcodeUtil;
 
+import java.awt.image.BufferedImage;
 import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -107,9 +113,9 @@ public class ChiTietHoaDonController {
         if (source == btnTroLai) {
             troLai();
         }
-//        else if (source == btnInHoaDon) {
-//            generateReport(this.hoaDon);
-//        }
+        else if (source == btnInHoaDon) {
+            generateReport(this.hoaDon);
+        }
     }
     @FXML
     void keyPressed(KeyEvent event) {
@@ -282,6 +288,36 @@ public class ChiTietHoaDonController {
         emailHKLabel.setText(hanhKhach.getEmail());
         cccdHKLabel.setText(hanhKhach.getCccd());
     }
+
+    public void generateReport(HoaDon hoaDon) {
+        Connection connection = null;
+        try {
+            HashMap<String, Object> para = new HashMap<>();
+            para.put("maHD", hoaDon.getMaHd());
+
+            // Tạo QR Code dựa trên maVe
+            BufferedImage qrCodeImage = BarcodeUtil.generateBarcodeImage(hoaDon.getMaHd(), 154, 50);
+            para.put("qrCodeImage", qrCodeImage);
+
+            // Tạo một kết nối mới (thay vì sử dụng EntityManager)
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/trainticket", "root", "1234567890");
+
+            JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream("/view/report/Invoice.jrxml"));
+
+            // Điền dữ liệu vào báo cáo
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, para, connection);
+
+            // Hiển thị báo cáo trong một cửa sổ mới
+            JasperViewer.viewReport(jasperPrint, false);
+        } catch (JRException e) {
+            e.printStackTrace();
+            showAlert("Lỗi JasperReports", "Lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Lỗi", "Xảy ra lỗi khi tạo báo cáo: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
 
     private void showAlert(String title, String content, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);
