@@ -1,0 +1,4 @@
+.background-img{
+    -fx-background-image: url("/view/images/anh304.jpg");
+    -fx-background-size: cover;
+}

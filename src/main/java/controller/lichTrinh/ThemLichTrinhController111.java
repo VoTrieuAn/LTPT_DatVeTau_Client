@@ -106,6 +106,7 @@ public class ThemLichTrinhController111 {
         khoiTaoThoiGianGiua2Ga();
         checkbox_DungAllGa.selectedProperty().addListener((observable, oldValue, newValue) -> {
             isDungAllGaChecked = newValue;
+            capNhatThongTin();
         });
     }
 
@@ -241,6 +242,7 @@ public class ThemLichTrinhController111 {
         setValueTable();
         if (!danhSachLichTrinh.isEmpty()) {
             btnLuuLai.setDisable(false);
+            btnHuyBo.setDisable(false);
         }
         tableThemLT.getSelectionModel().clearSelection();
     }
@@ -782,19 +784,15 @@ public class ThemLichTrinhController111 {
                     dsLT.add(new LichTrinh(maLT, gaKH, gaKT, ngayKhoiHanh, gioDen, gioDi, ngayKetThuc, 0, tauByMa));
                 }
             }
+
             return dsLT;
+
         }catch (RemoteException e){
             e.printStackTrace();
             return null;
         }
 
-        // In danh sách Lịch Trình để kiểm tra
-//        list.forEach(x -> System.out.println(x));
-//        dsLT.forEach(x -> System.out.println(x));
-//        gioDiList.forEach(x -> System.out.println(x));
-//        gioDenList.forEach(x -> System.out.println(x));
-//        ngayKhoiHanhList.forEach(x -> System.out.println(x));
-//        ngayKetThucList.forEach(x -> System.out.println(x));
+
 
     }
 
@@ -887,6 +885,9 @@ public class ThemLichTrinhController111 {
         }
         if(source == btnTroLai){
             xacNhanLuu();
+        }
+        if(source == btnHuyBo){
+            huyBoDong();
             System.out.println("CLicked");
         }
     }
@@ -902,7 +903,7 @@ public class ThemLichTrinhController111 {
                 themMoi();
             } else if (event.getCode() == KeyCode.X) {
 //                Sửa tên hàm lại cho dễ hiểu hơn
-//                huyBoDong();
+                huyBoDong();
             }
         }
     }
@@ -939,4 +940,20 @@ public class ThemLichTrinhController111 {
 
         return result;
     }
+
+
+    private void huyBoDong() {
+        LichTrinh selected = tableThemLT.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertHelper.showWarning("Cảnh báo","Vui lòng chọn một dòng để hủy.");
+        } else {
+            Optional<ButtonType> buttonType = AlertHelper.showConfirm("Bạn chắc chắn muốn xóa dòng này?");
+            if (buttonType.get().getButtonData() == ButtonBar.ButtonData.NO) {
+
+            } else if (buttonType.get().getButtonData() == ButtonBar.ButtonData.YES) {
+                tableThemLT.getItems().remove(selected);
+            }
+        }
+    }
+
 }

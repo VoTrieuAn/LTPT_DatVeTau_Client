@@ -561,4 +561,44 @@
     -fx-border-radius: 5px;              /
 -fx-background-radius: 5px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 4, 0, 2, 2);
+.background-img{
+    -fx-background-image: url("/view/images/30thang4/bangron30415.png");
+    -fx-background-size: 70% 100%; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-cogiaiphong{
+    -fx-background-image: url("/view/images/cogiaiphong.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-ngoisao{
+    -fx-background-image: url("/view/images/ngoisao.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-covn{
+    -fx-background-image: url("/view/images/hinh-nen-co-viet-nam.jpg");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-maybay{
+    -fx-background-image: url("/view/images/30thang4/maybay.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-tank{
+    -fx-background-image: url("/view/images/30thang4/xetang.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
 }

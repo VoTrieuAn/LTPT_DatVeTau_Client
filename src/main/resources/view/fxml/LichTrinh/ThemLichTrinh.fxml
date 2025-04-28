@@ -24,51 +24,60 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" onKeyPressed="#keyPressed" onMouseClicked="#mouseClickedEvent" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lichTrinh.ThemLichTrinhController111">
+<AnchorPane fx:id="anchorPane" onKeyPressed="#keyPressed" onMouseClicked="#mouseClickedEvent" prefHeight="826.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lichTrinh.ThemLichTrinhController111">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <top>
                 <AnchorPane BorderPane.alignment="CENTER">
                     <children>
-                        <HBox spacing="6.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
-                            <children>
-                                <Label fx:id="labelDanhSachLT" onMouseClicked="#mouseClickedEvent" text="Danh sách lịch trình" HBox.hgrow="ALWAYS">
-                                    <font>
-                                        <Font name="System Italic" size="16.0" />
-                                    </font>
-                                </Label>
-                                <Label text="/">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                                <Label text="Thêm lịch trình">
-                                    <font>
-                                        <Font name="System Bold" size="16.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </HBox>
-                        <Button fx:id="btnTroLai" layoutX="520.0" mnemonicParsing="false" onAction="#controller" styleClass="btn" stylesheets="/view/css/style.css" text="Trở lại (ESC)" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <HBox layoutX="10.0" prefHeight="78.0" prefWidth="1054.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="206.0">
+                     <children>
+                        <VBox>
+                           <children>
+                                    <HBox spacing="6.0">
+                                        <children>
+                                            <Label fx:id="labelDanhSachLT" onMouseClicked="#mouseClickedEvent" text="Danh sách lịch trình" HBox.hgrow="ALWAYS">
+                                                <font>
+                                                    <Font name="System Italic" size="16.0" />
+                                                </font>
+                                            </Label>
+                                            <Label text="/">
+                                                <font>
+                                                    <Font size="16.0" />
+                                                </font>
+                                            </Label>
+                                            <Label text="Thêm lịch trình">
+                                                <font>
+                                                    <Font name="System Bold" size="16.0" />
+                                                </font>
+                                            </Label>
+                                        </children>
+                                    </HBox>
+                                      <Label prefHeight="37.0" prefWidth="278.0" text="Tạo mới lịch trình" textAlignment="CENTER">
+                                          <font>
+                                              <Font size="36.0" />
+                                          </font>
+                                      </Label>
+                           </children>
+                        </VBox>
+                        <Pane prefHeight="78.0" prefWidth="30.0" />
+                        <Pane prefHeight="78.0" prefWidth="620.0" styleClass="background-img" stylesheets="@../../css/style.css" />
+                     </children>
+                  </HBox>
+                        <Button fx:id="btnTroLai" layoutX="1148.0" mnemonicParsing="false" onAction="#controller" styleClass="btn" stylesheets="/view/css/style.css" text="Trở lại (ESC)" AnchorPane.rightAnchor="0.0">
                             <font>
                                 <Font size="18.0" />
                             </font>
                         </Button>
-                        <Pane prefHeight="9.0" prefWidth="1260.0" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
-                          <Label layoutX="-2.0" layoutY="25.0" prefHeight="37.0" prefWidth="278.0" text="Tạo mới lịch trình" textAlignment="CENTER" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="25.0">
-                              <font>
-                                  <Font size="36.0" />
-                              </font>
-                          </Label>
                     </children>
                 </AnchorPane>
             </top>
             <center>
-            <ScrollPane hbarPolicy="ALWAYS" prefHeight="538.0" prefWidth="1260.0" styleClass="scroll-bar" stylesheets="@../../css/style.css" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
+            <ScrollPane hbarPolicy="ALWAYS" prefHeight="538.0" prefWidth="1260.0" style="-fx-background-color: transparent; -fx-background-insets: 0;" styleClass="scroll-bar" stylesheets="@../../css/style.css" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
                <content>
-                  <HBox alignment="CENTER">
+                  <HBox alignment="CENTER" spacing="20.0" HBox.hgrow="ALWAYS">
                      <children>
-                            <AnchorPane prefHeight="650.0" prefWidth="850.0" HBox.hgrow="ALWAYS">
+                            <AnchorPane prefHeight="650.0" HBox.hgrow="ALWAYS">
                                 <children>
                                     <GridPane alignment="CENTER" hgap="10.0" prefHeight="275.0" prefWidth="680.0" vgap="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                         <columnConstraints>
@@ -86,10 +95,15 @@
                                                 <children>
                                           <HBox alignment="CENTER_LEFT" prefHeight="20.0" prefWidth="420.0">
                                              <children>
-                                                <Circle fill="RED" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
-                                                          <Label text="Ga Khởi Hành">
+                                                <AnchorPane prefHeight="27.0" prefWidth="29.0">
+                                                   <children>
+                                                      <Circle fill="RED" layoutX="15.0" layoutY="13.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
+                                                      <Label layoutX="1.0" layoutY="-1.0" prefHeight="27.0" prefWidth="28.0" styleClass="background-ngoisao" stylesheets="@../../css/style.css" />
+                                                   </children>
+                                                </AnchorPane>
+                                                          <Label text="Ga Khởi Hành" textFill="RED">
                                                               <font>
-                                                                  <Font size="18.0" />
+                                                                  <Font name="System Bold" size="18.0" />
                                                               </font>
                                                           </Label>
                                              </children>
@@ -102,9 +116,9 @@
                                           <HBox alignment="CENTER_LEFT" prefHeight="0.0" prefWidth="420.0">
                                              <children>
                                                 <Circle fill="BLUE" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
-                                                          <Label text="Ga Kết Thúc">
+                                                          <Label text="Ga Kết Thúc" textFill="#1800ff">
                                                               <font>
-                                                                  <Font size="18.0" />
+                                                                  <Font name="System Bold" size="18.0" />
                                                               </font>
                                                           </Label>
                                              </children>
@@ -118,7 +132,7 @@
                                                         <children>
                                                             <Label text="Ngày Khởi Hành" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                 <font>
-                                                                    <Font size="18.0" />
+                                                                    <Font name="System Bold" size="18.0" />
                                                                 </font>
                                                             </Label>
                                                             <DatePicker fx:id="ngayKH_DatePicker" prefHeight="32.0" promptText="dd/mm/yyy" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="26.0" />
@@ -140,17 +154,17 @@
                                                 <children>
                                                     <Label text="Giờ Khởi Hành">
                                                         <font>
-                                                            <Font size="18.0" />
+                                                            <Font name="System Bold" size="18.0" />
                                                         </font>
                                                     </Label>
                                           <HBox prefHeight="100.0" prefWidth="200.0">
                                              <children>
-                                                <ComboBox fx:id="cboxGioKH" prefHeight="30.0" prefWidth="120.0" promptText="--Chọn giờ--">
+                                                <ComboBox fx:id="cboxGioKH" prefHeight="35.0" prefWidth="168.0" promptText="--Chọn giờ--" HBox.hgrow="ALWAYS">
                                                    <HBox.margin>
                                                       <Insets right="20.0" />
                                                    </HBox.margin>
                                                 </ComboBox>
-                                                <ComboBox fx:id="cboxPhutKH" prefHeight="30.0" prefWidth="120.0" promptText="--Chọn phút--" />
+                                                <ComboBox fx:id="cboxPhutKH" prefHeight="35.0" prefWidth="169.0" promptText="--Chọn phút--" HBox.hgrow="ALWAYS" />
                                              </children>
                                           </HBox>
                                                 </children>
@@ -182,7 +196,7 @@
                                        <children>
                                           <Label text="Tàu">
                                              <font>
-                                                <Font size="18.0" />
+                                                <Font name="System Bold" size="18.0" />
                                              </font>
                                           </Label>
                                           <ComboBox fx:id="cboxTau" prefHeight="28.0" prefWidth="393.0" promptText="--Chọn tàu--" />
@@ -198,7 +212,7 @@
                                             <Insets top="10.0" />
                                         </padding>
                                     </GridPane>
-                                    <TableView fx:id="tableThemLT" layoutY="319.0" onMouseClicked="#mouseClickedEvent" prefHeight="315.0" prefWidth="850.0" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="319.0">
+                                    <TableView fx:id="tableThemLT" layoutY="319.0" onMouseClicked="#mouseClickedEvent" prefHeight="315.0" prefWidth="850.0" styleClass="background-covn" stylesheets="@../../css/style.css" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="319.0">
                                         <columns>
                                             <TableColumn fx:id="maLTColumn" prefWidth="75.0" sortable="false" text="Mã LT" />
                                             <TableColumn fx:id="gaKHColumn" prefWidth="75.0" sortable="false" text="Ga KH" />
@@ -217,9 +231,9 @@
                               <HBox alignment="CENTER_LEFT" layoutY="281.0" prefHeight="27.0" prefWidth="796.0">
                                  <children>
                                     <Circle fill="ORANGE" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
-                                    <Label text="Ga Dừng: ">
+                                    <Label text="Ga Dừng: " textFill="#ffd000">
                                        <font>
-                                          <Font size="18.0" />
+                                          <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
                                     <Label fx:id="label_GaDung" prefHeight="27.0" prefWidth="679.0" HBox.hgrow="ALWAYS">
@@ -231,9 +245,9 @@
                               </HBox>
                                 </children>
                             </AnchorPane>
-                        <AnchorPane fx:id="map_pane" HBox.hgrow="ALWAYS">
+                        <AnchorPane fx:id="map_pane" nodeOrientation="LEFT_TO_RIGHT" HBox.hgrow="ALWAYS">
                             <children>
-                                <ImageView fitHeight="629.0" fitWidth="365.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="629.0" fitWidth="365.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="95.43875122070312">
                                     <image>
                                         <Image url="@../../images/bitmap.png" />
                                     </image>
@@ -380,6 +394,15 @@
                                 <Line fx:id="line_NhaTrang_PhanThiet" endX="111.5" endY="372.0" fill="WHITE" layoutX="166.0" layoutY="148.0" startX="121.25" startY="345.25" stroke="WHITE" strokeWidth="2.0" />
                                 <Line fx:id="line_PhanThiet_SaiGon" endX="15.0" endY="384.5" fill="WHITE" layoutX="176.0" layoutY="158.0" startX="87.5" startY="372.0" stroke="WHITE" strokeWidth="2.0" />
                                 <Line fx:id="line_SaiGon_VungTau" endX="3.25" endY="383.5" fill="WHITE" layoutX="186.0" layoutY="168.0" startX="19.5" startY="395.0" stroke="WHITE" strokeWidth="2.0" />
+                              <Line endX="-2.0" endY="20.0" layoutX="178.0" layoutY="511.0" startX="-2.0" startY="-27.0" strokeWidth="4.0" />
+                              <Label layoutX="177.0" layoutY="483.0" prefHeight="23.0" prefWidth="40.0" styleClass="background-cogiaiphong" stylesheets="@../../css/style.css" />
+                              <Label layoutX="14.0" layoutY="344.0" prefHeight="139.0" prefWidth="174.0" styleClass="background-tank" stylesheets="@../../css/style.css" />
+                              <Label layoutX="16.0" layoutY="270.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="42.0" layoutY="242.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="60.0" layoutY="276.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="240.0" layoutY="183.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="266.0" layoutY="155.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="284.0" layoutY="189.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
                             </children>
                         </AnchorPane>
                      </children>
