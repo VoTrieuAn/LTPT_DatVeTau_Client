@@ -396,6 +396,13 @@
                                 <Line fx:id="line_SaiGon_VungTau" endX="3.25" endY="383.5" fill="WHITE" layoutX="186.0" layoutY="168.0" startX="19.5" startY="395.0" stroke="WHITE" strokeWidth="2.0" />
                               <Line endX="-2.0" endY="20.0" layoutX="178.0" layoutY="511.0" startX="-2.0" startY="-27.0" strokeWidth="4.0" />
                               <Label layoutX="177.0" layoutY="483.0" prefHeight="23.0" prefWidth="40.0" styleClass="background-cogiaiphong" stylesheets="@../../css/style.css" />
+                              <Label layoutX="14.0" layoutY="344.0" prefHeight="139.0" prefWidth="174.0" styleClass="background-tank" stylesheets="@../../css/style.css" />
+                              <Label layoutX="16.0" layoutY="270.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="42.0" layoutY="242.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="60.0" layoutY="276.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="240.0" layoutY="183.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="266.0" layoutY="155.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
+                              <Label layoutX="284.0" layoutY="189.0" prefHeight="34.0" prefWidth="41.0" styleClass="background-maybay" stylesheets="@../../css/style.css" />
                             </children>
                         </AnchorPane>
                      </children>

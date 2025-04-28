@@ -20,7 +20,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="mainPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #f3f4f8;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.thongKe.TongQuanController">
+<AnchorPane fx:id="mainPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="2766.0" prefWidth="1258.0" style="-fx-background-color: #f3f4f8;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.thongKe.TongQuanController">
     <children>
       <HBox layoutX="22.0" layoutY="6.0" spacing="50.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
@@ -178,7 +178,7 @@
             <Font size="24.0" />
          </font>
       </Label>
-      <BarChart fx:id="chartSoChuyenDi" layoutX="650.0" layoutY="2365.0" prefHeight="380.0" prefWidth="595.0" styleClass="my-card" stylesheets="@../../css/thongKe/TongQuan.css" title="Số chuyến theo lịch trình mỗi tàu">
+      <BarChart fx:id="chartSoChuyenDi" layoutX="650.0" layoutY="2365.0" prefHeight="380.0" prefWidth="595.0" styleClass="my-card" stylesheets="@../../css/thongKe/TongQuan.css" title="Số chuyến theo lịch trình mỗi tàu" AnchorPane.rightAnchor="13.0">
          <xAxis>
             <CategoryAxis label="Tên Tàu" side="BOTTOM">
                <tickLabelFont>
@@ -243,15 +243,5 @@
             </Label>
          </children>
       </VBox>
-      <Label fx:id="textTyLeCacTuyenDuocDat" layoutX="39.0" layoutY="3015.0" prefHeight="130.0" prefWidth="395.0">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Label>
-      <Label layoutX="460.0" layoutY="3015.0" prefHeight="130.0" prefWidth="776.0">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Label>
     </children>
 </AnchorPane>
