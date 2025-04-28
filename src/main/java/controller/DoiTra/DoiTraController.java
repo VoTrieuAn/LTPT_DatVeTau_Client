@@ -29,10 +29,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 public class DoiTraController {
@@ -204,11 +201,14 @@ public class DoiTraController {
         tab2.setStyle("-fx-background-color: #fafa84;");
         tab3.setStyle("-fx-background-color: #04a8e1;");
         tableViewLoadTau.setStyle(
-                "-fx-background-image: url('./view/images/30thang4/30thang4bangron.png');" +
+                "-fx-background-image: url('./view/images/30thang4/img_4.png');" +
                         "-fx-background-size: cover;" +
                         "-fx-background-repeat: no-repeat;" +
                         "-fx-background-position: center center;"
         );
+        //F4F29CFF
+        //FAF873FF
+
         tableViewVe.setStyle(
                 "-fx-background-image: url('./view/images/30thang4/img_3.png');" +
                         "-fx-background-size: cover;" +
@@ -248,23 +248,35 @@ public class DoiTraController {
                         "-fx-background-repeat: no-repeat;" +
                         "-fx-background-position: center center;"
         );
-        columnMaVe.setStyle("-fx-background-color: #fafa84;");
-        columnTenNguoiMua.setStyle("-fx-background-color: #fafa84;");
-        columnNgayMua.setStyle("-fx-background-color: #fafa84;");
-        columnLoaiVe.setStyle("-fx-background-color: #fafa84;");
-        columnTau.setStyle("-fx-background-color: #fafa84;");
-        columnGioDi.setStyle("-fx-background-color: #fafa84;");
-        columnGioDen.setStyle("-fx-background-color: #fafa84;");
-        columnNgayDi.setStyle("-fx-background-color: #fafa84;");
-        columnNgayDen.setStyle("-fx-background-color: #fafa84;");
-        maDon.setStyle("-fx-background-color: #fafa84;");
-        loaiDon.setStyle("-fx-background-color: #fafa84;");
-        ngayLapDon.setStyle("-fx-background-color: #fafa84;");
-        maVe.setStyle("-fx-background-color: #fafa84;");
-        tienBuDon.setStyle("-fx-background-color: #fafa84;");
-        tienBuThem.setStyle("-fx-background-color: #fafa84;");
-        tienPhiDon.setStyle("-fx-background-color: #fafa84;");
-        tienHoanTraDon.setStyle("-fx-background-color: #fafa84;");
+
+        columnMaVe.setStyle("-fx-background-color: #f4bfbf;");
+        columnTenNguoiMua.setStyle("-fx-background-color: #f4bfbf;");
+        columnNgayMua.setStyle("-fx-background-color: #f4bfbf;");
+        columnLoaiVe.setStyle("-fx-background-color: #f4bfbf;");
+        columnTau.setStyle("-fx-background-color: #f4bfbf;");
+        columnGioDi.setStyle("-fx-background-color: #f4bfbf;");
+        columnGioDen.setStyle("-fx-background-color: #f4bfbf;");
+        columnNgayDi.setStyle("-fx-background-color: #f4bfbf;");
+        columnNgayDen.setStyle("-fx-background-color: #f4bfbf;");
+
+        maDon.setStyle("-fx-background-color: #bde7f6;");
+        loaiDon.setStyle("-fx-background-color: #bde7f6;");
+        ngayLapDon.setStyle("-fx-background-color: #bde7f6;");
+        maVe.setStyle("-fx-background-color: #bde7f6;");
+        tienBuDon.setStyle("-fx-background-color: #bde7f6;");
+        tienBuDon.setStyle("-fx-background-color: #bde7f6;");
+        tienPhiDon.setStyle("-fx-background-color: #bde7f6;");
+        tienHoanTraDon.setStyle("-fx-background-color: #bde7f6;");
+
+        colTau.setStyle("-fx-background-color: #f4f4b4;");
+        colGaDi.setStyle("-fx-background-color: #f4f4b4;");
+        colGaDen.setStyle("-fx-background-color: #f4f4b4;");
+        colNgayMua.setStyle("-fx-background-color: #f4f4b4;");
+
+        giaVeCu_DoiVe.setStyle("-fx-background-color: #9edff4;");
+        giaVeMoi_DoiVe.setStyle("-fx-background-color: #b7f186;");
+
+
     }
     @FXML
     public void initialize() {
@@ -528,6 +540,8 @@ public class DoiTraController {
 
             try {
                 DonDoiTra don = RMIServiceLocator.getDonDoiTraService().timKiemId(ma);
+                List<DonDoiTra> donDoiTraList = new ArrayList<>();
+                donDoiTraList.add(don);
                 if (don == null) {
                     showAlert(Alert.AlertType.INFORMATION, "Kết quả", "Không tìm thấy đơn đổi trả với mã đã nhập.");
                 } else {
@@ -672,10 +686,6 @@ public class DoiTraController {
                         HoaDon hoaDon = ve.getHoadonByMaHd();
                         //====================================== Note
                         selectedGhe = (Ghe) seatButton.getUserData();
-                        giaVeCu_DoiVe.setText(String.valueOf((int)ve.getGiaVe()));
-                        double gtriKM = ve.getKhuyenmaiByMaKm().getGiaTriKhuyenMai() / 100;
-                        int giaVe = (int) (selectedGhe.getGiaGhe() - (int)(selectedGhe.getGiaGhe() * gtriKM));
-                        giaVeMoi_DoiVe.setText(String.valueOf((int)giaVe));
                         // Done ==================================
                         double[] tien = null;
                         try {
@@ -683,6 +693,9 @@ public class DoiTraController {
                         } catch (RemoteException ex) {
                             throw new RuntimeException(ex);
                         }
+                        giaVeCu_DoiVe.setText(String.valueOf((int)ve.getGiaVe()));
+                        double giaVe = tien[3];
+                        giaVeMoi_DoiVe.setText(String.valueOf((int)giaVe));
                         double tienHT = tien[0];
                         double tienBu = tien[1];
                         double tienPhi = tien[2];
