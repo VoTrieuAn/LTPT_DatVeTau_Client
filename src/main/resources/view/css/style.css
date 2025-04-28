@@ -552,7 +552,7 @@
 .button_Login {
 }
 .background-img{
-    -fx-background-image: url("/view/images/bangron304.png");
+    -fx-background-image: url("/view/images/30thang4/bangron30415.png");
     -fx-background-size: 70% 100%; /* Đảm bảo ảnh không bị cắt */
     -fx-background-position: center center; /* Căn giữa ảnh */
     -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
@@ -574,6 +574,20 @@
 
 .background-covn{
     -fx-background-image: url("/view/images/hinh-nen-co-viet-nam.jpg");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-maybay{
+    -fx-background-image: url("/view/images/30thang4/maybay.png");
+    -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
+    -fx-background-position: center center; /* Căn giữa ảnh */
+    -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */
+}
+
+.background-tank{
+    -fx-background-image: url("/view/images/30thang4/xetang.png");
     -fx-background-size: cover; /* Đảm bảo ảnh không bị cắt */
     -fx-background-position: center center; /* Căn giữa ảnh */
     -fx-background-repeat: no-repeat; /* Không lặp lại ảnh nền */

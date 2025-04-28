@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 import rmi.RMIServiceLocator;
 import service.EntityService;
+import service.TaiKhoanService;
 import util.*;
 
 import java.io.IOException;
@@ -101,6 +102,8 @@ public class ThemNhanVienController {
     @FXML
     private TextField tenTextField;
     private ObservableList<NhanVien> danhSachNhanVien = FXCollections.observableArrayList();
+
+    private TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
     //    Gọi sự kiện
     @FXML
     public void initialize() {
@@ -231,7 +234,7 @@ public class ThemNhanVienController {
                 try {
                     nhanVienService.them(nhanVien);
                     String matKhau = PasswordGeneratorUtil.generatePassword();
-                    String maTk = AccountCodeGeneratorUtil.generateAccountCode();
+                    String maTk = ((TaiKhoanService) taiKhoanService).generateAccountCode();
                     String tenTK = nhanVien.getMaNv();
                     String matKhauHash = PasswordUtil.hashPassword(matKhau);
                     TaiKhoan taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
@@ -451,11 +454,15 @@ public class ThemNhanVienController {
                 }
             }
         }
-        String maNv = EmployeeCodeGeneratorUtil.generateEmployeeCode();
-        boolean gioiTinh = gioiTinhCombobox.getValue().contentEquals("Nữ");
-        LoaiNhanVien chucVu = chucVuCombobox.getValue().contentEquals(LoaiNhanVien.BAN_VE.getName()) ? LoaiNhanVien.BAN_VE : LoaiNhanVien.QUAN_LI_BAN_VE;
-        boolean trangThai = trangThaiCombobox.getValue().contentEquals("Đang làm việc");
-        return new NhanVien(maNv, hoTenDem, ten, gioiTinh, cccd, sdt, email, Date.valueOf(ngaySinh), chucVu, trangThai, new Timestamp(System.currentTimeMillis()));
+        try {
+            String maNv = taiKhoanService.generateEmployeeCode();
+            boolean gioiTinh = gioiTinhCombobox.getValue().contentEquals("Nữ");
+            LoaiNhanVien chucVu = chucVuCombobox.getValue().contentEquals(LoaiNhanVien.BAN_VE.getName()) ? LoaiNhanVien.BAN_VE : LoaiNhanVien.QUAN_LI_BAN_VE;
+            boolean trangThai = trangThaiCombobox.getValue().contentEquals("Đang làm việc");
+            return new NhanVien(maNv, hoTenDem, ten, gioiTinh, cccd, sdt, email, Date.valueOf(ngaySinh), chucVu, trangThai, new Timestamp(System.currentTimeMillis()));
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
     private void resetAllFiled() {
         hotenDemTextField.setText("");
