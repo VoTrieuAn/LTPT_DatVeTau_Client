@@ -285,8 +285,6 @@ public class DoiTraController {
         update30_4();
         Tooltip tooltip = new Tooltip("Có thể nhập mã vé nhé!☺");
         Tooltip tooltip2 = new Tooltip("Có thể nhập mã vé nhé!☺");
-        tooltip.getStyleClass().add("tooltip");
-        tooltip2.getStyleClass().add("tooltip");
         tooltip2.setShowDelay(Duration.millis(50));
         tooltip2.setHideDelay(Duration.millis(100));
         tooltip.setShowDelay(Duration.millis(50));
