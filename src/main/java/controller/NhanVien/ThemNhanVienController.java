@@ -103,7 +103,7 @@ public class ThemNhanVienController {
     @FXML
     private TextField tenTextField;
     private ObservableList<NhanVien> danhSachNhanVien = FXCollections.observableArrayList();
-
+    NhanVienService nhanVienService = RMIServiceLocator.getNhanVienService();
     private TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
     //    Gọi sự kiện
     @FXML
@@ -225,9 +225,8 @@ public class ThemNhanVienController {
             }
         }
     }
-    private void luuLai() throws RemoteException {
+    private void luuLai()  {
         int index = tableThemNv.getSelectionModel().getFocusedIndex();
-        EntityService<NhanVien> nhanVienService = RMIServiceLocator.getNhanVienService();
         TaiKhoanService taiKhoanService = RMIServiceLocator.getTaiKhoanService();
         if (index >= 0) {
             NhanVien nhanVien = tableThemNv.getSelectionModel().getSelectedItem();
@@ -257,37 +256,47 @@ public class ThemNhanVienController {
         } else {
             try{
                 // Thêm danh sách nhân viên
-//                databaseContext.newEntityDAO(NhanVienDAO.class).themNhieu(danhSachNhanVien);
-                nhanVienService.themNhieu(danhSachNhanVien);
+                danhSachNhanVien.forEach(nhanVien -> {
+                    try {
+                        nhanVienService.them(nhanVien);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
                 //Một list mật khẩu và tài khoản
                 List<String> matKhaus = new ArrayList<>();
                 List<TaiKhoan> taiKhoans = new ArrayList<>();
                 danhSachNhanVien.forEach(nhanVien -> {
                     String matKhau = PasswordGeneratorUtil.generatePassword();
                     matKhaus.add(matKhau);
-                    String maTk = AccountCodeGeneratorUtil.generateAccountCode();
+                    String maTk = null;
+                    try {
+                        maTk = taiKhoanService.generateAccountCode();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     String tenTK = nhanVien.getMaNv();
                     matKhau = PasswordUtil.hashPassword(matKhau);
-                    TaiKhoan taiKhoan = taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
+                    TaiKhoan taiKhoan = new TaiKhoan(maTk, tenTK, matKhau, new Timestamp(System.currentTimeMillis()),nhanVien);
                     taiKhoans.add(taiKhoan);
                 });
                 // Thêm toàn bộ tài khoản vào
-//                databaseContext.newEntityDAO(TaiKhoanDAO.class).themNhieu(taiKhoans);
                 taiKhoanService.themNhieu(taiKhoans);
-                // Tạo ra 5 luồng để chuyển email
-                ExecutorService emailService = Executors.newFixedThreadPool(5);
-                for(NhanVien nhanVien : danhSachNhanVien) {
+                ExecutorService emailService = Executors.newSingleThreadExecutor();
+                for (int i = 0; i < danhSachNhanVien.size(); i++) {
+                    NhanVien nhanVien = danhSachNhanVien.get(i);
+                    String matKhau = matKhaus.get(i);
                     emailService.submit(() -> {
                         String content = "Tên đăng nhập là: " + nhanVien.getMaNv() + "\n"
-                                + "Mật khẩu của bạn là: " + matKhaus.get(0);
+                                + "Mật khẩu của bạn là: " + matKhau;
                         EmailSenderUlti.sendEmail(nhanVien.getEmail(), "Tài khoản và mật khẩu", content);
-                        matKhaus.remove(0);
                     });
                 }
                 emailService.shutdown();
                 showAlert("Thông báo", "Lưu thành công", Alert.AlertType.CONFIRMATION);
                 resetAllFiled();
             } catch (Exception e) {
+                e.printStackTrace();
                 showAlert("Xãy ra lỗi", "Lưu thất bại! Xãy ra lỗi", Alert.AlertType.ERROR);
             }
             danhSachNhanVien.clear();
